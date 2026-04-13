@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --ts --tailwind --eslint --app --src-dir --no-git --use-npm --turbopack --no-import-alias)",
+      "Bash(bash .claude/skills/generer-festsporsmal/scripts/check_duplicates.sh --fetch-existing-kort fe203ea0-6a68-4a76-ba23-cfba9141bfb0)",
+      "Bash(py --version)",
+      "Bash(py .claude/skills/generer-festsporsmal/scripts/build_insert_migration.py --input C:/Users/mjens/AppData/Local/Temp/klink_approved.json --batch-name snusboksen_droey_20260413 --pack-name Snusboksen --mode drøy --next-migration-number 5 --output supabase/migrations/00005_kort_snusboksen_droey_20260413.sql)",
+      "Bash(npx supabase:*)",
+      "Bash(npx tsc:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(bash .claude/skills/generer-festsporsmal/scripts/check_duplicates.sh --fetch-existing-kort 25b1f74f-0b6b-468b-9289-f83812e80540)",
+      "Bash(sed -i 's/python3/py/g' .claude/skills/generer-festsporsmal/scripts/check_duplicates.sh)",
+      "Bash(bash .claude/skills/generer-festsporsmal/scripts/check_duplicates.sh --check-batch /tmp/klink_candidates.json --existing /tmp/klink_existing_kort.json)",
+      "Bash(ls \"C:\\\\Users\\\\mjens\\\\OneDrive\\\\Musikk\\\\Dokumenter\\\\Prosjekter\\\\Klink - Drikkespill\\\\supabase\\\\migrations\\\\\" | grep \"^[0-9]\" | sort | tail -3)"
+    ]
+  }
+}
