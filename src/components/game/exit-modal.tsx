@@ -1,6 +1,7 @@
 'use client'
 
 import { Package, LogOut, ArrowLeft } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
 
 interface ExitModalProps {
   open: boolean
@@ -10,6 +11,7 @@ interface ExitModalProps {
 }
 
 export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps) {
+  const { isActive: athina } = useAthina()
   if (!open) return null
 
   return (
@@ -19,7 +21,8 @@ export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps
 
       {/* Sheet */}
       <div
-        className="relative w-full max-w-lg bg-lime rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up"
+        className="relative w-full max-w-lg rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up transition-colors duration-500"
+        style={{ backgroundColor: athina ? '#FF69B4' : '#A8E63D' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
@@ -31,7 +34,7 @@ export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps
         <div className="space-y-3">
           <button
             onClick={onNewPacks}
-            className="w-full min-h-[52px] bg-forest text-lime rounded-2xl font-black text-base flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-forest-light"
+            className={`w-full min-h-[52px] rounded-2xl font-black text-base flex items-center justify-center gap-2 active:scale-95 transition-all ${athina ? 'bg-[#E91E8C] text-white hover:bg-[#C2185B]' : 'bg-forest text-lime hover:bg-forest-light'}`}
           >
             <Package className="w-5 h-5" />
             Velg nye pakker
@@ -39,7 +42,7 @@ export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps
 
           <button
             onClick={onReset}
-            className="w-full min-h-[52px] bg-forest/10 text-forest rounded-2xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-forest/15"
+            className={`w-full min-h-[52px] rounded-2xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all ${athina ? 'bg-[#E91E8C]/15 text-[#E91E8C] hover:bg-[#E91E8C]/25' : 'bg-forest/10 text-forest hover:bg-forest/15'}`}
           >
             <LogOut className="w-5 h-5" />
             Avslutt og nullstill

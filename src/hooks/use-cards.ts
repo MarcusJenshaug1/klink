@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Card } from '@/types/game'
+import type { Card, Korttype } from '@/types/game'
 
 export function useCards() {
   const [loading, setLoading] = useState(false)
@@ -28,5 +28,14 @@ export function useCards() {
     return data ?? []
   }, [])
 
-  return { fetchCards, loading, error }
+  const fetchKorttyper = useCallback(async (): Promise<Korttype[]> => {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('korttyper')
+      .select('id, label, icon_name, farge, beskrivelse')
+      .order('opprettet_at', { ascending: true })
+    return (data as Korttype[]) ?? []
+  }, [])
+
+  return { fetchCards, fetchKorttyper, loading, error }
 }

@@ -2,6 +2,7 @@
 
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAthina } from '@/context/athina-context'
 import type { Pack } from '@/types/game'
 
 interface PackCardProps {
@@ -11,16 +12,18 @@ interface PackCardProps {
 }
 
 export function PackCard({ pack, selected, onToggle }: PackCardProps) {
+  const { isActive: athina } = useAthina()
   return (
     <button
       onClick={onToggle}
       className={cn(
-        'relative w-full rounded-3xl p-5 text-left transition-all active:scale-95',
+        'relative w-full rounded-3xl p-5 text-left transition-all active:scale-95 overflow-hidden',
         'text-white min-h-[130px] flex flex-col justify-between',
         selected ? 'shadow-xl scale-[1.02]' : 'shadow-md opacity-90 hover:opacity-100'
       )}
       style={{ backgroundColor: pack.farge }}
     >
+      {athina && <div className="absolute inset-0 bg-[#FF1493]/30 pointer-events-none" />}
       {/* Top row: name + check */}
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-black text-xl leading-tight">{pack.navn}</h3>

@@ -1,0 +1,1 @@
+ALTER TABLE korttyper ADD COLUMN IF NOT EXISTS beskrivelse TEXT;

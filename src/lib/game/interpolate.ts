@@ -1,7 +1,9 @@
 /**
  * Resolves player name placeholders in card text.
- * {spiller}  → random player (multiple occurrences = distinct players, no repeats per card)
- * {spiller1}, {spiller2} → two distinct random players
+ *
+ * {spiller}           → random player per occurrence (distinct, no repeats per card)
+ * {spiller1}, {spiller2}, {spiller3}, … → distinct random players, one per unique number
+ *
  * Falls back to generic names if no players available.
  */
 
@@ -17,26 +19,32 @@ function shuffled<T>(arr: T[]): T[] {
 export function interpolate(template: string, players: string[]): string {
   if (players.length === 0) {
     return template
-      .replace(/\{spiller1\}/g, 'Person 1')
-      .replace(/\{spiller2\}/g, 'Person 2')
+      .replace(/\{spiller\d+\}/g, (_, i) => `Person ${i ?? ''}`.trim())
       .replace(/\{spiller\}/g, 'Du')
   }
 
   let result = template
+  const pool = shuffled(players)
 
-  // {spiller1} og {spiller2} — alltid distinkte
-  if (result.includes('{spiller1}') || result.includes('{spiller2}')) {
-    const pool = shuffled(players)
-    const p1 = pool[0]
-    const p2 = pool.length > 1 ? pool[1] : pool[0]
-    result = result.replace(/\{spiller1\}/g, p1)
-    result = result.replace(/\{spiller2\}/g, p2)
+  // Handle {spiller1}, {spiller2}, {spiller3}, …
+  // Each unique number maps to one player from the shuffled pool
+  const uniqueNumbers = new Set<number>()
+  const numberedRegex = /\{spiller(\d+)\}/g
+  let m: RegExpExecArray | null
+  while ((m = numberedRegex.exec(result)) !== null) {
+    uniqueNumbers.add(parseInt(m[1]))
   }
 
-  // {spiller} — flere forekomster = distinkte spillere (ingen gjenbruk per kort)
+  if (uniqueNumbers.size > 0) {
+    const sorted = [...uniqueNumbers].sort((a, b) => a - b)
+    const map: Record<number, string> = {}
+    sorted.forEach((n, i) => { map[n] = pool[i % pool.length] })
+    result = result.replace(/\{spiller(\d+)\}/g, (_, num) => map[parseInt(num)])
+  }
+
+  // Handle {spiller} — each occurrence gets the next player in shuffled pool
   const count = (result.match(/\{spiller\}/g) || []).length
   if (count > 0) {
-    const pool = shuffled(players)
     let idx = 0
     result = result.replace(/\{spiller\}/g, () => pool[idx++ % pool.length])
   }

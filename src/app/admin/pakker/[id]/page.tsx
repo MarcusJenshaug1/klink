@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { ChevronLeft, LayoutList } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { PackForm } from '@/components/admin/pack-form'
 
@@ -26,17 +27,30 @@ export default function EditPackPage() {
     load()
   }, [id])
 
-  if (loading) return <p className="text-gray-500">Laster...</p>
+  if (loading) return (
+    <div className="animate-pulse">
+      <div className="h-8 bg-white rounded-xl w-48 mb-8" />
+      <div className="h-96 bg-white rounded-2xl" />
+    </div>
+  )
   if (!pack) return <p className="text-red-500">Pakke ikke funnet</p>
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Rediger: {pack.navn}</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <Link href="/admin/pakker" className="text-forest/40 hover:text-forest transition-colors">
+            <ChevronLeft className="w-6 h-6" />
+          </Link>
+          <h1 className="font-display font-black text-3xl text-forest">
+            {pack.navn}
+          </h1>
+        </div>
         <Link
           href={`/admin/pakker/${id}/kort`}
-          className="bg-forest text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-forest-light"
+          className="inline-flex items-center gap-2 bg-forest text-white px-4 py-2.5 rounded-2xl text-sm font-bold hover:bg-forest/80 active:scale-95 transition-all"
         >
+          <LayoutList className="w-4 h-4" />
           Administrer kort
         </Link>
       </div>

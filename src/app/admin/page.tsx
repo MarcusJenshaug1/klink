@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface PackSummary {
@@ -43,23 +44,28 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-display font-black text-3xl text-forest">Dashboard</h1>
         <Link
           href="/admin/pakker/ny"
-          className="bg-forest text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-forest-light"
+          className="inline-flex items-center gap-2 bg-forest text-white px-4 py-2.5 rounded-2xl text-sm font-bold hover:bg-forest/80 active:scale-95 transition-all"
         >
-          + Ny pakke
+          <Plus className="w-4 h-4" />
+          Ny pakke
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Laster...</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl h-28 animate-pulse" />
+          ))}
+        </div>
       ) : packs.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <p className="text-lg">Ingen spillpakker enda</p>
-          <Link href="/admin/pakker/ny" className="text-forest underline mt-2 inline-block">
-            Opprett din forste pakke
+        <div className="text-center py-16 text-forest/40">
+          <p className="text-lg font-semibold">Ingen spillpakker enda</p>
+          <Link href="/admin/pakker/ny" className="text-forest underline mt-2 inline-block text-sm">
+            Opprett din første pakke
           </Link>
         </div>
       ) : (
@@ -68,21 +74,23 @@ export default function AdminDashboard() {
             <Link
               key={pack.id}
               href={`/admin/pakker/${pack.id}/kort`}
-              className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              className="group bg-white rounded-2xl p-5 shadow-sm border border-cream-dark/40 hover:shadow-md hover:-translate-y-0.5 transition-all"
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-start justify-between mb-3">
                 <div
-                  className="w-4 h-4 rounded-full"
+                  className="w-10 h-10 rounded-xl shrink-0"
                   style={{ backgroundColor: pack.farge }}
                 />
-                <h3 className="font-semibold">{pack.navn}</h3>
                 {!pack.aktiv && (
-                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-forest/10 text-forest/50 px-2 py-0.5 rounded-full font-semibold">
                     Inaktiv
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-500">{pack.card_count} kort</p>
+              <h3 className="font-display font-black text-lg text-forest leading-tight">
+                {pack.navn}
+              </h3>
+              <p className="text-sm text-forest/40 mt-1 font-medium">{pack.card_count} kort</p>
             </Link>
           ))}
         </div>

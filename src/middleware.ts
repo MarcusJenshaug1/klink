@@ -33,6 +33,9 @@ export async function middleware(request: NextRequest) {
   if (
     request.nextUrl.pathname.startsWith('/admin') &&
     !request.nextUrl.pathname.startsWith('/admin/logg-inn') &&
+    !request.nextUrl.pathname.startsWith('/admin/glemt-passord') &&
+    !request.nextUrl.pathname.startsWith('/admin/sett-passord') &&
+    !request.nextUrl.pathname.startsWith('/admin/auth/callback') &&
     !user
   ) {
     const url = request.nextUrl.clone()

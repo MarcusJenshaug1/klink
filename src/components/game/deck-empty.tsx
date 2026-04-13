@@ -1,6 +1,7 @@
 'use client'
 
 import { PartyPopper, RefreshCw, Package, Home } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
 
 interface DeckEmptyProps {
   onReshuffle: () => void
@@ -9,8 +10,9 @@ interface DeckEmptyProps {
 }
 
 export function DeckEmpty({ onReshuffle, onNewPacks, onReset }: DeckEmptyProps) {
+  const { isActive: athina } = useAthina()
   return (
-    <div className="min-h-dvh bg-lime flex flex-col items-center justify-center p-8">
+    <div className="min-h-dvh flex flex-col items-center justify-center p-8 transition-colors duration-700" style={{ backgroundColor: athina ? 'transparent' : '#A8E63D' }}>
       <div className="w-full max-w-sm animate-scale-in flex flex-col items-center">
 
         <div className="w-20 h-20 rounded-3xl bg-forest/10 flex items-center justify-center mb-6">

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Nunito, Playfair_Display } from 'next/font/google'
 import { GameProvider } from '@/context/game-context'
+import { AthinaProvider } from '@/context/athina-context'
 import './globals.css'
 
 const nunito = Nunito({
@@ -42,9 +43,11 @@ export default function RootLayout({
   return (
     <html lang="nb" className={`${nunito.variable} ${playfair.variable}`}>
       <body>
-        <GameProvider>
-          {children}
-        </GameProvider>
+        <AthinaProvider>
+          <GameProvider>
+            {children}
+          </GameProvider>
+        </AthinaProvider>
       </body>
     </html>
   )

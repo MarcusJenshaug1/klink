@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { Check, Pipette } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useConfirm } from './confirm-modal'
 
 interface PackFormData {
   navn: string
@@ -36,6 +38,28 @@ export function PackForm({ initialData }: PackFormProps) {
   const [data, setData] = useState<PackFormData>(initialData ?? DEFAULT_DATA)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [colorCounts, setColorCounts] = useState<Record<string, number>>({})
+  const colorInputRef = useRef<HTMLInputElement>(null)
+  const { confirm, ConfirmDialog } = useConfirm()
+
+  // Load color usage counts from all other packs
+  useEffect(() => {
+    async function loadColors() {
+      const supabase = createClient()
+      const { data: packs } = await supabase
+        .from('spillpakker')
+        .select('id, farge')
+      if (!packs) return
+      const counts: Record<string, number> = {}
+      packs.forEach(p => {
+        if (initialData?.id && p.id === initialData.id) return // skip self
+        const c = p.farge.toLowerCase()
+        counts[c] = (counts[c] ?? 0) + 1
+      })
+      setColorCounts(counts)
+    }
+    loadColors()
+  }, [initialData?.id])
 
   const isEdit = !!initialData?.id
 
@@ -53,9 +77,7 @@ export function PackForm({ initialData }: PackFormProps) {
         .eq('id', initialData!.id)
       if (err) { setError(err.message); setSaving(false); return }
     } else {
-      const { error: err } = await supabase
-        .from('spillpakker')
-        .insert(data)
+      const { error: err } = await supabase.from('spillpakker').insert(data)
       if (err) { setError(err.message); setSaving(false); return }
     }
 
@@ -64,7 +86,9 @@ export function PackForm({ initialData }: PackFormProps) {
   }
 
   const handleDelete = async () => {
-    if (!isEdit || !confirm('Er du sikker? Alle kort i pakken slettes ogsa.')) return
+    if (!isEdit) return
+    const ok = await confirm({ title: 'Slett spillpakken?', message: 'Alle kort i pakken slettes også. Dette kan ikke angres.', confirmLabel: 'Slett pakken', danger: true })
+    if (!ok) return
     const supabase = createClient()
     await supabase.from('spillpakker').delete().eq('id', initialData!.id)
     router.push('/admin/pakker')
@@ -75,110 +99,165 @@ export function PackForm({ initialData }: PackFormProps) {
     setData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const label = 'block text-sm font-semibold text-forest/60 mb-1.5'
+  const inputCls = 'w-full px-4 py-3 bg-white border border-cream-dark/60 rounded-2xl text-forest focus:outline-none focus:border-forest/40 transition-colors'
+
   return (
+    <>
+    {ConfirmDialog}
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-      {/* Navn */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Navn *</label>
-        <input
-          type="text"
-          value={data.navn}
-          onChange={(e) => update('navn', e.target.value)}
-          required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-        />
-      </div>
 
-      {/* Beskrivelse */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Beskrivelse</label>
-        <textarea
-          value={data.beskrivelse}
-          onChange={(e) => update('beskrivelse', e.target.value)}
-          rows={2}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-        />
-      </div>
-
-      {/* Regler (markdown) */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Regler (Markdown)
-        </label>
-        <textarea
-          value={data.regler}
-          onChange={(e) => update('regler', e.target.value)}
-          rows={6}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
-          placeholder="## Slik spiller du&#10;&#10;1. Snusboksen sendes rundt...&#10;2. ..."
-        />
-      </div>
-
-      {/* Farge */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Farge</label>
-        <div className="flex items-center gap-3 flex-wrap">
-          {PRESET_COLORS.map((color) => (
-            <button
-              key={color}
-              type="button"
-              onClick={() => update('farge', color)}
-              className={`w-10 h-10 rounded-full border-2 transition-transform ${
-                data.farge === color ? 'border-gray-900 scale-110' : 'border-transparent'
-              }`}
-              style={{ backgroundColor: color }}
-            />
-          ))}
+      <div className="bg-white rounded-2xl p-6 border border-cream-dark/40 space-y-5">
+        {/* Navn */}
+        <div>
+          <label className={label}>Navn *</label>
           <input
-            type="color"
-            value={data.farge}
-            onChange={(e) => update('farge', e.target.value)}
-            className="w-10 h-10 rounded-full cursor-pointer"
+            type="text"
+            value={data.navn}
+            onChange={(e) => update('navn', e.target.value)}
+            required
+            className={inputCls}
+            placeholder="f.eks. Snusboksen"
+          />
+        </div>
+
+        {/* Beskrivelse */}
+        <div>
+          <label className={label}>Beskrivelse</label>
+          <textarea
+            value={data.beskrivelse}
+            onChange={(e) => update('beskrivelse', e.target.value)}
+            rows={2}
+            className={inputCls + ' resize-none'}
+            placeholder="Kort beskrivelse av pakken..."
+          />
+        </div>
+
+        {/* Regler */}
+        <div>
+          <label className={label}>
+            Regler <span className="font-normal text-forest/40">(Markdown)</span>
+          </label>
+          <textarea
+            value={data.regler}
+            onChange={(e) => update('regler', e.target.value)}
+            rows={6}
+            className={inputCls + ' resize-none font-mono text-sm'}
+            placeholder={'## Slik spiller du\n\n1. Snusboksen sendes rundt...\n2. ...'}
           />
         </div>
       </div>
 
-      {/* Ikon */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Ikon (navn)</label>
-        <input
-          type="text"
-          value={data.ikon}
-          onChange={(e) => update('ikon', e.target.value)}
-          className="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          placeholder="default"
-        />
+      <div className="bg-white rounded-2xl p-6 border border-cream-dark/40 space-y-5">
+        {/* Farge */}
+        <div>
+          <label className={label}>Farge</label>
+          <div className="flex items-center gap-2 flex-wrap">
+            {PRESET_COLORS.map((color) => {
+              const isSelected = data.farge.toLowerCase() === color.toLowerCase()
+              const count = colorCounts[color.toLowerCase()] ?? 0
+              return (
+                <div key={color} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => update('farge', color)}
+                    title={count > 0 ? `Brukes av ${count} pakke${count !== 1 ? 'r' : ''}` : color}
+                    className={`w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center ${
+                      isSelected
+                        ? 'border-forest scale-110 shadow-md'
+                        : 'border-transparent hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color }}
+                  >
+                    {isSelected && (
+                      <Check className="w-4 h-4 text-white drop-shadow" strokeWidth={3} />
+                    )}
+                  </button>
+                  {count > 0 && !isSelected && (
+                    <span className="absolute -top-1.5 -right-1.5 text-[9px] font-black bg-forest text-white rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                      {count}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Custom color picker */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => colorInputRef.current?.click()}
+                title="Velg egendefinert farge"
+                className={`w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center overflow-hidden ${
+                  !PRESET_COLORS.map(c => c.toLowerCase()).includes(data.farge.toLowerCase())
+                    ? 'border-forest scale-110 shadow-md'
+                    : 'border-dashed border-cream-dark hover:border-forest/40'
+                }`}
+                style={
+                  !PRESET_COLORS.map(c => c.toLowerCase()).includes(data.farge.toLowerCase())
+                    ? { backgroundColor: data.farge }
+                    : {}
+                }
+              >
+                {!PRESET_COLORS.map(c => c.toLowerCase()).includes(data.farge.toLowerCase()) ? (
+                  <Check className="w-4 h-4 text-white drop-shadow" strokeWidth={3} />
+                ) : (
+                  <Pipette className="w-4 h-4 text-forest/40" />
+                )}
+              </button>
+              <input
+                ref={colorInputRef}
+                type="color"
+                value={data.farge}
+                onChange={(e) => update('farge', e.target.value)}
+                className="sr-only"
+                tabIndex={-1}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-forest/40 mt-2">
+            Valgt: <span className="font-mono font-semibold">{data.farge}</span>
+          </p>
+        </div>
+
+        {/* Aktiv toggle */}
+        <div className="flex items-center justify-between py-1">
+          <div>
+            <p className="font-semibold text-forest text-sm">Aktiv</p>
+            <p className="text-xs text-forest/40">Synlig for spillere</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => update('aktiv', !data.aktiv)}
+            className={`relative w-12 h-6 rounded-full transition-colors ${
+              data.aktiv ? 'bg-lime' : 'bg-cream-dark'
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                data.aktiv ? 'translate-x-6' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
-      {/* Aktiv */}
+      {error && (
+        <p className="text-red-500 text-sm font-medium px-1">{error}</p>
+      )}
+
       <div className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          id="aktiv"
-          checked={data.aktiv}
-          onChange={(e) => update('aktiv', e.target.checked)}
-          className="w-5 h-5"
-        />
-        <label htmlFor="aktiv" className="text-sm font-medium text-gray-700">
-          Aktiv (synlig for spillere)
-        </label>
-      </div>
-
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-
-      {/* Actions */}
-      <div className="flex items-center gap-3 pt-4 border-t">
         <button
           type="submit"
           disabled={saving || !data.navn.trim()}
-          className="bg-forest text-white px-6 py-2 rounded-lg font-medium hover:bg-forest-light disabled:opacity-50"
+          className="bg-forest text-white px-6 py-3 rounded-2xl font-bold hover:bg-forest/80 active:scale-95 disabled:opacity-50 transition-all"
         >
           {saving ? 'Lagrer...' : isEdit ? 'Lagre endringer' : 'Opprett pakke'}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="text-gray-500 hover:text-gray-700 px-4 py-2"
+          className="text-forest/50 hover:text-forest px-4 py-3 text-sm font-medium transition-colors"
         >
           Avbryt
         </button>
@@ -186,12 +265,13 @@ export function PackForm({ initialData }: PackFormProps) {
           <button
             type="button"
             onClick={handleDelete}
-            className="ml-auto text-red-500 hover:text-red-700 text-sm"
+            className="ml-auto text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
           >
             Slett pakke
           </button>
         )}
       </div>
     </form>
+    </>
   )
 }

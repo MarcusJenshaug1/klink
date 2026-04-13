@@ -9,16 +9,20 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const isLoginPage = pathname === '/admin/logg-inn'
+  const isStandalonePage =
+    pathname === '/admin/logg-inn' ||
+    pathname === '/admin/sett-passord' ||
+    pathname === '/admin/glemt-passord' ||
+    pathname.startsWith('/admin/auth/')
 
-  if (isLoginPage) {
+  if (isStandalonePage) {
     return <>{children}</>
   }
 
   return (
-    <div className="min-h-dvh bg-gray-50">
+    <div className="min-h-dvh bg-cream">
       <AdminNav />
-      <main className="max-w-5xl mx-auto p-6">{children}</main>
+      <main className="max-w-6xl mx-auto p-6">{children}</main>
     </div>
   )
 }

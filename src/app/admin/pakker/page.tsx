@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { ChevronRight, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface PackRow {
@@ -30,39 +31,42 @@ export default function PackListPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Spillpakker</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-display font-black text-3xl text-forest">Spillpakker</h1>
         <Link
           href="/admin/pakker/ny"
-          className="bg-forest text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-forest-light"
+          className="inline-flex items-center gap-2 bg-forest text-white px-4 py-2.5 rounded-2xl text-sm font-bold hover:bg-forest/80 active:scale-95 transition-all"
         >
-          + Ny pakke
+          <Plus className="w-4 h-4" />
+          Ny pakke
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Laster...</p>
+        <div className="space-y-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl h-16 animate-pulse" />
+          ))}
+        </div>
       ) : (
         <div className="space-y-2">
           {packs.map((pack) => (
             <Link
               key={pack.id}
               href={`/admin/pakker/${pack.id}`}
-              className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-100 hover:shadow-sm transition-shadow"
+              className="flex items-center gap-4 bg-white rounded-2xl px-5 py-4 border border-cream-dark/40 hover:shadow-sm hover:border-forest/20 transition-all"
             >
               <div
-                className="w-4 h-4 rounded-full shrink-0"
+                className="w-8 h-8 rounded-xl shrink-0"
                 style={{ backgroundColor: pack.farge }}
               />
-              <span className="font-medium flex-1">{pack.navn}</span>
+              <span className="font-semibold text-forest flex-1">{pack.navn}</span>
               {!pack.aktiv && (
-                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-forest/10 text-forest/50 px-2 py-0.5 rounded-full font-semibold">
                   Inaktiv
                 </span>
               )}
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-gray-400">
-                <path d="M8 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <ChevronRight className="w-4 h-4 text-forest/30" />
             </Link>
           ))}
         </div>

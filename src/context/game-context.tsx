@@ -7,7 +7,7 @@ import {
   useEffect,
   type ReactNode,
 } from 'react'
-import type { Card, Pack, GamePhase, GameState, Intensitet } from '@/types/game'
+import type { Card, Pack, GamePhase, GameState, Intensitet, Korttype } from '@/types/game'
 import { shuffle } from '@/lib/game/shuffle'
 
 type GameAction =
@@ -21,7 +21,9 @@ type GameAction =
   | { type: 'RESHUFFLE' }
   | { type: 'SET_PHASE'; phase: GamePhase }
   | { type: 'SET_INTENSITET'; intensitet: Intensitet }
+  | { type: 'SET_KORTTYPER'; korttyper: Korttype[] }
   | { type: 'RESET' }
+  | { type: 'RESTORE_STATE'; state: GameState }
 
 const initialState: GameState = {
   players: [],
@@ -30,6 +32,7 @@ const initialState: GameState = {
   currentCardIndex: 0,
   phase: 'landing',
   intensitet: 'medium',
+  korttyper: [],
 }
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -85,8 +88,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_INTENSITET':
       return { ...state, intensitet: action.intensitet }
 
+    case 'SET_KORTTYPER':
+      return { ...state, korttyper: action.korttyper }
+
     case 'RESET':
       return initialState
+
+    case 'RESTORE_STATE':
+      return { ...initialState, ...action.state }
 
     default:
       return state
@@ -128,7 +137,16 @@ function loadInitialState(): GameState {
 }
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(gameReducer, undefined, loadInitialState)
+  // Always start with initialState (same on server and client) to avoid hydration mismatch.
+  // Load persisted state client-side after mount.
+  const [state, dispatch] = useReducer(gameReducer, initialState)
+
+  useEffect(() => {
+    const loaded = loadInitialState()
+    if (loaded !== initialState) {
+      dispatch({ type: 'RESTORE_STATE', state: loaded })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync full state to sessionStorage, players to localStorage
   useEffect(() => {

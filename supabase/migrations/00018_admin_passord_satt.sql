@@ -1,0 +1,1 @@
+ALTER TABLE admin_brukere ADD COLUMN IF NOT EXISTS passord_satt BOOLEAN NOT NULL DEFAULT false;

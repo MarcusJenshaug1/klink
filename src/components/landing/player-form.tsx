@@ -10,7 +10,11 @@ interface PlayerFormProps {
 export function PlayerForm({ players, onUpdate }: PlayerFormProps) {
   const validCount = players.filter((n) => n.trim() !== '').length
 
-  const addPlayer = () => onUpdate([...players, ''])
+  const hasBlank = players.some((n) => n.trim() === '')
+  const addPlayer = () => {
+    if (hasBlank) return
+    onUpdate([...players, ''])
+  }
   const removePlayer = (i: number) => onUpdate(players.filter((_, idx) => idx !== i))
   const updateName = (i: number, name: string) => {
     const updated = [...players]
@@ -59,7 +63,8 @@ export function PlayerForm({ players, onUpdate }: PlayerFormProps) {
       {/* Legg til */}
       <button
         onClick={addPlayer}
-        className="w-full py-2.5 rounded-xl border-2 border-dashed border-forest/20 flex items-center justify-center gap-1.5 text-forest/50 font-semibold text-sm transition-all hover:border-forest/35 hover:text-forest/70 active:scale-95"
+        disabled={hasBlank}
+        className="w-full py-2.5 rounded-xl border-2 border-dashed border-forest/20 flex items-center justify-center gap-1.5 text-forest/50 font-semibold text-sm transition-all hover:border-forest/35 hover:text-forest/70 active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
       >
         <Plus className="w-4 h-4" />
         Legg til spiller

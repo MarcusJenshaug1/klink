@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Droplets, Flame, Zap, ChevronLeft, Play } from 'lucide-react'
 import { PackGrid } from '@/components/pack-selection/pack-grid'
 import { useGame } from '@/context/game-context'
+import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
 import { useCards } from '@/hooks/use-cards'
 import { INTENSITET_META } from '@/lib/game/sips'
@@ -20,8 +21,9 @@ const INTENSITET_ICONS: Record<Intensitet, typeof Droplets> = {
 export default function PackSelectionPage() {
   const router = useRouter()
   const { state, dispatch } = useGame()
+  const { isActive: athina } = useAthina()
   const { packs, loading: packsLoading } = usePacks()
-  const { fetchCards, loading: cardsLoading } = useCards()
+  const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const togglePack = (id: string) => {
@@ -36,7 +38,11 @@ export default function PackSelectionPage() {
   const handleStart = async () => {
     const selected = packs.filter((p) => selectedIds.has(p.id))
     dispatch({ type: 'SELECT_PACKS', packs: selected })
-    const cards = await fetchCards(Array.from(selectedIds))
+    const [cards, korttyper] = await Promise.all([
+      fetchCards(Array.from(selectedIds)),
+      fetchKorttyper(),
+    ])
+    dispatch({ type: 'SET_KORTTYPER', korttyper })
     if (cards.length > 0) {
       dispatch({ type: 'START_GAME', cards })
       router.push('/spill')
@@ -51,40 +57,56 @@ export default function PackSelectionPage() {
   const canStart = selectedIds.size > 0 && !cardsLoading
 
   return (
-    <div className="min-h-dvh bg-lime flex flex-col">
+    <div className="min-h-dvh flex flex-col transition-colors duration-700" style={{ backgroundColor: athina ? 'transparent' : '#A8E63D' }}>
       <div className="flex-1 flex flex-col p-6 gap-6 max-w-lg mx-auto w-full">
 
-        {/* Top row: back + players */}
-        <div className="flex items-center gap-3 pt-2">
-          <button
-            onClick={handleBack}
-            aria-label="Tilbake"
-            className="shrink-0 w-10 h-10 rounded-full bg-forest/10 flex items-center justify-center text-forest hover:bg-forest/20 transition-colors active:scale-95"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+        {/* Header: back + players + title */}
+        <div
+          className={cn('rounded-3xl transition-all duration-500', athina && 'p-4 -mx-1')}
+          style={athina ? { backgroundColor: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(10px)' } : {}}
+        >
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              onClick={handleBack}
+              aria-label="Tilbake"
+              className={cn(
+                'shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors active:scale-95',
+                athina ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-forest/10 text-forest hover:bg-forest/20'
+              )}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-          {/* Player chips */}
-          <div className="flex flex-wrap gap-1.5 min-w-0">
-            {state.players.map((p, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 rounded-full bg-forest/10 text-forest text-sm font-semibold"
-              >
-                {p}
-              </span>
-            ))}
+            {/* Player chips */}
+            <div className="flex flex-wrap gap-1.5 min-w-0">
+              {state.players.map((p, i) => {
+                return (
+                  <span
+                    key={i}
+                    className={cn(
+                      'px-3 py-1 rounded-full text-sm font-semibold',
+                      athina ? 'bg-white/25 text-white' : 'bg-forest/10 text-forest'
+                    )}
+                  >
+                    {p}
+                  </span>
+                )
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Title */}
-        <div>
-          <h1 className="font-display text-4xl font-black text-forest tracking-tight leading-none">
-            Velg pakker
-          </h1>
-          <p className="text-forest/50 font-medium mt-1">
-            Velg én eller flere spillpakker
-          </p>
+          {/* Title */}
+          <div className="mt-4">
+            <h1
+              className="font-display text-4xl font-black tracking-tight leading-none"
+              style={{ color: athina ? '#ffffff' : '#1A3A1A' }}
+            >
+              Velg pakker
+            </h1>
+            <p style={{ color: athina ? 'rgba(255,255,255,0.75)' : 'rgba(26,58,26,0.5)' }} className="font-medium mt-1">
+              Velg én eller flere spillpakker
+            </p>
+          </div>
         </div>
 
         {/* Pack grid */}
@@ -101,8 +123,8 @@ export default function PackSelectionPage() {
         )}
 
         {/* Intensity */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-5 shadow-sm">
-          <p className="text-xs font-bold text-forest/50 uppercase tracking-widest mb-4">
+        <div className="backdrop-blur-sm rounded-3xl p-5 shadow-sm transition-colors duration-500" style={{ backgroundColor: athina ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.6)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: athina ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.5)' }}>
             Intensitet
           </p>
           <div className="grid grid-cols-3 gap-2">
@@ -117,15 +139,17 @@ export default function PackSelectionPage() {
                   className={cn(
                     'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
                     selected
-                      ? 'bg-forest text-lime shadow-sm'
-                      : 'bg-forest/5 text-forest hover:bg-forest/10'
+                      ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
+                      : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
                   )}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="text-sm font-black">{meta.label}</span>
                   <span className={cn(
                     'text-[10px] leading-tight text-center font-medium',
-                    selected ? 'text-lime/70' : 'text-forest/40'
+                    selected
+                      ? athina ? 'text-white/70' : 'text-lime/70'
+                      : athina ? 'text-white/50' : 'text-forest/40'
                   )}>
                     {meta.beskrivelse}
                   </span>
@@ -140,7 +164,7 @@ export default function PackSelectionPage() {
       </div>
 
       {/* Sticky start button */}
-      <div className="sticky bottom-0 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] bg-lime/80 backdrop-blur-sm">
+      <div className="sticky bottom-0 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700" style={{ backgroundColor: athina ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}>
         <div className="max-w-lg mx-auto">
           <button
             onClick={handleStart}
@@ -148,8 +172,8 @@ export default function PackSelectionPage() {
             className={cn(
               'w-full min-h-[56px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
               canStart
-                ? 'bg-forest text-lime shadow-lg hover:bg-forest-light'
-                : 'bg-forest/20 text-forest/40 cursor-not-allowed'
+                ? athina ? 'bg-white/30 text-white shadow-lg hover:bg-white/40 backdrop-blur-sm' : 'bg-forest text-lime shadow-lg hover:bg-forest-light'
+                : athina ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-forest/20 text-forest/40 cursor-not-allowed'
             )}
           >
             {cardsLoading ? (

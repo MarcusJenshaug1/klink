@@ -13,6 +13,10 @@ interface UseSwipeOptions {
   threshold?: number
 }
 
+function vibrate(ms: number) {
+  try { navigator.vibrate?.(ms) } catch { /* unsupported */ }
+}
+
 export function useSwipe(
   { onSwipeLeft, onSwipeRight, threshold = 50 }: UseSwipeOptions
 ): SwipeHandlers {
@@ -26,8 +30,10 @@ export function useSwipe(
     (e: React.TouchEvent) => {
       const deltaX = startX.current - e.changedTouches[0].clientX
       if (deltaX > threshold) {
+        vibrate(30)
         onSwipeLeft()
       } else if (deltaX < -threshold) {
+        vibrate(30)
         onSwipeRight()
       }
     },

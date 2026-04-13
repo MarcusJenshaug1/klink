@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, Plus, UserRound } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
 
 interface PlayerModalProps {
   open: boolean
@@ -13,6 +14,7 @@ interface PlayerModalProps {
 
 export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlayer }: PlayerModalProps) {
   const [newName, setNewName] = useState('')
+  const { isActive: athina } = useAthina()
 
   const handleAdd = () => {
     const name = newName.trim()
@@ -29,7 +31,8 @@ export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlaye
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" />
 
       <div
-        className="relative w-full max-w-lg bg-lime rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up"
+        className="relative w-full max-w-lg rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up transition-colors duration-500"
+        style={{ backgroundColor: athina ? '#FF69B4' : '#A8E63D' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
@@ -54,11 +57,13 @@ export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlaye
             </p>
           ) : (
             <div className="divide-y divide-forest/10">
-              {players.map((name, i) => (
+              {players.map((name, i) => {
+                const hasCrown = /^athi|^atif/i.test(name.trim())
+                return (
                 <div key={i} className="flex items-center gap-3 px-4 py-3">
-                  <div className="shrink-0 w-7 h-7 rounded-full bg-lime flex items-center justify-center">
+                  <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors duration-500" style={{ backgroundColor: athina ? '#E91E8C' : '#A8E63D' }}>
                     {name.trim() ? (
-                      <span className="text-xs font-black text-forest">{name[0].toUpperCase()}</span>
+                      <span className="text-xs font-black text-forest">{hasCrown ? '👑' : name[0].toUpperCase()}</span>
                     ) : (
                       <UserRound className="w-3.5 h-3.5 text-forest/50" />
                     )}
@@ -73,7 +78,8 @@ export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlaye
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
@@ -93,7 +99,7 @@ export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlaye
             onClick={handleAdd}
             disabled={!newName.trim()}
             aria-label="Legg til"
-            className="w-12 h-12 rounded-2xl bg-forest text-lime flex items-center justify-center disabled:opacity-30 active:scale-95 transition-all"
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center disabled:opacity-30 active:scale-95 transition-all ${athina ? 'bg-[#E91E8C] text-white' : 'bg-forest text-lime'}`}
           >
             <Plus className="w-5 h-5" />
           </button>

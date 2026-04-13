@@ -9,6 +9,7 @@ import { PlayerModal } from '@/components/game/player-modal'
 import { ExitModal } from '@/components/game/exit-modal'
 import { DeckEmpty } from '@/components/game/deck-empty'
 import { useGame } from '@/context/game-context'
+import { useAthina } from '@/context/athina-context'
 import { useSwipe } from '@/hooks/use-swipe'
 
 type SlideDir = 'in-left' | 'out-left' | 'in-right' | 'out-right' | null
@@ -16,6 +17,7 @@ type SlideDir = 'in-left' | 'out-left' | 'in-right' | 'out-right' | null
 export default function GamePage() {
   const router = useRouter()
   const { state, dispatch, currentCard, currentPack, progress } = useGame()
+  const { isActive: athina } = useAthina()
   const [infoOpen, setInfoOpen] = useState(false)
   const [playersOpen, setPlayersOpen] = useState(false)
   const [exitOpen, setExitOpen] = useState(false)
@@ -109,7 +111,7 @@ export default function GamePage() {
   return (
     <div
       className="fixed inset-0 no-overscroll select-none"
-      style={{ backgroundColor: currentPack.farge }}
+      style={{ backgroundColor: athina ? 'transparent' : currentPack.farge }}
       {...swipeHandlers}
     >
       {/* Card */}
@@ -122,6 +124,7 @@ export default function GamePage() {
           pack={currentPack}
           players={state.players}
           intensitet={state.intensitet}
+          korttyper={state.korttyper}
           onNext={nextCard}
         />
       </div>
@@ -140,7 +143,7 @@ export default function GamePage() {
       <InfoModal
         open={infoOpen}
         onClose={() => setInfoOpen(false)}
-        pack={currentPack}
+        packs={state.selectedPacks}
       />
 
       <PlayerModal
