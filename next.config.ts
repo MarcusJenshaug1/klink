@@ -4,6 +4,7 @@ import withPWA from '@ducanh2912/next-pwa'
 const SUPABASE_URL = 'https://sqaszlwpphfpoaxacjke.supabase.co'
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   async headers() {
     return [
       {
