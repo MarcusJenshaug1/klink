@@ -75,8 +75,14 @@ export default function PackSelectionPage() {
   const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
 
   return (
-    <div className="min-h-dvh flex flex-col transition-colors duration-700" style={{ backgroundColor: athina ? 'transparent' : '#A8E63D' }}>
+    <div className="min-h-dvh flex flex-col transition-colors duration-700 relative" style={{ backgroundColor: athina ? 'transparent' : '#A8E63D' }}>
       <ScarePop trigger={scareActive} />
+      {scareActive && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[50] animate-blood-pulse"
+          aria-hidden
+        />
+      )}
       <div className="flex-1 flex flex-col p-6 gap-6 max-w-lg mx-auto w-full">
 
         {/* Header: back + players + title */}
