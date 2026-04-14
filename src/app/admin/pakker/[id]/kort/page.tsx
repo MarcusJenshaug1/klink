@@ -7,7 +7,7 @@ import { ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { CardForm } from '@/components/admin/card-form'
 import { CardList } from '@/components/admin/card-list'
-import type { KortType, Korttype } from '@/types/game'
+import type { KortType, Korttype, Droyhet, Kjonn, Vekt } from '@/types/game'
 
 interface CardRow {
   id: string
@@ -17,6 +17,13 @@ interface CardRow {
   utfordring?: string | null
   timer_sekunder?: number | null
   timer_synlig?: boolean
+  aktiv?: boolean
+  droyhet?: Droyhet
+  min_spillere?: number
+  standard_slurker?: number | null
+  notater?: string | null
+  kjonn?: Kjonn
+  vekt?: Vekt
 }
 
 export default function CardManagementPage() {
@@ -44,7 +51,7 @@ export default function CardManagementPage() {
     const [{ data }, { data: ktData }] = await Promise.all([
       supabase
         .from('kort')
-        .select('id, type, tittel, innhold, utfordring, timer_sekunder, timer_synlig')
+        .select('id, type, tittel, innhold, utfordring, timer_sekunder, timer_synlig, aktiv, droyhet, min_spillere, standard_slurker, notater, kjonn, vekt')
         .eq('spillpakke_id', packId)
         .order('opprettet_at', { ascending: true }),
       supabase

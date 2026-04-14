@@ -2,20 +2,27 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Droplets, Flame, Zap, ChevronLeft, Play } from 'lucide-react'
+import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, Play } from 'lucide-react'
 import { PackGrid } from '@/components/pack-selection/pack-grid'
 import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
 import { useCards } from '@/hooks/use-cards'
 import { INTENSITET_META } from '@/lib/game/sips'
+import { DROYHET_META, isDroyhetAllowed } from '@/lib/game/droyhet'
 import { cn } from '@/lib/utils'
-import type { Intensitet } from '@/types/game'
+import type { Intensitet, Droyhet } from '@/types/game'
 
 const INTENSITET_ICONS: Record<Intensitet, typeof Droplets> = {
   lett: Droplets,
   medium: Flame,
   borst: Zap,
+}
+
+const DROYHET_ICONS: Record<Droyhet, typeof Droplets> = {
+  mild: Feather,
+  normal: Flame,
+  droy: Skull,
 }
 
 export default function PackSelectionPage() {
@@ -43,8 +50,13 @@ export default function PackSelectionPage() {
       fetchKorttyper(),
     ])
     dispatch({ type: 'SET_KORTTYPER', korttyper })
-    if (cards.length > 0) {
-      dispatch({ type: 'START_GAME', cards })
+    const filtered = cards.filter(
+      (c) =>
+        isDroyhetAllowed(c.droyhet ?? 'normal', state.droyhet) &&
+        (c.min_spillere ?? 2) <= state.players.length,
+    )
+    if (filtered.length > 0) {
+      dispatch({ type: 'START_GAME', cards: filtered })
       router.push('/spill')
     }
   }
@@ -136,6 +148,43 @@ export default function PackSelectionPage() {
                 <button
                   key={key}
                   onClick={() => dispatch({ type: 'SET_INTENSITET', intensitet: key })}
+                  className={cn(
+                    'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
+                    selected
+                      ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
+                      : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
+                  )}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-sm font-black">{meta.label}</span>
+                  <span className={cn(
+                    'text-[10px] leading-tight text-center font-medium',
+                    selected
+                      ? athina ? 'text-white/70' : 'text-lime/70'
+                      : athina ? 'text-white/50' : 'text-forest/40'
+                  )}>
+                    {meta.beskrivelse}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Drøyhet */}
+        <div className="backdrop-blur-sm rounded-3xl p-5 shadow-sm transition-colors duration-500" style={{ backgroundColor: athina ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.6)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: athina ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.5)' }}>
+            Drøyhet
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(DROYHET_META) as Droyhet[]).map((key) => {
+              const meta = DROYHET_META[key]
+              const Icon = DROYHET_ICONS[key]
+              const selected = state.droyhet === key
+              return (
+                <button
+                  key={key}
+                  onClick={() => dispatch({ type: 'SET_DROYHET', droyhet: key })}
                   className={cn(
                     'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
                     selected

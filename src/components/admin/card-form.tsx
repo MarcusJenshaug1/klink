@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { CARD_TYPE_META, ICON_MAP } from '@/lib/game/card-types'
+import { DROYHET_META } from '@/lib/game/droyhet'
+import { VEKT_META } from '@/lib/game/vekt'
 import { CardPreview } from './card-preview'
-import type { KortType, Korttype } from '@/types/game'
+import type { KortType, Korttype, Droyhet, Kjonn, Vekt } from '@/types/game'
 
 const BUILT_IN_TYPES: KortType[] = [
   'snusboks', 'pekelek', 'alle_drikker', 'kaos', 'utfordring', 'regel', 'kategori',
@@ -23,9 +25,22 @@ interface CardFormProps {
     utfordring?: string | null
     timer_sekunder?: number | null
     timer_synlig?: boolean
+    aktiv?: boolean
+    droyhet?: Droyhet
+    min_spillere?: number
+    standard_slurker?: number | null
+    notater?: string | null
+    kjonn?: Kjonn
+    vekt?: Vekt
   }
   onSaved: () => void
   onCancel?: () => void
+}
+
+const KJONN_META: Record<Kjonn, { label: string; beskrivelse: string }> = {
+  alle: { label: 'Alle', beskrivelse: 'Rettet mot alle' },
+  mann: { label: 'Mann', beskrivelse: 'Menn i fokus' },
+  kvinne: { label: 'Kvinne', beskrivelse: 'Kvinner i fokus' },
 }
 
 const label = 'block text-xs font-bold text-forest/50 uppercase tracking-wider mb-1.5'
@@ -40,6 +55,17 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     editCard?.timer_sekunder != null ? String(editCard.timer_sekunder) : ''
   )
   const [timerSynlig, setTimerSynlig] = useState<boolean>(editCard?.timer_synlig ?? false)
+  const [aktiv, setAktiv] = useState<boolean>(editCard?.aktiv ?? true)
+  const [droyhet, setDroyhet] = useState<Droyhet>(editCard?.droyhet ?? 'normal')
+  const [minSpillere, setMinSpillere] = useState<string>(
+    editCard?.min_spillere != null ? String(editCard.min_spillere) : '2'
+  )
+  const [standardSlurker, setStandardSlurker] = useState<string>(
+    editCard?.standard_slurker != null ? String(editCard.standard_slurker) : ''
+  )
+  const [kjonn, setKjonn] = useState<Kjonn>(editCard?.kjonn ?? 'alle')
+  const [vekt, setVekt] = useState<Vekt>(editCard?.vekt ?? 'vanlig')
+  const [notater, setNotater] = useState(editCard?.notater ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [korttyper, setKorttyper] = useState<Korttype[]>(initialKorttyper ?? [])
@@ -64,6 +90,13 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     setUtfordring('')
     setTimerSekunder('')
     setTimerSynlig(false)
+    setAktiv(true)
+    setDroyhet('normal')
+    setMinSpillere('2')
+    setStandardSlurker('')
+    setKjonn('alle')
+    setVekt('vanlig')
+    setNotater('')
     setError('')
   }, [])
 
@@ -81,12 +114,21 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       utfordring: utfordring.trim() || null,
       timer_sekunder: timerSekunder ? parseInt(timerSekunder, 10) : null,
       timer_synlig: timerSekunder ? timerSynlig : false,
+      aktiv,
+      droyhet,
+      min_spillere: minSpillere ? Math.max(1, parseInt(minSpillere, 10)) : 2,
+      standard_slurker: standardSlurker ? parseInt(standardSlurker, 10) : null,
+      notater: notater.trim() || null,
+      kjonn,
+      vekt,
     }
 
     if (editCard) {
+      const { spillpakke_id: _s, ...updatePayload } = payload
+      void _s
       const { error: err } = await supabase
         .from('kort')
-        .update({ type, tittel: payload.tittel, innhold: payload.innhold, utfordring: payload.utfordring, timer_sekunder: payload.timer_sekunder, timer_synlig: payload.timer_synlig })
+        .update(updatePayload)
         .eq('id', editCard.id)
       if (err) { setError(err.message); setSaving(false); return }
     } else {
@@ -101,6 +143,9 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       setUtfordring('')
       setTimerSekunder('')
       setTimerSynlig(false)
+      setStandardSlurker('')
+      setNotater('')
+      // keep aktiv/droyhet/min_spillere/kjonn/vekt as "sticky" defaults for batch entry
     }
     onSaved()
   }
@@ -261,6 +306,165 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
                 : 'Ingen nedtelling synlig — spilleren gjetter selv (Hot Seat)'}
             </p>
           )}
+        </div>
+
+        {/* Drøyhet */}
+        <div>
+          <p className={label}>Drøyhet</p>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(DROYHET_META) as Droyhet[]).map((k) => {
+              const m = DROYHET_META[k]
+              const selected = droyhet === k
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setDroyhet(k)}
+                  className={`flex flex-col items-start gap-0.5 p-2.5 rounded-xl border-2 transition-all text-left ${
+                    selected
+                      ? 'border-forest bg-forest text-white'
+                      : 'border-cream-dark/40 bg-cream text-forest/60 hover:border-forest/30'
+                  }`}
+                >
+                  <span className="text-xs font-black">{m.label}</span>
+                  <span className={`text-[10px] leading-tight ${selected ? 'text-white/70' : 'text-forest/40'}`}>
+                    {m.beskrivelse}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Vekt */}
+        <div>
+          <label className={label}>
+            Vekt <span className="font-normal normal-case text-forest/30">(hvor ofte kortet dukker opp)</span>
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(VEKT_META) as Vekt[]).map((v) => {
+              const m = VEKT_META[v]
+              const selected = vekt === v
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setVekt(v)}
+                  className={`flex flex-col items-start gap-0.5 p-2.5 rounded-xl border-2 transition-all text-left ${
+                    selected
+                      ? 'border-forest bg-forest text-white'
+                      : 'border-cream-dark/40 bg-cream text-forest/60 hover:border-forest/30'
+                  }`}
+                >
+                  <span className="text-xs font-black">{m.label}</span>
+                  <span className={`text-[10px] leading-tight ${selected ? 'text-white/70' : 'text-forest/40'}`}>
+                    {m.beskrivelse}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Min spillere + standard slurker */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={label}>Min. spillere</label>
+            <input
+              type="number"
+              value={minSpillere}
+              onChange={(e) => setMinSpillere(e.target.value)}
+              min={1}
+              max={20}
+              className={inputCls}
+              placeholder="2"
+            />
+          </div>
+          <div>
+            <label className={label}>
+              Standard slurker <span className="font-normal normal-case text-forest/30">(valgfritt)</span>
+            </label>
+            <input
+              type="number"
+              value={standardSlurker}
+              onChange={(e) => setStandardSlurker(e.target.value)}
+              min={0}
+              max={50}
+              className={inputCls}
+              placeholder="Overstyr intensitet"
+            />
+          </div>
+        </div>
+        {standardSlurker && (
+          <p className="text-xs text-forest/40 -mt-2">
+            Dette kortet bruker alltid {standardSlurker} slurker — uavhengig av valgt intensitet.
+          </p>
+        )}
+
+        {/* Kjønn */}
+        <div>
+          <label className={label}>
+            Kjønn <span className="font-normal normal-case text-forest/30">(tagg for senere filtrering)</span>
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(KJONN_META) as Kjonn[]).map((k) => {
+              const m = KJONN_META[k]
+              const selected = kjonn === k
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setKjonn(k)}
+                  className={`flex flex-col items-start gap-0.5 p-2.5 rounded-xl border-2 transition-all text-left ${
+                    selected
+                      ? 'border-forest bg-forest text-white'
+                      : 'border-cream-dark/40 bg-cream text-forest/60 hover:border-forest/30'
+                  }`}
+                >
+                  <span className="text-xs font-black">{m.label}</span>
+                  <span className={`text-[10px] leading-tight ${selected ? 'text-white/70' : 'text-forest/40'}`}>
+                    {m.beskrivelse}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Notater */}
+        <div>
+          <label className={label}>
+            Notater <span className="font-normal normal-case text-forest/30">(kun synlig i admin)</span>
+          </label>
+          <textarea
+            value={notater}
+            onChange={(e) => setNotater(e.target.value)}
+            rows={2}
+            className={inputCls + ' resize-none'}
+            placeholder="Interne kommentarer, ideer, foreslått av ..."
+          />
+        </div>
+
+        {/* Aktiv-toggle */}
+        <div className="flex items-center justify-between bg-cream rounded-xl px-4 py-3">
+          <div>
+            <p className="text-sm font-bold text-forest">Publisert</p>
+            <p className="text-xs text-forest/50">
+              {aktiv ? 'Kortet vises i spillet' : 'Kortet er skjult (utkast)'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAktiv((v) => !v)}
+            className={`relative w-12 h-6 rounded-full transition-colors ${aktiv ? 'bg-lime' : 'bg-cream-dark'}`}
+            aria-label={aktiv ? 'Skjul kort' : 'Publiser kort'}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
+                aktiv ? 'translate-x-6' : ''
+              }`}
+            />
+          </button>
         </div>
 
         {error && <p className="text-red-500 text-xs font-medium">{error}</p>}

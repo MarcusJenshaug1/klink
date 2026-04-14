@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getCardTypeMeta } from '@/lib/game/card-types'
 import { CardForm } from './card-form'
 import { useConfirm } from './confirm-modal'
-import type { KortType, Korttype } from '@/types/game'
+import type { KortType, Korttype, Droyhet, Kjonn, Vekt } from '@/types/game'
 
 interface CardItem {
   id: string
@@ -16,6 +16,19 @@ interface CardItem {
   utfordring?: string | null
   timer_sekunder?: number | null
   timer_synlig?: boolean
+  aktiv?: boolean
+  droyhet?: Droyhet
+  min_spillere?: number
+  standard_slurker?: number | null
+  notater?: string | null
+  kjonn?: Kjonn
+  vekt?: Vekt
+}
+
+const DROYHET_BADGE: Record<Droyhet, { label: string; cls: string }> = {
+  mild: { label: 'Mild', cls: 'bg-green-50 text-green-700' },
+  normal: { label: 'Normal', cls: 'bg-blue-50 text-blue-700' },
+  droy: { label: 'Drøy', cls: 'bg-red-50 text-red-700' },
 }
 
 interface CardListProps {
@@ -123,25 +136,56 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }
                   initialKorttyper={korttyper}
                 />
               ) : (
-                <div className="bg-white rounded-2xl border border-cream-dark/40 p-4 flex items-start justify-between gap-4 hover:border-forest/20 transition-colors">
+                <div className={`bg-white rounded-2xl border border-cream-dark/40 p-4 flex items-start justify-between gap-4 hover:border-forest/20 transition-colors ${card.aktiv === false ? 'opacity-50' : ''}`}>
                   <div className="flex-1 min-w-0">
-                    {/* Type badge */}
-                    {(() => {
-                      const meta = getCardTypeMeta(card.type, korttyper)
-                      const Icon = meta.icon
-                      return (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-forest/8 text-forest/60 mb-2">
-                          <Icon className="w-3 h-3" />
-                          {meta.label}
-                        </span>
-                      )
-                    })()}
+                    {/* Badges row */}
+                    <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                      {(() => {
+                        const meta = getCardTypeMeta(card.type, korttyper)
+                        const Icon = meta.icon
+                        return (
+                          <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-forest/8 text-forest/60">
+                            <Icon className="w-3 h-3" />
+                            {meta.label}
+                          </span>
+                        )
+                      })()}
 
-                    {card.tittel && (
-                      <span className="inline-flex ml-1.5 text-xs font-semibold text-forest/40 mb-2">
-                        — {card.tittel}
-                      </span>
-                    )}
+                      {card.droyhet && card.droyhet !== 'normal' && (
+                        <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full ${DROYHET_BADGE[card.droyhet].cls}`}>
+                          {DROYHET_BADGE[card.droyhet].label}
+                        </span>
+                      )}
+
+                      {card.aktiv === false && (
+                        <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-forest/15 text-forest/70">
+                          Inaktiv
+                        </span>
+                      )}
+
+                      {card.vekt === 'sjelden' && (
+                        <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                          Sjelden
+                        </span>
+                      )}
+                      {card.vekt === 'ofte' && (
+                        <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                          Ofte
+                        </span>
+                      )}
+
+                      {card.min_spillere != null && card.min_spillere > 2 && (
+                        <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-forest/8 text-forest/60">
+                          {card.min_spillere}+ spillere
+                        </span>
+                      )}
+
+                      {card.tittel && (
+                        <span className="text-xs font-semibold text-forest/40">
+                          — {card.tittel}
+                        </span>
+                      )}
+                    </div>
 
                     <p className="text-sm text-forest leading-relaxed">{card.innhold}</p>
 
@@ -156,6 +200,11 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }
                         <span className="inline-flex items-center gap-1 text-xs text-violet-700 bg-violet-50 rounded-lg px-2 py-1 font-medium">
                           <Timer className="w-3 h-3" />
                           {card.timer_sekunder}s {card.timer_synlig ? '(synlig)' : '(skjult)'}
+                        </span>
+                      )}
+                      {card.standard_slurker != null && (
+                        <span className="inline-flex items-center text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1 font-medium">
+                          {card.standard_slurker} slurker (fast)
                         </span>
                       )}
                     </div>

@@ -15,8 +15,9 @@ export function useCards() {
     const supabase = createClient()
     const { data, error: err } = await supabase
       .from('kort')
-      .select('id, spillpakke_id, type, tittel, innhold, utfordring, timer_sekunder, timer_synlig')
+      .select('id, spillpakke_id, type, tittel, innhold, utfordring, timer_sekunder, timer_synlig, aktiv, droyhet, min_spillere, standard_slurker, kjonn, vekt')
       .in('spillpakke_id', packIds)
+      .eq('aktiv', true)
 
     setLoading(false)
 

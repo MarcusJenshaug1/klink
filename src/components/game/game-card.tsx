@@ -31,7 +31,10 @@ type TimerPhase = 'idle' | 'running' | 'result'
 export function GameCard({ card, pack, players, intensitet, korttyper, onNext }: GameCardProps) {
   const { isActive: athina } = useAthina()
   const meta = getCardTypeMeta(card.type, korttyper)
-  const sips = useMemo(() => getSips(intensitet), [card.id, intensitet]) // eslint-disable-line react-hooks/exhaustive-deps
+  const sips = useMemo(() => {
+    if (card.standard_slurker != null) return card.standard_slurker
+    return getSips(intensitet)
+  }, [card.id, intensitet]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const content = useMemo(() => {
     let text = interpolate(card.innhold, players)

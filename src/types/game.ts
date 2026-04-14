@@ -19,6 +19,10 @@ export interface Pack {
   aktiv: boolean
 }
 
+export type Droyhet = 'mild' | 'normal' | 'droy'
+export type Kjonn = 'alle' | 'mann' | 'kvinne'
+export type Vekt = 'sjelden' | 'vanlig' | 'ofte'
+
 export interface Card {
   id: string
   spillpakke_id: string
@@ -28,6 +32,13 @@ export interface Card {
   utfordring?: string | null
   timer_sekunder?: number | null
   timer_synlig?: boolean
+  aktiv?: boolean
+  droyhet?: Droyhet
+  min_spillere?: number
+  standard_slurker?: number | null
+  notater?: string | null
+  kjonn?: Kjonn
+  vekt?: Vekt
 }
 
 export type Intensitet = 'lett' | 'medium' | 'borst'
@@ -41,5 +52,6 @@ export interface GameState {
   currentCardIndex: number
   phase: GamePhase
   intensitet: Intensitet
+  droyhet: Droyhet
   korttyper: Korttype[]
 }
