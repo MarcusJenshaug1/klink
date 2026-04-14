@@ -149,6 +149,8 @@ export default function DrikkelekerPage() {
         </dl>
 
         <div className="flex gap-3 flex-wrap">
+          <Link href="/drikkeleker/2-personer" className="underline underline-offset-4">Drikkeleker 2 personer</Link>
+          <span className="opacity-40">·</span>
           <Link href="/regler" className="underline underline-offset-4">Regler</Link>
           <span className="opacity-40">·</span>
           <Link href="/om" className="underline underline-offset-4">Om Klink</Link>
