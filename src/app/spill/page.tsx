@@ -281,6 +281,15 @@ export default function GamePage() {
               {tvUrl && <QRCode value={tvUrl} size={180} />}
             </div>
             <p className="text-forest/40 text-xs font-semibold break-all">{tvUrl}</p>
+
+            {/* Apple TV hint */}
+            <div className="border-t border-forest/10 pt-3 text-left space-y-1">
+              <p className="text-forest/50 text-xs font-bold uppercase tracking-widest">Har du Apple TV?</p>
+              <p className="text-forest/45 text-xs leading-relaxed">
+                Åpne lenken i Safari på iPhone → trykk Del → velg Apple TV fra AirPlay-listen. TV-siden vises da på storskjermen mens du spiller på telefonen.
+              </p>
+            </div>
+
             <button
               onClick={() => setCastOpen(false)}
               className="w-full min-h-[44px] rounded-2xl bg-forest text-lime font-black text-base transition-all active:scale-95"

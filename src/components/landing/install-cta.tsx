@@ -10,7 +10,86 @@ interface BeforeInstallPromptEvent extends Event {
 
 // ─── SVG Illustrations ────────────────────────────────────────────────────────
 
-/** Step 1: Safari bottom toolbar with share button highlighted */
+/** iOS 26 Step 1: Safari bottom toolbar with ••• button highlighted */
+function IllustrationThreeDots() {
+  return (
+    <svg viewBox="0 0 220 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[220px]">
+      {/* Toolbar background */}
+      <rect width="220" height="64" rx="14" fill="#F2F2F7"/>
+      <line x1="0" y1="1" x2="220" y2="1" stroke="#D1D1D6" strokeWidth="1"/>
+      {/* Back arrow */}
+      <path d="M18 32 L30 22 M18 32 L30 42" stroke="#007AFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Tab switcher icon */}
+      <rect x="44" y="28" width="13" height="10" rx="2.5" stroke="#C7C7CC" strokeWidth="1.5" fill="none"/>
+      <rect x="48" y="25" width="13" height="10" rx="2.5" stroke="#C7C7CC" strokeWidth="1.5" fill="#F2F2F7"/>
+      {/* URL bar */}
+      <rect x="70" y="22" width="96" height="20" rx="8" fill="#E5E5EA"/>
+      <text x="118" y="35" textAnchor="middle" fontSize="9" fill="#8E8E93" fontFamily="system-ui">klinkn.no</text>
+      {/* Reload icon */}
+      <path d="M178 25 A7 7 0 0 1 185 32" stroke="#C7C7CC" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+      <path d="M175 30 L178 25 L183 28" stroke="#C7C7CC" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* ••• highlight */}
+      <rect x="194" y="12" width="22" height="40" rx="9" fill="#007AFF" fillOpacity="0.13"/>
+      {/* Three dots */}
+      <circle cx="200" cy="32" r="2.2" fill="#007AFF"/>
+      <circle cx="207" cy="32" r="2.2" fill="#007AFF"/>
+      <circle cx="214" cy="32" r="2.2" fill="#007AFF"/>
+      {/* Pulse ring */}
+      <circle cx="207" cy="32" r="16" stroke="#007AFF" strokeWidth="1.5" strokeDasharray="4 3" strokeOpacity="0.45"/>
+    </svg>
+  )
+}
+
+/** iOS 26 Step 2: small popup menu with Del highlighted */
+function IllustrationDelMenu() {
+  return (
+    <svg viewBox="0 0 220 92" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[220px]">
+      {/* Card shadow */}
+      <rect x="9" y="9" width="202" height="80" rx="15" fill="#000" fillOpacity="0.07"/>
+      {/* Menu card */}
+      <rect x="8" y="6" width="202" height="80" rx="15" fill="white"/>
+      {/* Del — highlighted row */}
+      <rect x="8" y="6" width="202" height="24" rx="15" fill="#007AFF" fillOpacity="0.10"/>
+      <path d="M30 14 L30 22 M30 14 L38 14 L38 22 M34 10 L34 14" stroke="#007AFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <text x="52" y="22" fontSize="12" fill="#007AFF" fontFamily="system-ui" fontWeight="600">Del</text>
+      <line x1="18" y1="30" x2="202" y2="30" stroke="#E5E5EA" strokeWidth="0.8"/>
+      {/* Legg til i Bokmerker */}
+      <text x="18" y="46" fontSize="10.5" fill="#3C3C43" fontFamily="system-ui">Legg til i Bokmerker</text>
+      <line x1="18" y1="54" x2="202" y2="54" stroke="#E5E5EA" strokeWidth="0.8"/>
+      {/* Ny fane */}
+      <text x="18" y="68" fontSize="10.5" fill="#3C3C43" fontFamily="system-ui">Ny fane</text>
+      <line x1="18" y1="74" x2="202" y2="74" stroke="#E5E5EA" strokeWidth="0.8"/>
+      {/* Ny privat fane */}
+      <text x="18" y="84" fontSize="10.5" fill="#3C3C43" fontFamily="system-ui">Ny privat fane</text>
+    </svg>
+  )
+}
+
+/** iOS 26 Step 3: share sheet list with Legg til på Hjem-skjerm highlighted */
+function IllustrationAddToHomeList() {
+  return (
+    <svg viewBox="0 0 220 96" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[220px]">
+      <rect width="220" height="96" rx="14" fill="#F2F2F7"/>
+      {/* Row 1 */}
+      <text x="14" y="20" fontSize="10" fill="#8E8E93" fontFamily="system-ui">Legg til i favoritter</text>
+      <line x1="10" y1="27" x2="210" y2="27" stroke="#D1D1D6" strokeWidth="0.6"/>
+      {/* Row 2 */}
+      <text x="14" y="42" fontSize="10" fill="#8E8E93" fontFamily="system-ui">Finn på siden</text>
+      <line x1="10" y1="49" x2="210" y2="49" stroke="#D1D1D6" strokeWidth="0.6"/>
+      {/* Row 3 — HIGHLIGHTED */}
+      <rect x="5" y="52" width="210" height="22" rx="7" fill="#007AFF" fillOpacity="0.12"/>
+      <circle cx="24" cy="63" r="7.5" stroke="#007AFF" strokeWidth="1.8" fill="none"/>
+      <line x1="24" y1="59" x2="24" y2="67" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="20" y1="63" x2="28" y2="63" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"/>
+      <text x="38" y="67" fontSize="10.5" fill="#007AFF" fontFamily="system-ui" fontWeight="600">Legg til på Hjem-skjerm</text>
+      <line x1="10" y1="75" x2="210" y2="75" stroke="#D1D1D6" strokeWidth="0.6"/>
+      {/* Row 4 */}
+      <text x="14" y="90" fontSize="10" fill="#8E8E93" fontFamily="system-ui">Merking</text>
+    </svg>
+  )
+}
+
+/** Legacy Step 1: Safari bottom toolbar with share button highlighted */
 function IllustrationShare() {
   return (
     <svg viewBox="0 0 220 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[220px]">
@@ -142,10 +221,26 @@ const STEP_2 = {
 }
 
 const IOS26_STEPS = [
-  STEP_1,
-  STEP_2,
+  {
+    number: 1,
+    title: 'Trykk på ••• (tre prikker)',
+    description: 'Finn de tre prikkene nederst til høyre i Safari.',
+    illustration: <IllustrationThreeDots />,
+  },
+  {
+    number: 2,
+    title: 'Trykk «Del»',
+    description: 'Velg Del fra menyen som dukker opp.',
+    illustration: <IllustrationDelMenu />,
+  },
   {
     number: 3,
+    title: 'Velg «Legg til på Hjem-skjerm»',
+    description: 'Bla ned i delemenyen og trykk på alternativet.',
+    illustration: <IllustrationAddToHomeList />,
+  },
+  {
+    number: 4,
     title: 'Trykk «Legg til»',
     description: 'Pass på at «Åpne som nettapp» er slått på, og trykk «Legg til».',
     illustration: <IllustrationConfirmIOS26 />,
