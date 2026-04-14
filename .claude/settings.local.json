@@ -70,7 +70,11 @@
       "Bash(ls:*)",
       "Bash(node -e ':*)",
       "Bash(node scripts/gen-backfill.js)",
-      "Bash(node scripts/fetch-snusboksen.js)"
+      "Bash(node scripts/fetch-snusboksen.js)",
+      "Bash(git stash:*)",
+      "Bash(lsof -i :3000 -sTCP:LISTEN)",
+      "Bash(awk 'NR>1 {print $2}')",
+      "Bash(xargs kill:*)"
     ]
   }
 }

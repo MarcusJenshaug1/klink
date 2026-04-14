@@ -66,8 +66,15 @@ export default function PackSelectionPage() {
       fetchKorttyper(),
     ])
     dispatch({ type: 'SET_KORTTYPER', korttyper })
-    // Hard-krav filter: min_spillere kan ikke "blandes"
-    const filtered = cards.filter((c) => (c.min_spillere ?? 2) <= state.players.length)
+    // Hard-krav filter: min_spillere + nummererte spillerslots
+    const filtered = cards.filter((c) => {
+      if ((c.min_spillere ?? 2) > state.players.length) return false
+      // {spiller3} i innhold krever min 3 spillere
+      const allContent = (c.innhold ?? '') + ' ' + (c.utfordring ?? '')
+      const nums = [...allContent.matchAll(/\{spiller(\d+)\}/g)].map(m => parseInt(m[1]))
+      if (nums.length > 0 && Math.max(...nums) > state.players.length) return false
+      return true
+    })
     if (filtered.length === 0) {
       setStartError('Ingen kort passer til valgene dine. Prøv flere pakker eller legg til flere spillere.')
       return

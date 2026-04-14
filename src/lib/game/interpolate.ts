@@ -7,6 +7,10 @@
  * Falls back to generic names if no players available.
  */
 
+export type TextSegment   = { type: 'text';   text: string }
+export type PlayerSegment = { type: 'player'; name: string }
+export type Segment = TextSegment | PlayerSegment
+
 function shuffled<T>(arr: T[]): T[] {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -50,4 +54,47 @@ export function interpolate(template: string, players: string[]): string {
   }
 
   return result
+}
+
+/**
+ * Same as interpolate() but returns typed segments so the caller can render
+ * player names differently (e.g. as highlighted badge spans).
+ */
+export function interpolateToSegments(template: string, players: string[]): Segment[] {
+  const MARK = (name: string) => `\x00player:${name}\x00`
+
+  let result: string
+  if (players.length === 0) {
+    result = template
+      .replace(/\{spiller(\d+)\}/g, (_, i) => MARK(`Person ${i}`))
+      .replace(/\{spiller\}/g, () => MARK('Du'))
+  } else {
+    const pool = shuffled(players)
+    let tmp = template
+
+    // {spiller1}, {spiller2}, …
+    const uniqueNumbers = new Set<number>()
+    const nr = /\{spiller(\d+)\}/g
+    let m: RegExpExecArray | null
+    while ((m = nr.exec(tmp)) !== null) uniqueNumbers.add(parseInt(m[1]))
+    if (uniqueNumbers.size > 0) {
+      const map: Record<number, string> = {}
+      ;[...uniqueNumbers].sort((a, b) => a - b).forEach((n, i) => { map[n] = pool[i % pool.length] })
+      tmp = tmp.replace(/\{spiller(\d+)\}/g, (_, num) => MARK(map[parseInt(num)]))
+    }
+
+    // {spiller}
+    let idx = 0
+    tmp = tmp.replace(/\{spiller\}/g, () => MARK(pool[idx++ % pool.length]))
+    result = tmp
+  }
+
+  // Split on NUL markers → typed segments
+  const parts = result.split(/\x00player:(.*?)\x00/)
+  const segments: Segment[] = []
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 0) { if (parts[i]) segments.push({ type: 'text',   text: parts[i] }) }
+    else             {               segments.push({ type: 'player', name: parts[i] }) }
+  }
+  return segments
 }

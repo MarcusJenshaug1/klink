@@ -4,7 +4,7 @@ import { useMemo, useState, useRef, useEffect } from 'react'
 import { Droplets, Trophy, Timer, Sparkles } from 'lucide-react'
 import JSConfetti from 'js-confetti'
 import { getCardTypeMeta } from '@/lib/game/card-types'
-import { interpolate } from '@/lib/game/interpolate'
+import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips, isChugging } from '@/lib/game/sips'
 import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
@@ -42,16 +42,20 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
     return getSips(intensitet)
   }, [card.id, intensitet]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const content = useMemo(() => {
-    let text = interpolate(card.innhold, players)
-    text = replaceSips(text, sips)
-    return text
+  const segments = useMemo(() => {
+    const raw = interpolateToSegments(card.innhold, players)
+    return raw.map(seg =>
+      seg.type === 'text' ? { ...seg, text: replaceSips(seg.text, sips) } : seg
+    )
   }, [card.id, players, sips]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const utfordring = useMemo(() => {
+  const utfordringSegments = useMemo(() => {
     if (!card.utfordring) return null
-    return replaceSips(card.utfordring, sips)
-  }, [card.utfordring, sips])
+    const raw = interpolateToSegments(card.utfordring, players)
+    return raw.map(seg =>
+      seg.type === 'text' ? { ...seg, text: replaceSips(seg.text, sips) } : seg
+    )
+  }, [card.utfordring, players, sips]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasTimer = !!card.timer_sekunder
   const timerSynlig = !!card.timer_synlig
@@ -172,15 +176,31 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
 
             {/* Card text */}
             <p className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl landscape:text-lg lg:landscape:text-3xl font-semibold leading-relaxed text-center">
-              {content}
+              {segments.map((seg, i) =>
+                seg.type === 'player' ? (
+                  <mark key={i} className="inline-block not-italic bg-white/30 text-white font-black px-2.5 py-0.5 rounded-full mx-0.5">
+                    {seg.name}
+                  </mark>
+                ) : (
+                  <span key={i}>{seg.text}</span>
+                )
+              )}
             </p>
 
             {/* Utfordring */}
-            {utfordring && (
+            {utfordringSegments && (
               <div className="rounded-2xl bg-black/20 px-4 py-3 flex items-start gap-3">
                 <Trophy className="w-4 h-4 text-white/60 shrink-0 mt-0.5" />
                 <p className="text-white/85 text-sm font-semibold leading-snug">
-                  {utfordring}
+                  {utfordringSegments.map((seg, i) =>
+                    seg.type === 'player' ? (
+                      <mark key={i} className="inline-block not-italic bg-white/20 text-white font-black px-2 py-0.5 rounded-full mx-0.5">
+                        {seg.name}
+                      </mark>
+                    ) : (
+                      <span key={i}>{seg.text}</span>
+                    )
+                  )}
                 </p>
               </div>
             )}

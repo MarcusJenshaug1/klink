@@ -7,6 +7,7 @@ import { CARD_TYPE_META, ICON_MAP } from '@/lib/game/card-types'
 import { DROYHET_META } from '@/lib/game/droyhet'
 import { VEKT_META } from '@/lib/game/vekt'
 import { CardPreview } from './card-preview'
+import { TokenInput, type TokenInputHandle } from './token-input'
 import type { KortType, Korttype, Droyhet, Kjonn, Vekt } from '@/types/game'
 
 const BUILT_IN_TYPES: KortType[] = [
@@ -39,6 +40,23 @@ interface CardFormProps {
   onCancel?: () => void
   /** Render in modal mode: no live preview sidebar, stacked layout */
   compact?: boolean
+}
+
+const btnCls = 'text-xs font-semibold px-2 py-1 rounded-md bg-forest/8 text-forest/80 hover:bg-forest/15 transition-colors'
+
+function TokenInsertBar({ onInsert }: { onInsert: (token: string) => void }) {
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-1.5 items-center">
+      <span className="text-[10px] font-bold text-forest/40 uppercase tracking-wider">Sett inn:</span>
+      <span className="flex gap-1">
+        <button type="button" onClick={() => onInsert('{spiller}')}   className={btnCls} title="Tilfeldig spiller">Tilfeldig spiller</button>
+        <button type="button" onClick={() => onInsert('{spiller1}')}  className={btnCls} title="Spiller-slot #1 — samme person om du bruker #1 flere ganger">#1</button>
+        <button type="button" onClick={() => onInsert('{spiller2}')}  className={btnCls} title="Spiller-slot #2">#2</button>
+        <button type="button" onClick={() => onInsert('{spiller3}')}  className={btnCls} title="Spiller-slot #3">#3</button>
+      </span>
+      <button type="button" onClick={() => onInsert('{sips}')} className={btnCls} title="Antall slurker basert på intensitet">{'{sips}'}</button>
+    </div>
+  )
 }
 
 const KJONN_META: Record<Kjonn, string> = {
@@ -80,33 +98,13 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
   const [error, setError] = useState('')
   const [korttyper, setKorttyper] = useState<Korttype[]>(initialKorttyper ?? [])
   const [advancedOpen, setAdvancedOpen] = useState(!!editCard)
-  const innholdRef = useRef<HTMLTextAreaElement>(null)
-  const utfordringRef = useRef<HTMLTextAreaElement>(null)
+  const innholdRef = useRef<TokenInputHandle>(null)
+  const utfordringRef = useRef<TokenInputHandle>(null)
 
   const insertToken = useCallback((token: string, target: 'innhold' | 'utfordring') => {
-    const ref = target === 'innhold' ? innholdRef : utfordringRef
-    const setter = target === 'innhold' ? setInnhold : setUtfordring
-    const current = target === 'innhold' ? innhold : utfordring
-    const el = ref.current
-    if (!el) {
-      setter((current ?? '') + token)
-      return
-    }
-    const start = el.selectionStart ?? current.length
-    const end = el.selectionEnd ?? current.length
-    const before = current.slice(0, start)
-    const after = current.slice(end)
-    const needsSpaceBefore = before.length > 0 && !/\s$/.test(before)
-    const needsSpaceAfter = after.length > 0 && !/^\s/.test(after)
-    const inserted = (needsSpaceBefore ? ' ' : '') + token + (needsSpaceAfter ? ' ' : '')
-    const next = before + inserted + after
-    setter(next)
-    requestAnimationFrame(() => {
-      el.focus()
-      const pos = before.length + inserted.length
-      el.setSelectionRange(pos, pos)
-    })
-  }, [innhold, utfordring])
+    if (target === 'innhold') innholdRef.current?.insertToken(token)
+    else utfordringRef.current?.insertToken(token)
+  }, [])
 
   useEffect(() => {
     if (initialKorttyper) return
@@ -142,6 +140,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!innhold.trim()) { setError('Innhold er påkrevd'); return }
     setSaving(true)
     setError('')
 
@@ -246,35 +245,15 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       {/* Innhold */}
       <div>
         <label className={label}>Innhold *</label>
-        <textarea
+        <TokenInput
           ref={innholdRef}
           value={innhold}
-          onChange={(e) => setInnhold(e.target.value)}
-          required
+          onChange={setInnhold}
           rows={3}
-          className={inputCls + ' resize-none'}
-          placeholder="Skriv spørsmål eller innhold..."
           autoFocus={!editCard}
+          placeholder="Skriv spørsmål eller innhold..."
         />
-        <div className="flex flex-wrap gap-1.5 mt-1.5">
-          <span className="text-[10px] font-bold text-forest/40 uppercase tracking-wider self-center">Sett inn:</span>
-          <button
-            type="button"
-            onClick={() => insertToken('{spiller}', 'innhold')}
-            className="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-forest/8 text-forest/80 hover:bg-forest/15 transition-colors"
-            title="Erstattes av en tilfeldig spiller"
-          >
-            {'{spiller}'}
-          </button>
-          <button
-            type="button"
-            onClick={() => insertToken('{sips}', 'innhold')}
-            className="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-forest/8 text-forest/80 hover:bg-forest/15 transition-colors"
-            title="Erstattes av antall slurker basert på intensitet"
-          >
-            {'{sips}'}
-          </button>
-        </div>
+        <TokenInsertBar onInsert={(t) => insertToken(t, 'innhold')} />
       </div>
 
       {/* Drøyhet — front-and-center as most impactful field */}
@@ -332,31 +311,14 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
           {/* Utfordring */}
           <div>
             <label className={label}>Utfordring <span className="font-normal normal-case text-forest/30">(valgfritt)</span></label>
-            <textarea
+            <TokenInput
               ref={utfordringRef}
-              value={utfordring}
-              onChange={(e) => setUtfordring(e.target.value)}
+              value={utfordring ?? ''}
+              onChange={setUtfordring}
               rows={2}
-              className={inputCls + ' resize-none'}
               placeholder="f.eks. Den som klarer X kan dele ut {sips} slurker!"
             />
-            <div className="flex flex-wrap gap-1.5 mt-1.5">
-              <span className="text-[10px] font-bold text-forest/40 uppercase tracking-wider self-center">Sett inn:</span>
-              <button
-                type="button"
-                onClick={() => insertToken('{spiller}', 'utfordring')}
-                className="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-forest/8 text-forest/80 hover:bg-forest/15 transition-colors"
-              >
-                {'{spiller}'}
-              </button>
-              <button
-                type="button"
-                onClick={() => insertToken('{sips}', 'utfordring')}
-                className="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-forest/8 text-forest/80 hover:bg-forest/15 transition-colors"
-              >
-                {'{sips}'}
-              </button>
-            </div>
+            <TokenInsertBar onInsert={(t) => insertToken(t, 'utfordring')} />
           </div>
 
           {/* Per-intensitet slurker */}
