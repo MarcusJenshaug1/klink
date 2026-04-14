@@ -157,6 +157,15 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }
     onRefresh()
   }
 
+  const bulkMinSpillere = async (n: number) => {
+    setBusy(true)
+    const supabase = createClient()
+    await supabase.from('kort').update({ min_spillere: n }).in('id', [...selected])
+    clearSelection()
+    setBusy(false)
+    onRefresh()
+  }
+
   return (
     <div>
       {ConfirmDialog}
@@ -220,6 +229,18 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }
           <button onClick={() => bulkDroyhet('droy')} disabled={busy} className="text-xs font-bold px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 disabled:opacity-50">
             → Drøy
           </button>
+          <div className="h-4 w-px bg-white/30" />
+          <span className="text-xs text-white/60 font-bold">Min. spillere:</span>
+          {[2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              onClick={() => bulkMinSpillere(n)}
+              disabled={busy}
+              className="text-xs font-bold w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 disabled:opacity-50 flex items-center justify-center"
+            >
+              {n}
+            </button>
+          ))}
           <div className="ml-auto flex items-center gap-2">
             <button onClick={bulkDelete} disabled={busy} className="text-xs font-bold px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 inline-flex items-center gap-1">
               <Trash2 className="w-3 h-3" /> Slett
