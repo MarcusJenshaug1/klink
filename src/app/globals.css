@@ -154,7 +154,8 @@ html {
 }
 
 body {
-  @apply bg-cream text-charcoal font-sans antialiased;
+  @apply text-charcoal font-sans antialiased;
+  background-color: transparent; /* la html-fargen vises i safe-area */
   overscroll-behavior: none;
 }
 
