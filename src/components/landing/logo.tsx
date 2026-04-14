@@ -1,19 +1,60 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAthina } from '@/context/athina-context'
+import { useAdminRole } from '@/hooks/use-admin-role'
+
+const LONG_PRESS_MS = 1500
 
 export function Logo({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false)
   const { isActive, tap, toast } = useAthina()
+  const { rolle } = useAdminRole()
+  const router = useRouter()
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const firedRef = useRef(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  const onPointerDown = () => {
+    firedRef.current = false
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      firedRef.current = true
+      try { if (navigator.vibrate) navigator.vibrate(25) } catch {}
+      router.push(rolle ? '/admin' : '/admin/logg-inn')
+    }, LONG_PRESS_MS)
+  }
+
+  const cancelLongPress = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  const handleClick = () => {
+    // Ikke tell tap mot Athina når long-press nettopp fyrte
+    if (firedRef.current) {
+      firedRef.current = false
+      return
+    }
+    tap()
+  }
+
   return (
     <div className={className}>
-      <div onClick={tap} className="select-none">
+      <div
+        onClick={handleClick}
+        onPointerDown={onPointerDown}
+        onPointerUp={cancelLongPress}
+        onPointerLeave={cancelLongPress}
+        onPointerCancel={cancelLongPress}
+        className="select-none touch-manipulation"
+      >
         <div
           className="inline-block px-6 py-4 rounded-3xl transition-all duration-500"
           style={isActive ? { backgroundColor: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(10px)' } : {}}
