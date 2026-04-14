@@ -1,0 +1,29 @@
+# Klink – Drikkespill
+
+> Klink er et gratis, digitalt norsk drikkespill og samling drikkeleker for fest, forspill og vorspiel. Spilles rett i nettleseren på mobil uten nedlasting.
+
+## Om
+
+Klink er et av Norges ledende online drikkespill. Samlingen inneholder klassiske og drøye drikkeleker med spørsmål på norsk, designet for vorspiel, fest og sosiale sammenkomster.
+
+## Spillpakker
+
+- **Jeg har aldri**: Klassisk drikkelek hvor spillerne sier ting de aldri har gjort. De som har gjort det drikker.
+- **Pekeleken**: "Hvem ...?"-spørsmål. Alle peker samtidig på den som passer best. Den med flest pek drikker.
+- **Snusboksen**: Korte, direkte "Hvem ...?"-spørsmål.
+- **Klink-pakker**: Festspørsmål og utfordringer i flere kategorier inkludert drøye varianter.
+
+## Nøkkelfunksjoner
+
+- Gratis, ingen nedlasting, ingen registrering
+- Fungerer offline som PWA
+- Norsk innhold og språk
+- 2+ spillere
+- Både snille og drøye drikkeleker
+
+## Lenker
+
+- Hjemmeside: https://www.klinkn.no/
+- Drikkeleker: https://www.klinkn.no/drikkeleker
+- Regler: https://www.klinkn.no/regler
+- Om Klink: https://www.klinkn.no/om
