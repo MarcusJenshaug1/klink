@@ -140,7 +140,7 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
         </div>
       )}
       {/* The card */}
-      <div className="w-full max-w-sm landscape:max-w-2xl flex flex-col items-center gap-3 landscape:gap-2">
+      <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl lg:landscape:max-w-3xl flex flex-col items-center gap-3 md:gap-5 landscape:gap-2">
 
           {/* Category badge — above card */}
           <div className="flex justify-center">
@@ -158,12 +158,12 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
 
           {/* Main card — frosted glass */}
           <div
-            className="w-full bg-white/15 backdrop-blur-md rounded-3xl landscape:rounded-2xl p-7 landscape:p-5 flex flex-col gap-5 landscape:gap-3 shadow-xl transition-all duration-500"
+            className="w-full bg-white/15 backdrop-blur-md rounded-3xl landscape:rounded-2xl p-7 md:p-10 lg:p-12 landscape:p-5 lg:landscape:p-10 flex flex-col gap-5 md:gap-7 landscape:gap-3 lg:landscape:gap-6 shadow-xl transition-all duration-500"
             style={athina ? { boxShadow: '0 0 0 2px rgba(255,215,0,0.5), 0 20px 25px -5px rgba(0,0,0,0.1)' } : undefined}
           >
 
             {/* Card text */}
-            <p className="text-white text-xl sm:text-2xl landscape:text-lg font-semibold leading-relaxed text-center">
+            <p className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl landscape:text-lg lg:landscape:text-3xl font-semibold leading-relaxed text-center">
               {content}
             </p>
 

@@ -66,6 +66,25 @@ export default function GamePage() {
     onSwipeRight: prevCard,
   })
 
+  // Keyboard navigation (desktop): ← → for prev/next, space = next
+  useEffect(() => {
+    if (state.phase !== 'playing') return
+    const onKey = (e: KeyboardEvent) => {
+      if (infoOpen || playersOpen || exitOpen) return
+      const target = e.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault()
+        nextCard()
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        prevCard()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [state.phase, infoOpen, playersOpen, exitOpen, nextCard, prevCard])
+
   const handleClose = () => setExitOpen(true)
 
   const handleNewPacks = () => {
