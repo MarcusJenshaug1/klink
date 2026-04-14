@@ -15,7 +15,7 @@ export function usePacks() {
     async function fetchPacks() {
       const { data, error: err } = await supabase
         .from('spillpakker')
-        .select('id, navn, beskrivelse, regler, farge, ikon, aktiv')
+        .select('id, navn, beskrivelse, regler, farge, ikon, aktiv, droyhet')
         .eq('aktiv', true)
         .order('opprettet_at', { ascending: true })
 

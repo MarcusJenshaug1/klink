@@ -17,6 +17,7 @@ export interface Pack {
   farge: string
   ikon: string
   aktiv: boolean
+  droyhet?: Droyhet
 }
 
 export type Droyhet = 'mild' | 'normal' | 'droy'

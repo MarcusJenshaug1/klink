@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Pipette } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { DROYHET_META } from '@/lib/game/droyhet'
 import { useConfirm } from './confirm-modal'
+import type { Droyhet } from '@/types/game'
 
 interface PackFormData {
   navn: string
@@ -13,6 +15,7 @@ interface PackFormData {
   farge: string
   ikon: string
   aktiv: boolean
+  droyhet: Droyhet
 }
 
 interface PackFormProps {
@@ -26,6 +29,7 @@ const DEFAULT_DATA: PackFormData = {
   farge: '#4B3FC7',
   ikon: 'default',
   aktiv: true,
+  droyhet: 'normal',
 }
 
 const PRESET_COLORS = [
@@ -217,6 +221,37 @@ export function PackForm({ initialData }: PackFormProps) {
           </div>
           <p className="text-xs text-forest/40 mt-2">
             Valgt: <span className="font-mono font-semibold">{data.farge}</span>
+          </p>
+        </div>
+
+        {/* Drøyhet */}
+        <div>
+          <label className="block text-sm font-bold text-forest mb-2">Drøyhet</label>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(DROYHET_META) as Droyhet[]).map((k) => {
+              const m = DROYHET_META[k]
+              const selected = data.droyhet === k
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => update('droyhet', k)}
+                  className={`p-2.5 rounded-xl border-2 transition-all text-left ${
+                    selected
+                      ? 'border-forest bg-forest text-white'
+                      : 'border-cream-dark/40 bg-cream text-forest/60 hover:border-forest/30'
+                  }`}
+                >
+                  <div className="text-xs font-black">{m.label}</div>
+                  <div className={`text-[10px] leading-tight mt-0.5 ${selected ? 'text-white/70' : 'text-forest/40'}`}>
+                    {m.beskrivelse}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-xs text-forest/40 mt-2">
+            Pakker skjules på /velg-pakke basert på brukerens drøyhets-valg.
           </p>
         </div>
 

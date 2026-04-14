@@ -9,8 +9,9 @@ import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
 import { useCards } from '@/hooks/use-cards'
+import { useMemo } from 'react'
 import { INTENSITET_META } from '@/lib/game/sips'
-import { DROYHET_META } from '@/lib/game/droyhet'
+import { DROYHET_META, DROYHET_ORDER } from '@/lib/game/droyhet'
 import { cn } from '@/lib/utils'
 import type { Intensitet, Droyhet } from '@/types/game'
 
@@ -36,6 +37,13 @@ export default function PackSelectionPage() {
   const [startError, setStartError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
+  // Filtrer bort pakker der pakkens drøyhet er høyere enn brukerens valg.
+  // Mild valgt → viser kun mild-pakker. Normal → mild+normal. Drøy → alle.
+  const visiblePacks = useMemo(
+    () => packs.filter((p) => DROYHET_ORDER[p.droyhet ?? 'normal'] <= DROYHET_ORDER[state.droyhet]),
+    [packs, state.droyhet],
+  )
+
   const togglePack = (id: string) => {
     setStartError(null)
     setSelectedIds((prev) => {
@@ -48,7 +56,7 @@ export default function PackSelectionPage() {
 
   const handleStart = async () => {
     setStartError(null)
-    const selected = packs.filter((p) => selectedIds.has(p.id))
+    const selected = visiblePacks.filter((p) => selectedIds.has(p.id))
     dispatch({ type: 'SELECT_PACKS', packs: selected })
     const [cards, korttyper] = await Promise.all([
       fetchCards(Array.from(selectedIds)),
@@ -241,7 +249,7 @@ export default function PackSelectionPage() {
           </div>
         ) : (
           <PackGrid
-            packs={packs}
+            packs={visiblePacks}
             selectedIds={selectedIds}
             onToggle={togglePack}
           />
