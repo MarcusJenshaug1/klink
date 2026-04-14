@@ -83,14 +83,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELECT_PACKS':
       return { ...state, selectedPacks: action.packs }
 
-    case 'START_GAME':
+    case 'START_GAME': {
+      const deck = buildWeightedDeck(action.cards, state.droyhet)
       return {
         ...state,
         cards: action.cards,
-        deck: buildWeightedDeck(action.cards, state.droyhet),
+        deck,
         currentCardIndex: 0,
-        phase: 'playing',
+        phase: deck.length === 0 ? 'deck-empty' : 'playing',
       }
+    }
 
     case 'NEXT_CARD': {
       const nextIndex = state.currentCardIndex + 1
@@ -106,13 +108,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, currentCardIndex: prevIndex, phase: 'playing' }
     }
 
-    case 'RESHUFFLE':
+    case 'RESHUFFLE': {
+      const deck = buildWeightedDeck(state.cards, state.droyhet)
       return {
         ...state,
-        deck: buildWeightedDeck(state.cards, state.droyhet),
+        deck,
         currentCardIndex: 0,
-        phase: 'playing',
+        phase: deck.length === 0 ? 'deck-empty' : 'playing',
       }
+    }
 
     case 'SET_PHASE':
       return { ...state, phase: action.phase }
