@@ -21,18 +21,19 @@ export function AdminQuickAccess() {
 
   useEffect(() => setMounted(true), [])
 
-  // Global keyboard shortcut
+  // Global keyboard shortcut — toggler mellom admin og public
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault()
-        const target = rolle ? '/admin' : '/admin/logg-inn'
+        const onAdmin = pathname.startsWith('/admin')
+        const target = onAdmin ? '/' : (rolle ? '/admin' : '/admin/logg-inn')
         router.push(target)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [rolle, router])
+  }, [rolle, router, pathname])
 
   if (!mounted || loading) return null
 
