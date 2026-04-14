@@ -36,8 +36,9 @@ export async function sendAdminInvite({
           <!-- Logo / header -->
           <tr>
             <td align="center" style="padding-bottom:36px;">
-              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iNzYiIHZpZXdCb3g9IjAgMCAyMDAgNzYiPjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iNzYiIHJ4PSIyMiIgZmlsbD0iI0Q0RjA0QyIvPjx0ZXh0IHg9IjEwMCIgeT0iNTQiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCZhcG9zO1RpbWVzIE5ldyBSb21hbiZhcG9zOyxzZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSI0MCIgZmlsbD0iIzFBM0ExQSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9Ii0xIj5LbGluazwvdGV4dD48L3N2Zz4="
-                alt="Klink" width="200" height="76" style="display:block;border:0;" />
+              <div style="display:inline-block;background:#A8E63D;border-radius:22px;padding:14px 38px;">
+                <span style="font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-weight:900;font-size:44px;color:#1A3A1A;letter-spacing:-1px;line-height:1;">Klink</span>
+              </div>
             </td>
           </tr>
 
