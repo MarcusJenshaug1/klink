@@ -51,6 +51,7 @@ export type GamePhase = 'landing' | 'pack-selection' | 'playing' | 'deck-empty'
 export interface GameState {
   players: string[]
   selectedPacks: Pack[]
+  cards: Card[]   // original unweighted cards — used for reshuffle
   deck: Card[]
   currentCardIndex: number
   phase: GamePhase

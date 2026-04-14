@@ -29,6 +29,7 @@ type GameAction =
   | { type: 'RESTORE_STATE'; state: GameState }
 
 const initialState: GameState = {
+  cards: [],
   players: [],
   selectedPacks: [],
   deck: [],
@@ -85,6 +86,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'START_GAME':
       return {
         ...state,
+        cards: action.cards,
         deck: buildWeightedDeck(action.cards, state.droyhet),
         currentCardIndex: 0,
         phase: 'playing',
@@ -107,7 +109,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'RESHUFFLE':
       return {
         ...state,
-        deck: buildWeightedDeck(state.deck, state.droyhet),
+        deck: buildWeightedDeck(state.cards, state.droyhet),
         currentCardIndex: 0,
         phase: 'playing',
       }

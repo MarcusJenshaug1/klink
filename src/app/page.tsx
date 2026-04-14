@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Play, Beer } from 'lucide-react'
 import { Logo } from '@/components/landing/logo'
 import { PlayerForm } from '@/components/landing/player-form'
+import { InstallCta } from '@/components/landing/install-cta'
 import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { cn } from '@/lib/utils'
@@ -42,8 +43,12 @@ export default function LandingPage() {
           />
         </div>
 
+        <div className="mt-5">
+          <InstallCta />
+        </div>
+
         <p
-          className="text-center text-xs mt-6 max-w-xs inline-flex items-center gap-1.5"
+          className="text-center text-xs mt-3 max-w-xs inline-flex items-center gap-1.5"
           style={{ color: isActive ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.4)' }}
         >
           <Beer className="w-3.5 h-3.5 shrink-0" />

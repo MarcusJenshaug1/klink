@@ -73,9 +73,9 @@ export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlaye
                     onClick={() => onRemovePlayer(i)}
                     aria-label={`Fjern ${name}`}
                     disabled={players.length <= 2}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-forest/25 hover:text-forest/50 hover:bg-forest/10 transition-colors disabled:opacity-20 disabled:pointer-events-none"
+                    className="w-8 h-8 rounded-full flex items-center justify-center bg-forest/40 text-white hover:bg-forest/60 active:scale-90 transition-all disabled:invisible disabled:pointer-events-none"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
                 )

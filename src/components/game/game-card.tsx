@@ -118,7 +118,7 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
 
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-5 landscape:px-20 transition-colors duration-700"
+      className="absolute inset-0 flex flex-col items-center justify-center px-5 landscape:px-20 pt-16 pb-24 transition-colors duration-700"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
 
