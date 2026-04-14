@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Cookie } from 'lucide-react'
 
 const CONSENT_KEY = 'klink-consent-v1'
 
@@ -56,7 +57,10 @@ export function ConsentBanner() {
       className="fixed inset-x-0 bottom-0 z-[90] p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
     >
       <div className="max-w-2xl mx-auto bg-forest text-white rounded-3xl shadow-2xl p-5 sm:p-6">
-        <h2 className="font-display font-black text-lg sm:text-xl mb-2">🍪 Cookies og analyse</h2>
+        <h2 className="font-display font-black text-lg sm:text-xl mb-2 flex items-center gap-2">
+          <Cookie className="w-5 h-5" />
+          Cookies og analyse
+        </h2>
         <p className="text-sm text-white/80 leading-relaxed mb-4">
           Klink bruker Google Analytics og Vercel Analytics for å forstå hvordan appen brukes,
           slik at vi kan forbedre den. IP-adresse anonymiseres. Du kan velge bort når som helst.

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Play } from 'lucide-react'
+import { Play, Beer } from 'lucide-react'
 import { Logo } from '@/components/landing/logo'
 import { PlayerForm } from '@/components/landing/player-form'
 import { useGame } from '@/context/game-context'
@@ -43,13 +43,16 @@ export default function LandingPage() {
         </div>
 
         <p
-          className="text-center text-xs mt-6 max-w-xs"
+          className="text-center text-xs mt-6 max-w-xs inline-flex items-center gap-1.5"
           style={{ color: isActive ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.4)' }}
         >
-          🍻 Drikk ansvarlig. 18+.{' '}
-          <Link href="/personvern" className="underline hover:opacity-80">
-            Personvern
-          </Link>
+          <Beer className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            Drikk ansvarlig. 18+.{' '}
+            <Link href="/personvern" className="underline hover:opacity-80">
+              Personvern
+            </Link>
+          </span>
         </p>
 
         <div className="h-4" />

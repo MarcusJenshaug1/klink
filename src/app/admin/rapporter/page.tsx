@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Trash2, Flag, Clock, Package, Pencil } from 'lucide-react'
+import { Trash2, Flag, Clock, Package, Pencil, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useAdminRole } from '@/hooks/use-admin-role'
@@ -133,7 +133,7 @@ export default function RapporterPage() {
         </div>
       ) : rows.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-cream-dark/40">
-          <p className="text-4xl mb-2">🎉</p>
+          <CheckCircle2 className="w-12 h-12 mx-auto text-forest/50 mb-3" />
           <p className="font-bold text-forest">Ingen rapporter akkurat nå</p>
           <p className="text-forest/50 text-sm mt-1">Alle kort har gode tilbakemeldinger.</p>
         </div>
