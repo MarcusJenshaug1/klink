@@ -56,7 +56,14 @@
       "Bash(sort -t- -k1)",
       "Bash(python3 -c \" import sys, json data = sys.stdin.read\\(\\) lines = data.strip\\(\\).split\\('\\\\n'\\) for line in lines[-5:]: try: obj = json.loads\\(line\\) msg = obj.get\\('message', {}\\) content = msg.get\\('content', []\\) if isinstance\\(content, list\\): for item in content: if isinstance\\(item, dict\\) and item.get\\('type'\\) == 'image': src = item.get\\('source', {}\\) print\\('FOUND IMAGE:', src.get\\('type'\\), 'len:', len\\(str\\(src.get\\('data',''\\)\\)\\)\\) except: pass \")",
       "Bash(python3)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 20 http://klinkn.no/)",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 http://klinkn.no/robots.txt)",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 http://klinkn.no/sitemap.xml)",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 http://klinkn.no/llms.txt)",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 https://www.klinkn.no/manifest.json)",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 https://www.klinkn.no/)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -A Mozilla/5.0 --max-time 10 https://www.klinkn.no__TRACKED_VAR__)"
     ]
   }
 }
