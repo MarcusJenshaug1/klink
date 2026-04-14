@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
               `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
               `font-src 'self' https://fonts.gstatic.com`,
               `img-src 'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com`,
-              `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
+              `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
               `frame-ancestors 'none'`,
             ].join('; '),
           },
