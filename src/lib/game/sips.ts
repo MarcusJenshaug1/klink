@@ -44,15 +44,15 @@ export function replaceSips(text: string, sips: number): string {
 
 export const INTENSITET_META: Record<Intensitet, { label: string; beskrivelse: string }> = {
   lett: {
-    label: 'Lett',
-    beskrivelse: '1–2 slurker. Rolig og sosialt.',
+    label: 'Pils',
+    beskrivelse: 'Rolig runde. 1–2 slurker.',
   },
   medium: {
-    label: 'Medium',
-    beskrivelse: '3–5 slurker. Litt mer trykk.',
+    label: 'Party',
+    beskrivelse: 'Full stemning. 3–5 slurker.',
   },
   borst: {
-    label: 'Børst',
-    beskrivelse: '7–10 slurker. Full gass.',
+    label: 'Blackout',
+    beskrivelse: 'Ingen vei tilbake. 7–10 slurker.',
   },
 }

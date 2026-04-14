@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, Play } from 'lucide-react'
+import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, ChevronDown, ChevronUp, Settings, Play } from 'lucide-react'
 import { PackGrid } from '@/components/pack-selection/pack-grid'
 import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
@@ -33,6 +33,7 @@ export default function PackSelectionPage() {
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [startError, setStartError] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const togglePack = (id: string) => {
     setStartError(null)
@@ -136,78 +137,102 @@ export default function PackSelectionPage() {
           />
         )}
 
-        {/* Intensity */}
-        <div className="backdrop-blur-sm rounded-3xl p-5 shadow-sm transition-colors duration-500" style={{ backgroundColor: athina ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.6)' }}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: athina ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.5)' }}>
-            Intensitet
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {(Object.keys(INTENSITET_META) as Intensitet[]).map((key) => {
-              const meta = INTENSITET_META[key]
-              const Icon = INTENSITET_ICONS[key]
-              const selected = state.intensitet === key
-              return (
-                <button
-                  key={key}
-                  onClick={() => dispatch({ type: 'SET_INTENSITET', intensitet: key })}
-                  className={cn(
-                    'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
-                    selected
-                      ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
-                      : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
-                  )}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-sm font-black">{meta.label}</span>
-                  <span className={cn(
-                    'text-[10px] leading-tight text-center font-medium',
-                    selected
-                      ? athina ? 'text-white/70' : 'text-lime/70'
-                      : athina ? 'text-white/50' : 'text-forest/40'
-                  )}>
-                    {meta.beskrivelse}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        {/* Settings (collapsible: Intensitet + Drøyhet) */}
+        <div className="backdrop-blur-sm rounded-3xl shadow-sm transition-colors duration-500 overflow-hidden" style={{ backgroundColor: athina ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.6)' }}>
+          <button
+            onClick={() => setSettingsOpen((v) => !v)}
+            className={cn(
+              'w-full flex items-center justify-between gap-3 px-5 py-4 transition-colors',
+              athina ? 'text-white hover:bg-white/5' : 'text-forest hover:bg-forest/5'
+            )}
+          >
+            <span className="flex items-center gap-2">
+              <Settings className="w-4 h-4 opacity-70" />
+              <span className="text-sm font-black tracking-wide">Innstillinger</span>
+              <span className={cn('text-xs font-semibold', athina ? 'text-white/60' : 'text-forest/50')}>
+                {INTENSITET_META[state.intensitet].label} · {DROYHET_META[state.droyhet].label}
+              </span>
+            </span>
+            {settingsOpen ? <ChevronUp className="w-4 h-4 opacity-70" /> : <ChevronDown className="w-4 h-4 opacity-70" />}
+          </button>
 
-        {/* Drøyhet */}
-        <div className="backdrop-blur-sm rounded-3xl p-5 shadow-sm transition-colors duration-500" style={{ backgroundColor: athina ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.6)' }}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: athina ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.5)' }}>
-            Drøyhet
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {(Object.keys(DROYHET_META) as Droyhet[]).map((key) => {
-              const meta = DROYHET_META[key]
-              const Icon = DROYHET_ICONS[key]
-              const selected = state.droyhet === key
-              return (
-                <button
-                  key={key}
-                  onClick={() => { setStartError(null); dispatch({ type: 'SET_DROYHET', droyhet: key }) }}
-                  className={cn(
-                    'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
-                    selected
-                      ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
-                      : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
-                  )}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-sm font-black">{meta.label}</span>
-                  <span className={cn(
-                    'text-[10px] leading-tight text-center font-medium',
-                    selected
-                      ? athina ? 'text-white/70' : 'text-lime/70'
-                      : athina ? 'text-white/50' : 'text-forest/40'
-                  )}>
-                    {meta.beskrivelse}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+          {settingsOpen && (
+            <div className="px-5 pb-5 space-y-4">
+              {/* Intensitet */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: athina ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.5)' }}>
+                  Intensitet
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(INTENSITET_META) as Intensitet[]).map((key) => {
+                    const meta = INTENSITET_META[key]
+                    const Icon = INTENSITET_ICONS[key]
+                    const selected = state.intensitet === key
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => dispatch({ type: 'SET_INTENSITET', intensitet: key })}
+                        className={cn(
+                          'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
+                          selected
+                            ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
+                            : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
+                        )}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="text-sm font-black">{meta.label}</span>
+                        <span className={cn(
+                          'text-[10px] leading-tight text-center font-medium',
+                          selected
+                            ? athina ? 'text-white/70' : 'text-lime/70'
+                            : athina ? 'text-white/50' : 'text-forest/40'
+                        )}>
+                          {meta.beskrivelse}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Drøyhet */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: athina ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.5)' }}>
+                  Drøyhet
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(DROYHET_META) as Droyhet[]).map((key) => {
+                    const meta = DROYHET_META[key]
+                    const Icon = DROYHET_ICONS[key]
+                    const selected = state.droyhet === key
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => { setStartError(null); dispatch({ type: 'SET_DROYHET', droyhet: key }) }}
+                        className={cn(
+                          'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
+                          selected
+                            ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
+                            : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
+                        )}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="text-sm font-black">{meta.label}</span>
+                        <span className={cn(
+                          'text-[10px] leading-tight text-center font-medium',
+                          selected
+                            ? athina ? 'text-white/70' : 'text-lime/70'
+                            : athina ? 'text-white/50' : 'text-forest/40'
+                        )}>
+                          {meta.beskrivelse}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Spacer for sticky button */}
