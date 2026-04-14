@@ -46,7 +46,6 @@ function IllustrationAddToHome() {
     <svg viewBox="0 0 220 96" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[220px]">
       {/* Sheet background */}
       <rect width="220" height="96" rx="14" fill="#F2F2F7"/>
-      {/* Row of icons */}
       {/* Icon 1 — grayed */}
       <rect x="8" y="10" width="44" height="44" rx="12" fill="#E5E5EA"/>
       <text x="30" y="68" textAnchor="middle" fontSize="8.5" fill="#8E8E93" fontFamily="system-ui">Del</text>
@@ -69,14 +68,14 @@ function IllustrationAddToHome() {
   )
 }
 
-/** Step 3: iOS dialog top bar — "Legg til" button highlighted */
-function IllustrationConfirm() {
+/** Step 3 (eldre iOS): confirm dialog — "Legg til" button highlighted */
+function IllustrationConfirmLegacy() {
   return (
     <svg viewBox="0 0 220 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[220px]">
       {/* Nav bar background */}
       <rect width="220" height="64" rx="14" fill="#F9F9F9"/>
       <line x1="0" y1="63" x2="220" y2="63" stroke="#D1D1D6" strokeWidth="1"/>
-      {/* Klink app icon (preview) */}
+      {/* Klink app icon */}
       <rect x="16" y="10" width="44" height="44" rx="10" fill="#A8E63D"/>
       <text x="38" y="38" textAnchor="middle" fontSize="13" fill="#1A3A1A" fontFamily="Georgia, serif" fontWeight="700">K</text>
       {/* App name + url */}
@@ -89,32 +88,99 @@ function IllustrationConfirm() {
   )
 }
 
+/** Step 3 (iOS 26+): new confirm dialog with "Åpne som nettapp" toggle */
+function IllustrationConfirmIOS26() {
+  return (
+    <svg viewBox="0 0 220 108" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[220px]">
+      {/* Background */}
+      <rect width="220" height="108" rx="14" fill="#F9F9F9"/>
+
+      {/* Header bar */}
+      <line x1="0" y1="44" x2="220" y2="44" stroke="#D1D1D6" strokeWidth="0.6"/>
+      {/* X button */}
+      <circle cx="24" cy="22" r="11" fill="#E5E5EA"/>
+      <path d="M20 18 L28 26 M28 18 L20 26" stroke="#636366" strokeWidth="1.8" strokeLinecap="round"/>
+      {/* "Hjem-skjerm" title */}
+      <text x="110" y="26" textAnchor="middle" fontSize="11" fill="#000" fontFamily="system-ui" fontWeight="600">Hjem-skjerm</text>
+      {/* "Legg til" button — highlighted */}
+      <rect x="156" y="11" width="52" height="22" rx="7" fill="#007AFF" fillOpacity="0.13"/>
+      <text x="182" y="26" textAnchor="middle" fontSize="12" fill="#007AFF" fontFamily="system-ui" fontWeight="600">Legg til</text>
+
+      {/* App icon + name row */}
+      <rect x="14" y="52" width="28" height="28" rx="7" fill="#A8E63D"/>
+      <text x="28" y="71" textAnchor="middle" fontSize="12" fill="#1A3A1A" fontFamily="Georgia, serif" fontWeight="700">K</text>
+      <text x="50" y="63" fontSize="10.5" fill="#000" fontFamily="system-ui" fontWeight="600">Klink</text>
+      <text x="50" y="75" fontSize="8.5" fill="#8E8E93" fontFamily="system-ui">klinkn.no</text>
+
+      {/* Separator */}
+      <line x1="14" y1="87" x2="206" y2="87" stroke="#D1D1D6" strokeWidth="0.6"/>
+
+      {/* "Åpne som nettapp" row — highlighted */}
+      <rect x="10" y="91" width="200" height="14" rx="4" fill="#34C759" fillOpacity="0.10"/>
+      <text x="16" y="101" fontSize="9.5" fill="#000" fontFamily="system-ui" fontWeight="500">Åpne som nettapp</text>
+      {/* Toggle (on = green) */}
+      <rect x="172" y="92" width="32" height="18" rx="9" fill="#34C759"/>
+      <circle cx="195" cy="101" r="7" fill="white"/>
+    </svg>
+  )
+}
+
 // ─── Step data ─────────────────────────────────────────────────────────────────
 
-const IOS_STEPS = [
+const STEP_1 = {
+  number: 1,
+  title: 'Trykk Del-knappen',
+  description: 'Finn firkant-ikonet med pil opp nederst i Safari.',
+  illustration: <IllustrationShare />,
+}
+
+const STEP_2 = {
+  number: 2,
+  title: 'Velg «Legg til på Hjem-skjerm»',
+  description: 'Scroll i menyen og trykk på +-ikonet.',
+  illustration: <IllustrationAddToHome />,
+}
+
+const IOS26_STEPS = [
+  STEP_1,
+  STEP_2,
   {
-    number: 1,
-    title: 'Trykk Del-knappen',
-    description: 'Finn firkant-ikonet med pil opp nederst i Safari.',
-    illustration: <IllustrationShare />,
+    number: 3,
+    title: 'Trykk «Legg til»',
+    description: 'Pass på at «Åpne som nettapp» er slått på, og trykk «Legg til».',
+    illustration: <IllustrationConfirmIOS26 />,
   },
-  {
-    number: 2,
-    title: 'Velg «Legg til på hjemskjerm»',
-    description: 'Scroll nedover i menyen og trykk på +-ikonet.',
-    illustration: <IllustrationAddToHome />,
-  },
+]
+
+const IOS_LEGACY_STEPS = [
+  STEP_1,
+  STEP_2,
   {
     number: 3,
     title: 'Trykk «Legg til»',
     description: 'Bekreft i dialogboksen. Klink dukker opp på hjemskjermen!',
-    illustration: <IllustrationConfirm />,
+    illustration: <IllustrationConfirmLegacy />,
   },
 ]
+
+// ─── iOS version detection ─────────────────────────────────────────────────────
+
+function getIosVersion(): number | null {
+  if (typeof navigator === 'undefined') return null
+  const match = navigator.userAgent.match(/OS (\d+)_/)
+  return match ? parseInt(match[1], 10) : null
+}
 
 // ─── iOS Guide Modal ──────────────────────────────────────────────────────────
 
 function IosGuideModal({ onClose }: { onClose: () => void }) {
+  const [isIOS26, setIsIOS26] = useState<boolean>(() => {
+    const ver = getIosVersion()
+    return ver === null ? true : ver >= 26
+  })
+
+  const steps = isIOS26 ? IOS26_STEPS : IOS_LEGACY_STEPS
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div
@@ -125,7 +191,7 @@ function IosGuideModal({ onClose }: { onClose: () => void }) {
         <div className="w-10 h-1 bg-black/10 rounded-full mx-auto mt-3 mb-5" />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 mb-6">
+        <div className="flex items-center justify-between px-6 mb-4">
           <div>
             <h2 className="font-display text-2xl font-black text-forest">Installer Klink</h2>
             <p className="text-sm text-forest/50 mt-0.5">Legg til på hjemskjermen i Safari</p>
@@ -139,9 +205,25 @@ function IosGuideModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {/* iOS version toggle */}
+        <div className="mx-6 mb-5 flex gap-0.5 bg-black/6 rounded-xl p-1">
+          <button
+            onClick={() => setIsIOS26(true)}
+            className={`flex-1 text-xs font-black py-1.5 rounded-lg transition-all ${isIOS26 ? 'bg-white text-forest shadow-sm' : 'text-forest/45 hover:text-forest/70'}`}
+          >
+            iOS 26+
+          </button>
+          <button
+            onClick={() => setIsIOS26(false)}
+            className={`flex-1 text-xs font-black py-1.5 rounded-lg transition-all ${!isIOS26 ? 'bg-white text-forest shadow-sm' : 'text-forest/45 hover:text-forest/70'}`}
+          >
+            Eldre iOS
+          </button>
+        </div>
+
         {/* Steps */}
         <div className="px-6 flex flex-col gap-5">
-          {IOS_STEPS.map((step) => (
+          {steps.map((step) => (
             <div key={step.number} className="flex gap-4 items-start">
               {/* Step number */}
               <div className="shrink-0 w-7 h-7 rounded-full bg-forest flex items-center justify-center">
@@ -160,7 +242,7 @@ function IosGuideModal({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        {/* iOS requirement note */}
+        {/* Footer note */}
         <p className="text-center text-[11px] text-forest/35 mt-5 px-6">
           Krever Safari på iPhone/iPad
         </p>
