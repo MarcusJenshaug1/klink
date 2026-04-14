@@ -10,6 +10,7 @@ import {
 import type { Card, Pack, GamePhase, GameState, Intensitet, Droyhet, Korttype } from '@/types/game'
 import { shuffle } from '@/lib/game/shuffle'
 import { VEKT_MULTIPLIER } from '@/lib/game/vekt'
+import { getDroyhetCopies } from '@/lib/game/droyhet'
 
 type GameAction =
   | { type: 'SET_PLAYERS'; players: string[] }
@@ -39,17 +40,18 @@ const initialState: GameState = {
 }
 
 /**
- * Bygg vektet deck: replikér hvert kort per vekt (1/3/5), shuffle,
- * så dedup-streak så samme ID ikke kommer rett etter hverandre.
+ * Bygg vektet deck: for hvert kort: copies = VEKT_MULTIPLIER[vekt] * DROYHET_BLEND[valgt][kortDroyhet].
+ * Hopp over når copies = 0. Shuffle + dedup-streak så samme ID ikke kommer rett etter hverandre.
  */
-function buildWeightedDeck(cards: Card[]): Card[] {
+function buildWeightedDeck(cards: Card[], selectedDroyhet: Droyhet): Card[] {
   const replicated: Card[] = []
   for (const c of cards) {
-    const mult = VEKT_MULTIPLIER[c.vekt ?? 'vanlig']
-    for (let i = 0; i < mult; i++) replicated.push(c)
+    const vektMult = VEKT_MULTIPLIER[c.vekt ?? 'vanlig']
+    const droyhetMult = getDroyhetCopies(selectedDroyhet, c.droyhet ?? 'normal')
+    const copies = vektMult * droyhetMult
+    for (let i = 0; i < copies; i++) replicated.push(c)
   }
   const shuffled = shuffle(replicated)
-  // Dedup streak: hvis neste == forrige, bytt med en senere ulik
   for (let i = 1; i < shuffled.length; i++) {
     if (shuffled[i].id === shuffled[i - 1].id) {
       for (let j = i + 1; j < shuffled.length; j++) {
@@ -83,7 +85,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'START_GAME':
       return {
         ...state,
-        deck: buildWeightedDeck(action.cards),
+        deck: buildWeightedDeck(action.cards, state.droyhet),
         currentCardIndex: 0,
         phase: 'playing',
       }
@@ -105,7 +107,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'RESHUFFLE':
       return {
         ...state,
-        deck: buildWeightedDeck(state.deck),
+        deck: buildWeightedDeck(state.deck, state.droyhet),
         currentCardIndex: 0,
         phase: 'playing',
       }

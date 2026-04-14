@@ -9,7 +9,7 @@ import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
 import { useCards } from '@/hooks/use-cards'
 import { INTENSITET_META } from '@/lib/game/sips'
-import { DROYHET_META, isDroyhetAllowed } from '@/lib/game/droyhet'
+import { DROYHET_META } from '@/lib/game/droyhet'
 import { cn } from '@/lib/utils'
 import type { Intensitet, Droyhet } from '@/types/game'
 
@@ -32,8 +32,10 @@ export default function PackSelectionPage() {
   const { packs, loading: packsLoading } = usePacks()
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [startError, setStartError] = useState<string | null>(null)
 
   const togglePack = (id: string) => {
+    setStartError(null)
     setSelectedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
@@ -43,6 +45,7 @@ export default function PackSelectionPage() {
   }
 
   const handleStart = async () => {
+    setStartError(null)
     const selected = packs.filter((p) => selectedIds.has(p.id))
     dispatch({ type: 'SELECT_PACKS', packs: selected })
     const [cards, korttyper] = await Promise.all([
@@ -50,15 +53,14 @@ export default function PackSelectionPage() {
       fetchKorttyper(),
     ])
     dispatch({ type: 'SET_KORTTYPER', korttyper })
-    const filtered = cards.filter(
-      (c) =>
-        isDroyhetAllowed(c.droyhet ?? 'normal', state.droyhet) &&
-        (c.min_spillere ?? 2) <= state.players.length,
-    )
-    if (filtered.length > 0) {
-      dispatch({ type: 'START_GAME', cards: filtered })
-      router.push('/spill')
+    // Hard-krav filter: min_spillere kan ikke "blandes"
+    const filtered = cards.filter((c) => (c.min_spillere ?? 2) <= state.players.length)
+    if (filtered.length === 0) {
+      setStartError('Ingen kort passer til valgene dine. Prøv flere pakker eller legg til flere spillere.')
+      return
     }
+    dispatch({ type: 'START_GAME', cards: filtered })
+    router.push('/spill')
   }
 
   const handleBack = () => {
@@ -184,7 +186,7 @@ export default function PackSelectionPage() {
               return (
                 <button
                   key={key}
-                  onClick={() => dispatch({ type: 'SET_DROYHET', droyhet: key })}
+                  onClick={() => { setStartError(null); dispatch({ type: 'SET_DROYHET', droyhet: key }) }}
                   className={cn(
                     'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
                     selected
@@ -215,6 +217,17 @@ export default function PackSelectionPage() {
       {/* Sticky start button */}
       <div className="sticky bottom-0 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700" style={{ backgroundColor: athina ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}>
         <div className="max-w-lg mx-auto">
+          {startError && (
+            <p
+              className="mb-2 text-sm font-semibold text-center rounded-xl px-4 py-2"
+              style={{
+                backgroundColor: athina ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.75)',
+                color: athina ? '#fff' : '#991b1b',
+              }}
+            >
+              {startError}
+            </p>
+          )}
           <button
             onClick={handleStart}
             disabled={!canStart}
