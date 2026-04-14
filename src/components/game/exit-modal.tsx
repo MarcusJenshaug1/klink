@@ -15,9 +15,7 @@ export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" />
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
 
       {/* Sheet */}
       <div
