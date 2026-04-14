@@ -12,7 +12,7 @@ import { usePacks } from '@/hooks/use-packs'
 import { useCards } from '@/hooks/use-cards'
 import { useMemo } from 'react'
 import { INTENSITET_META } from '@/lib/game/sips'
-import { DROYHET_META, DROYHET_ORDER } from '@/lib/game/droyhet'
+import { DROYHET_META, DROYHET_ORDER, getDroyhetCopies } from '@/lib/game/droyhet'
 import { cn } from '@/lib/utils'
 import type { Intensitet, Droyhet } from '@/types/game'
 
@@ -68,6 +68,13 @@ export default function PackSelectionPage() {
     const filtered = cards.filter((c) => (c.min_spillere ?? 2) <= state.players.length)
     if (filtered.length === 0) {
       setStartError('Ingen kort passer til valgene dine. Prøv flere pakker eller legg til flere spillere.')
+      return
+    }
+    const hasMatchingDroyhet = filtered.some(
+      (c) => getDroyhetCopies(state.droyhet, c.droyhet ?? 'normal') > 0
+    )
+    if (!hasMatchingDroyhet) {
+      setStartError(`Ingen kort passer valgt drøyhet (${DROYHET_META[state.droyhet].label.toLowerCase()}). Prøv å velge «Drøy» under Innstillinger.`)
       return
     }
     track('game_started', {
