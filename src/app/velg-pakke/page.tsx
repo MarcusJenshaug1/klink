@@ -124,20 +124,7 @@ export default function PackSelectionPage() {
           </div>
         </div>
 
-        {/* Pack grid */}
-        {packsLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-[3px] border-forest/20 border-t-forest rounded-full animate-spin" />
-          </div>
-        ) : (
-          <PackGrid
-            packs={packs}
-            selectedIds={selectedIds}
-            onToggle={togglePack}
-          />
-        )}
-
-        {/* Settings (collapsible: Intensitet + Drøyhet) */}
+        {/* Settings (collapsible: Intensitet + Drøyhet) — plassert over pakkene */}
         <div className="backdrop-blur-sm rounded-3xl shadow-sm transition-colors duration-500 overflow-hidden" style={{ backgroundColor: athina ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.6)' }}>
           <button
             onClick={() => setSettingsOpen((v) => !v)}
@@ -157,7 +144,7 @@ export default function PackSelectionPage() {
           </button>
 
           {settingsOpen && (
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-5 pb-5 space-y-4 border-t border-black/5">
               {/* Intensitet */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: athina ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.5)' }}>
@@ -234,6 +221,19 @@ export default function PackSelectionPage() {
             </div>
           )}
         </div>
+
+        {/* Pack grid */}
+        {packsLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-[3px] border-forest/20 border-t-forest rounded-full animate-spin" />
+          </div>
+        ) : (
+          <PackGrid
+            packs={packs}
+            selectedIds={selectedIds}
+            onToggle={togglePack}
+          />
+        )}
 
         {/* Spacer for sticky button */}
         <div className="h-4" />
