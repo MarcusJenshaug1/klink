@@ -63,7 +63,8 @@
       "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 http://klinkn.no/llms.txt)",
       "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 https://www.klinkn.no/manifest.json)",
       "Bash(curl -s -L -A \"Mozilla/5.0\" --max-time 15 https://www.klinkn.no/)",
-      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -A Mozilla/5.0 --max-time 10 https://www.klinkn.no__TRACKED_VAR__)"
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -A Mozilla/5.0 --max-time 10 https://www.klinkn.no__TRACKED_VAR__)",
+      "Bash(npm i:*)"
     ]
   }
 }

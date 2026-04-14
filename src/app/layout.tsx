@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Nunito, Playfair_Display } from 'next/font/google'
 import { GameProvider } from '@/context/game-context'
 import { AthinaProvider } from '@/context/athina-context'
-import { Analytics } from '@/components/analytics'
-import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
+import { TrackingGate } from '@/components/tracking-gate'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
@@ -154,8 +153,7 @@ export default function RootLayout({
             {children}
           </GameProvider>
         </AthinaProvider>
-        <Analytics />
-        <VercelAnalytics />
+        <TrackingGate />
         <SpeedInsights />
       </body>
     </html>

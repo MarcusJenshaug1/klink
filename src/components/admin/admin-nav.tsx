@@ -19,7 +19,10 @@ export function AdminNav() {
     { href: '/admin/pakker', label: 'Spillpakker', exact: false },
     { href: '/admin/korttyper', label: 'Korttyper', exact: false },
     ...(rolle === 'super_admin'
-      ? [{ href: '/admin/brukere', label: 'Brukere', exact: false }]
+      ? [
+          { href: '/admin/brukere', label: 'Brukere', exact: false },
+          { href: '/admin/tracking', label: 'Tracking', exact: false },
+        ]
       : []),
   ]
 
