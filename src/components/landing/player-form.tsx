@@ -42,6 +42,12 @@ export function PlayerForm({ players, onUpdate }: PlayerFormProps) {
               <input
                 value={name}
                 onChange={(e) => updateName(i, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    if (name.trim()) addPlayer()
+                  }
+                }}
                 placeholder={`Spiller ${i + 1}`}
                 autoFocus={i === players.length - 1 && name === ''}
                 className="flex-1 bg-transparent text-forest placeholder:text-forest/30 font-semibold text-base focus:outline-none min-w-0"
