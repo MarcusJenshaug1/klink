@@ -32,7 +32,11 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
   const { isActive: athina } = useAthina()
   const meta = getCardTypeMeta(card.type, korttyper)
   const sips = useMemo(() => {
-    if (card.standard_slurker != null) return card.standard_slurker
+    const override =
+      intensitet === 'lett' ? card.slurker_lett
+      : intensitet === 'medium' ? card.slurker_medium
+      : card.slurker_borst
+    if (override != null) return override
     return getSips(intensitet)
   }, [card.id, intensitet]) // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -35,7 +35,9 @@ export interface Card {
   aktiv?: boolean
   droyhet?: Droyhet
   min_spillere?: number
-  standard_slurker?: number | null
+  slurker_lett?: number | null
+  slurker_medium?: number | null
+  slurker_borst?: number | null
   notater?: string | null
   kjonn?: Kjonn
   vekt?: Vekt
