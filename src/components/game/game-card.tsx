@@ -9,6 +9,17 @@ import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
+const CONFETTI_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#A8E63D', '#FF69B4', '#FFFFFF', '#FFA500', '#7B61FF']
+const CONFETTI_ITEMS = Array.from({ length: 32 }, (_, i) => ({
+  id: i,
+  left: (i * 3.2 + 1.6) % 100,
+  delay: (i * 0.055) % 1.1,
+  duration: 1.1 + (i * 0.045) % 0.9,
+  size: 5 + (i % 6),
+  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+  isCircle: i % 4 === 0,
+}))
+
 const GLITTERS = [
   { top: '8%',  left: '12%',  delay: 0 },
   { top: '12%', right: '10%', delay: 0.4 },
@@ -121,6 +132,27 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
 
+      {/* Konfetti — synlig timer ferdig */}
+      {timerPhase === 'result' && timerSynlig && (
+        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+          {CONFETTI_ITEMS.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                position: 'absolute',
+                left: `${p.left}%`,
+                top: '-12px',
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                backgroundColor: p.color,
+                borderRadius: p.isCircle ? '50%' : '2px',
+                animation: `confetti-fall ${p.duration}s ${p.delay}s ease-in forwards`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Glitter sparkles */}
       {athina && (
         <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
@@ -212,16 +244,23 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
                   </div>
                 )}
 
-                {timerPhase === 'result' && (
+                {timerPhase === 'result' && timerSynlig && (
                   <div className="w-full rounded-2xl bg-black/25 px-5 py-4 flex flex-col items-center gap-2 text-center">
-                    {!timerSynlig && (
-                      <p className="text-white/70 text-sm font-semibold">
-                        Du bommet med <span className="text-white font-black">{diffSec} sek</span>
-                      </p>
-                    )}
-                    {timerSynlig && (
-                      <p className="text-white/70 text-sm font-semibold">Tiden er ute!</p>
-                    )}
+                    <p className="text-white text-2xl font-black">Tid er ute! 🎉</p>
+                    <button
+                      onClick={onNext}
+                      className="mt-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-bold text-sm px-6 py-2 rounded-xl transition-all"
+                    >
+                      Neste kort →
+                    </button>
+                  </div>
+                )}
+
+                {timerPhase === 'result' && !timerSynlig && (
+                  <div className="w-full rounded-2xl bg-black/25 px-5 py-4 flex flex-col items-center gap-2 text-center">
+                    <p className="text-white/70 text-sm font-semibold">
+                      Du bommet med <span className="text-white font-black">{diffSec} sek</span>
+                    </p>
                     <p className="text-white text-2xl font-black flex items-center gap-2">
                       {isChugging(resultSips) ? '' : 'Drikk '}{formatSips(resultSips)}
                       <Droplets className="w-6 h-6" />
@@ -240,7 +279,7 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
           </div>
 
         {/* Sip pill — centered below card */}
-        {timerPhase !== 'result' && (
+        {(timerPhase !== 'result' || timerSynlig) && (
           <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-sm text-white/70 text-sm font-bold">
             <Droplets className="w-4 h-4" />
             {formatSips(sips)}
