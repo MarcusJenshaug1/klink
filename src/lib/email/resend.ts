@@ -59,7 +59,7 @@ export async function sendAdminInvite({
                 Nå kan du lage ditt eget drikkespill, bygg spillpakker, lag morsomme kort og del opplevelsen med vennene dine. Alt administreres enkelt i Klink Admin.
               </p>
               <p style="margin:0 0 32px;font-size:15px;color:#1A3A1A99;line-height:1.65;">
-                Du er invitert som <strong style="color:#1A3A1A;">${rolleLabel}</strong>. Klikk på knappen under for å sette opp din konto — skål! 🍺
+                Du er invitert som <strong style="color:#1A3A1A;">${rolleLabel}</strong>. Klikk på knappen under for å sette opp din konto, skål! 🍺
               </p>
 
               <!-- CTA -->
