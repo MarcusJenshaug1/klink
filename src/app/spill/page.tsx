@@ -127,12 +127,20 @@ export default function GamePage() {
 
   if (!currentCard || !currentPack) return null
 
+  const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
+
   return (
     <div
       className="fixed inset-0 no-overscroll select-none"
       style={{ backgroundColor: athina ? 'transparent' : currentPack.farge }}
       {...swipeHandlers}
     >
+      {scareActive && (
+        <div
+          className="pointer-events-none fixed inset-0 z-[50] animate-blood-pulse"
+          aria-hidden
+        />
+      )}
       {/* Card */}
       <div
         className={slideClass}
