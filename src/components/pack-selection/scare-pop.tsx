@@ -24,7 +24,8 @@ export function ScarePop({ trigger }: ScarePopProps) {
     wasTriggered.current = true
     setVisible(true)
 
-    playGhostMoan()
+    // Fire-and-forget
+    playGhostMoan().catch(() => {})
 
     const t = setTimeout(() => setVisible(false), 1700)
     return () => clearTimeout(t)
@@ -64,73 +65,114 @@ export function ScarePop({ trigger }: ScarePopProps) {
   )
 }
 
-/** Web Audio: ghostly moan (wobble descending tone + tremolo) */
-function playGhostMoan() {
+/**
+ * Web Audio: "WhoooOOOoooo" — classic ghost moan.
+ * Triangle + sine chorus m/ vibrato + "aaa"-formant filter + echo-tail.
+ */
+async function playGhostMoan() {
   try {
     const Ctx = (window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)
     if (!Ctx) return
     const ctx = new Ctx()
+    if (ctx.state === 'suspended') {
+      try { await ctx.resume() } catch {}
+    }
     const now = ctx.currentTime
+    const DUR = 1.8
 
-    // Master gain for envelope
+    // --- Echo/delay bus (spooky tail) ---
+    const delay = ctx.createDelay(1.0)
+    delay.delayTime.value = 0.32
+    const feedback = ctx.createGain()
+    feedback.gain.value = 0.45
+    const wet = ctx.createGain()
+    wet.gain.value = 0.5
+    delay.connect(feedback)
+    feedback.connect(delay)
+    delay.connect(wet)
+    wet.connect(ctx.destination)
+
+    // --- Master with slow swell ---
     const master = ctx.createGain()
     master.gain.setValueAtTime(0, now)
-    master.gain.linearRampToValueAtTime(0.35, now + 0.1)
-    master.gain.linearRampToValueAtTime(0.25, now + 1.3)
-    master.gain.linearRampToValueAtTime(0, now + 1.6)
+    master.gain.linearRampToValueAtTime(0.35, now + 0.35)
+    master.gain.setValueAtTime(0.35, now + 1.1)
+    master.gain.linearRampToValueAtTime(0, now + DUR)
     master.connect(ctx.destination)
+    master.connect(delay)
 
-    // Base oscillator — sawtooth with low-pass for muffled vibe
-    const osc = ctx.createOscillator()
-    osc.type = 'sawtooth'
-    osc.frequency.setValueAtTime(220, now)
-    osc.frequency.exponentialRampToValueAtTime(80, now + 1.4)
+    // --- "Ooo"-formant: lowpass m/ resonans rundt 700Hz (simulerer vokal) ---
+    const formant = ctx.createBiquadFilter()
+    formant.type = 'lowpass'
+    formant.frequency.setValueAtTime(900, now)
+    formant.frequency.linearRampToValueAtTime(600, now + DUR)
+    formant.Q.value = 8
+    formant.connect(master)
 
-    const filter = ctx.createBiquadFilter()
-    filter.type = 'lowpass'
-    filter.frequency.setValueAtTime(800, now)
-    filter.frequency.exponentialRampToValueAtTime(300, now + 1.5)
-    filter.Q.value = 6
+    // --- Pitch-kontur: klassisk "wOOOOOoo" — opp, topp, ned ---
+    const baseFreq = (t: number, base: number) => {
+      // Bueformet: start lav, topp midt, ender lav
+      const rise = Math.sin((Math.PI * t) / DUR)
+      return base + rise * base * 0.35
+    }
 
-    osc.connect(filter)
-    filter.connect(master)
+    // --- LFO for vibrato (subtile pitch-wobble) ---
+    const vibrato = ctx.createOscillator()
+    vibrato.type = 'sine'
+    vibrato.frequency.value = 5.5
+    const vibratoGain = ctx.createGain()
+    vibratoGain.gain.value = 4 // ±4Hz
+    vibrato.connect(vibratoGain)
 
-    // Tremolo / wobble via LFO modulating gain
-    const lfo = ctx.createOscillator()
-    lfo.type = 'sine'
-    lfo.frequency.value = 7
-    const lfoGain = ctx.createGain()
-    lfoGain.gain.value = 0.15
-    lfo.connect(lfoGain)
-    lfoGain.connect(master.gain)
+    // --- 3 detuned oscillators = chorus/ghost layering ---
+    const voices: { freq: number; type: OscillatorType; detune: number }[] = [
+      { freq: 140, type: 'triangle', detune: 0 },
+      { freq: 140, type: 'sine', detune: -12 },
+      { freq: 140, type: 'sine', detune: +10 },
+    ]
 
-    osc.start(now)
-    lfo.start(now)
-    osc.stop(now + 1.7)
-    lfo.stop(now + 1.7)
+    for (const v of voices) {
+      const osc = ctx.createOscillator()
+      osc.type = v.type
+      osc.detune.value = v.detune
+      // Sample pitch-kontur for et par punkter
+      const steps = 20
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * DUR
+        osc.frequency.setValueAtTime(baseFreq(t, v.freq), now + t)
+      }
+      vibratoGain.connect(osc.frequency)
+      osc.connect(formant)
+      osc.start(now)
+      osc.stop(now + DUR + 0.05)
+    }
+    vibrato.start(now)
+    vibrato.stop(now + DUR + 0.05)
 
-    // Noise whisper layer
-    const bufferSize = ctx.sampleRate * 1.6
+    // --- Bandpass-hviskende noise layer (lav i miksen) ---
+    const bufferSize = ctx.sampleRate * DUR
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
     const data = buffer.getChannelData(0)
-    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.3
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1)
     const noise = ctx.createBufferSource()
     noise.buffer = buffer
     const noiseFilter = ctx.createBiquadFilter()
     noiseFilter.type = 'bandpass'
-    noiseFilter.frequency.value = 600
-    noiseFilter.Q.value = 0.8
+    noiseFilter.frequency.value = 700
+    noiseFilter.Q.value = 1.2
     const noiseGain = ctx.createGain()
     noiseGain.gain.setValueAtTime(0, now)
-    noiseGain.gain.linearRampToValueAtTime(0.18, now + 0.15)
-    noiseGain.gain.linearRampToValueAtTime(0, now + 1.5)
+    noiseGain.gain.linearRampToValueAtTime(0.06, now + 0.4)
+    noiseGain.gain.linearRampToValueAtTime(0, now + DUR)
     noise.connect(noiseFilter)
     noiseFilter.connect(noiseGain)
-    noiseGain.connect(ctx.destination)
+    noiseGain.connect(master)
+    noiseGain.connect(delay)
     noise.start(now)
+    noise.stop(now + DUR)
 
-    setTimeout(() => ctx.close().catch(() => {}), 2000)
-  } catch {
-    // Silent fallback — no sound, animation still plays
+    setTimeout(() => ctx.close().catch(() => {}), (DUR + 1.5) * 1000)
+  } catch (err) {
+    console.warn('[scare-pop] Audio failed:', err)
   }
 }
