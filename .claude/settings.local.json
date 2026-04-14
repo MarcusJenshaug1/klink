@@ -69,7 +69,8 @@
       "Bash(curl -s --max-time 10 https://ipv6.icanhazip.com)",
       "Bash(ls:*)",
       "Bash(node -e ':*)",
-      "Bash(node scripts/gen-backfill.js)"
+      "Bash(node scripts/gen-backfill.js)",
+      "Bash(node scripts/fetch-snusboksen.js)"
     ]
   }
 }
