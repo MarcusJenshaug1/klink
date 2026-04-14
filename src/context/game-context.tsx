@@ -43,6 +43,7 @@ const initialState: GameState = {
   phase: 'landing',
   intensitet: 'medium',
   droyhet: 'normal',
+  castCode: generateCastCode(),
   korttyper: [],
   customCards: [],
 }

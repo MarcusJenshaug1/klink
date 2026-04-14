@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Play, Beer, QrCode, UserPlus } from 'lucide-react'
+import { Play, Beer, QrCode, UserPlus, Tv } from 'lucide-react'
 import type { Card } from '@/types/game'
+import { CastModal } from '@/components/game/cast-modal'
 import { Logo } from '@/components/landing/logo'
 import { PlayerForm } from '@/components/landing/player-form'
 import { QrJoinMode } from '@/components/landing/qr-join-mode'
@@ -20,6 +21,7 @@ export default function LandingPage() {
   const { state, dispatch } = useGame()
   const { isActive } = useAthina()
   const [mode, setMode] = useState<PlayerMode>('manual')
+  const [castOpen, setCastOpen] = useState(false)
 
   const validPlayers = state.players.filter((n) => n.trim() !== '')
   const canStart = validPlayers.length >= 2
@@ -119,12 +121,22 @@ export default function LandingPage() {
           className="sticky bottom-0 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700"
           style={{ backgroundColor: isActive ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}
         >
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto flex gap-2">
+            <button
+              onClick={() => setCastOpen(true)}
+              aria-label="Cast til TV"
+              className={cn(
+                'shrink-0 w-14 min-h-[56px] rounded-2xl flex items-center justify-center transition-all active:scale-95',
+                isActive ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-forest/15 text-forest hover:bg-forest/25'
+              )}
+            >
+              <Tv className="w-5 h-5" />
+            </button>
             <button
               onClick={handleStart}
               disabled={!canStart}
               className={cn(
-                'w-full min-h-[56px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
+                'flex-1 min-h-[56px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
                 canStart
                   ? isActive ? 'bg-white/30 text-white shadow-lg hover:bg-white/40 backdrop-blur-sm' : 'bg-forest text-lime shadow-lg hover:bg-forest-light'
                   : isActive ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-forest/20 text-forest/40 cursor-not-allowed'
@@ -136,6 +148,8 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      <CastModal open={castOpen} onClose={() => setCastOpen(false)} castCode={state.castCode} />
     </div>
   )
 }

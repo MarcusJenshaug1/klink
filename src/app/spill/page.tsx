@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import QRCode from 'react-qr-code'
 import { GameCard } from '@/components/game/game-card'
+import { CastModal } from '@/components/game/cast-modal'
 import { GameHud } from '@/components/game/game-hud'
 import { InfoModal } from '@/components/game/info-modal'
 import { PlayerModal } from '@/components/game/player-modal'
@@ -29,7 +29,6 @@ export default function GamePage() {
   const [exitOpen, setExitOpen] = useState(false)
   const [flagOpen, setFlagOpen] = useState(false)
   const [castOpen, setCastOpen] = useState(false)
-  const [tvUrl, setTvUrl] = useState('')
   const [animating, setAnimating] = useState(false)
   const [slideDir, setSlideDir] = useState<SlideDir>(null)
 
@@ -41,11 +40,6 @@ export default function GamePage() {
       router.push('/')
     }
   }, [state.phase, router])
-
-  // Build TV URL client-side to avoid SSR mismatch
-  useEffect(() => {
-    if (state.castCode) setTvUrl(`${window.location.origin}/tv/${state.castCode}`)
-  }, [state.castCode])
 
   // Broadcast current card to TV whenever it changes
   useEffect(() => {
@@ -265,40 +259,7 @@ export default function GamePage() {
         onClose={() => setFlagOpen(false)}
       />
 
-      {/* Cast to TV modal */}
-      {castOpen && (
-        <div
-          className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6"
-          onClick={() => setCastOpen(false)}
-        >
-          <div
-            className="bg-white rounded-3xl p-6 w-full max-w-xs space-y-4 text-center shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="font-black text-forest text-lg">Cast til TV</p>
-            <p className="text-forest/50 text-sm font-medium">Åpne denne adressen i nettleseren på TV-en</p>
-            <div className="inline-block bg-white rounded-2xl p-3 shadow-sm">
-              {tvUrl && <QRCode value={tvUrl} size={180} />}
-            </div>
-            <p className="text-forest/40 text-xs font-semibold break-all">{tvUrl}</p>
-
-            {/* Apple TV hint */}
-            <div className="border-t border-forest/10 pt-3 text-left space-y-1">
-              <p className="text-forest/50 text-xs font-bold uppercase tracking-widest">Har du Apple TV?</p>
-              <p className="text-forest/45 text-xs leading-relaxed">
-                Åpne lenken i Safari på iPhone → trykk Del → velg Apple TV fra AirPlay-listen. TV-siden vises da på storskjermen mens du spiller på telefonen.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setCastOpen(false)}
-              className="w-full min-h-[44px] rounded-2xl bg-forest text-lime font-black text-base transition-all active:scale-95"
-            >
-              Lukk
-            </button>
-          </div>
-        </div>
-      )}
+      <CastModal open={castOpen} onClose={() => setCastOpen(false)} castCode={state.castCode} />
     </div>
   )
 }

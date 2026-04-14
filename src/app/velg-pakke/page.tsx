@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, ChevronDown, ChevronUp, Settings, Play } from 'lucide-react'
+import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, ChevronDown, ChevronUp, Settings, Play, Tv } from 'lucide-react'
+import { CastModal } from '@/components/game/cast-modal'
 import { PackGrid } from '@/components/pack-selection/pack-grid'
 import { ScarePop } from '@/components/pack-selection/scare-pop'
 import { track } from '@/lib/analytics/events'
@@ -47,6 +48,7 @@ export default function PackSelectionPage() {
   const { packs, loading: packsLoading } = usePacks()
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
   const { counts: cardCounts } = useCardCounts(state.droyhet)
+  const [castOpen, setCastOpen] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     () => (state.customCards?.length ?? 0) > 0 ? new Set(['__custom__']) : new Set()
   )
@@ -322,11 +324,22 @@ export default function PackSelectionPage() {
               {startError}
             </p>
           )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCastOpen(true)}
+              aria-label="Cast til TV"
+              className={cn(
+                'shrink-0 w-14 min-h-[56px] rounded-2xl flex items-center justify-center transition-all active:scale-95',
+                athina ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-forest/15 text-forest hover:bg-forest/25'
+              )}
+            >
+              <Tv className="w-5 h-5" />
+            </button>
           <button
             onClick={handleStart}
             disabled={!canStart}
             className={cn(
-              'w-full min-h-[56px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
+              'flex-1 min-h-[56px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
               canStart
                 ? athina ? 'bg-white/30 text-white shadow-lg hover:bg-white/40 backdrop-blur-sm' : 'bg-forest text-lime shadow-lg hover:bg-forest-light'
                 : athina ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-forest/20 text-forest/40 cursor-not-allowed'
@@ -343,8 +356,11 @@ export default function PackSelectionPage() {
               </>
             )}
           </button>
+          </div>
         </div>
       </div>
+
+      <CastModal open={castOpen} onClose={() => setCastOpen(false)} castCode={state.castCode} />
     </div>
   )
 }
