@@ -12,6 +12,7 @@ interface AdminBruker {
   user_id: string
   rolle: AdminRolle
   epost: string
+  navn: string | null
   passord_satt: boolean
 }
 
@@ -96,14 +97,14 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
     })
   }
 
-  function handleResend(userId: string, epost: string, rolle: AdminRolle) {
+  function handleResend(userId: string, epost: string, rolle: AdminRolle, navn: string | null) {
     setActionMsg(null)
     startAction(async () => {
-      const res = await sendInvitasjonPaNytt(userId, epost, rolle, epost)
+      const res = await sendInvitasjonPaNytt(userId, epost, rolle, navn ?? '')
       if (res.error) {
         setActionMsg({ type: 'err', text: res.error })
       } else {
-        setActionMsg({ type: 'ok', text: `Invitasjon sendt til ${epost}` })
+        setActionMsg({ type: 'ok', text: `Invitasjon sendt til ${navn || epost}` })
       }
     })
   }
@@ -220,8 +221,9 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-forest text-sm truncate">{bruker.epost}</p>
-                      <p className="text-xs text-forest/40 font-medium">
+                      <p className="font-semibold text-forest text-sm truncate">{bruker.navn || bruker.epost}</p>
+                      <p className="text-xs text-forest/40 font-medium truncate">
+                        {bruker.navn ? `${bruker.epost} · ` : ''}
                         {isSuperAdmin ? 'Super Admin' : 'Admin'}
                         {isSelf && ' (deg)'}
                       </p>
@@ -242,7 +244,7 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
                       {/* Resend invite — only shown if user hasn't set password yet */}
                       {!isSelf && !bruker.passord_satt && (
                         <button
-                          onClick={() => handleResend(bruker.user_id, bruker.epost, bruker.rolle)}
+                          onClick={() => handleResend(bruker.user_id, bruker.epost, bruker.rolle, bruker.navn)}
                           disabled={pending}
                           title="Send invitasjon på nytt"
                           className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-1.5 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"

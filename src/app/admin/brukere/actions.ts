@@ -43,6 +43,7 @@ export async function inviterAdmin(epost: string, rolle: AdminRolle = 'admin', n
     user_id: linkData.user.id,
     rolle,
     epost,
+    navn: navn || null,
   })
 
   if (insertError) return { error: insertError.message }
