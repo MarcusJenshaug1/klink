@@ -4,6 +4,7 @@ import { GameProvider } from '@/context/game-context'
 import { AthinaProvider } from '@/context/athina-context'
 import { TrackingGate } from '@/components/tracking-gate'
 import { ConsentBanner } from '@/components/consent-banner'
+import { PwaUpdateBanner } from '@/components/pwa-update-banner'
 import { AdminQuickAccess } from '@/components/admin-quick-access'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
@@ -158,6 +159,7 @@ export default function RootLayout({
         <TrackingGate />
         <AdminQuickAccess />
         <ConsentBanner />
+        <PwaUpdateBanner />
         <SpeedInsights />
       </body>
     </html>
