@@ -20,6 +20,7 @@ export function AdminNav() {
     { href: '/admin/korttyper', label: 'Korttyper', exact: false },
     ...(rolle === 'super_admin'
       ? [
+          { href: '/admin/rapporter', label: 'Rapporter', exact: false },
           { href: '/admin/brukere', label: 'Brukere', exact: false },
           { href: '/admin/tracking', label: 'Tracking', exact: false },
         ]
