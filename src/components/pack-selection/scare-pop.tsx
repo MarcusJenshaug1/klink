@@ -101,12 +101,12 @@ async function playGhostMoan() {
     master.connect(ctx.destination)
     master.connect(delay)
 
-    // --- "Ooo"-formant: lowpass m/ resonans rundt 700Hz (simulerer vokal) ---
+    // --- "Ooo"-formant: bandpass m/ resonans rundt 1.1kHz (lettere, mer ethereal) ---
     const formant = ctx.createBiquadFilter()
-    formant.type = 'lowpass'
-    formant.frequency.setValueAtTime(900, now)
-    formant.frequency.linearRampToValueAtTime(600, now + DUR)
-    formant.Q.value = 8
+    formant.type = 'bandpass'
+    formant.frequency.setValueAtTime(1200, now)
+    formant.frequency.linearRampToValueAtTime(900, now + DUR)
+    formant.Q.value = 4
     formant.connect(master)
 
     // --- Pitch-kontur: klassisk "wOOOOOoo" — opp, topp, ned ---
@@ -116,19 +116,19 @@ async function playGhostMoan() {
       return base + rise * base * 0.35
     }
 
-    // --- LFO for vibrato (subtile pitch-wobble) ---
+    // --- LFO for vibrato (luftig pitch-wobble) ---
     const vibrato = ctx.createOscillator()
     vibrato.type = 'sine'
-    vibrato.frequency.value = 5.5
+    vibrato.frequency.value = 6
     const vibratoGain = ctx.createGain()
-    vibratoGain.gain.value = 4 // ±4Hz
+    vibratoGain.gain.value = 10 // ±10Hz — litt bredere svai
     vibrato.connect(vibratoGain)
 
-    // --- 3 detuned oscillators = chorus/ghost layering ---
+    // --- Sine-voices høyt i spekteret for klassisk "wooo"-ghost ---
     const voices: { freq: number; type: OscillatorType; detune: number }[] = [
-      { freq: 185, type: 'triangle', detune: 0 },
-      { freq: 185, type: 'sine', detune: -14 },
-      { freq: 185, type: 'sine', detune: +12 },
+      { freq: 330, type: 'sine', detune: 0 },
+      { freq: 330, type: 'sine', detune: -15 },
+      { freq: 330, type: 'sine', detune: +18 },
     ]
 
     for (const v of voices) {
