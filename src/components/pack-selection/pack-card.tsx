@@ -9,9 +9,10 @@ interface PackCardProps {
   pack: Pack
   selected: boolean
   onToggle: () => void
+  cardCount?: number
 }
 
-export function PackCard({ pack, selected, onToggle }: PackCardProps) {
+export function PackCard({ pack, selected, onToggle, cardCount }: PackCardProps) {
   const { isActive: athina } = useAthina()
   return (
     <button
@@ -44,12 +45,21 @@ export function PackCard({ pack, selected, onToggle }: PackCardProps) {
         </div>
       </div>
 
-      {/* Description */}
-      {pack.beskrivelse && (
-        <p className="text-white/75 text-xs sm:text-sm leading-snug line-clamp-2 mt-2">
-          {pack.beskrivelse}
-        </p>
-      )}
+      {/* Bottom: description + card count */}
+      <div className="flex items-end justify-between gap-2 mt-2">
+        {pack.beskrivelse ? (
+          <p className="text-white/75 text-xs sm:text-sm leading-snug line-clamp-2 flex-1">
+            {pack.beskrivelse}
+          </p>
+        ) : (
+          <span />
+        )}
+        {cardCount !== undefined && (
+          <span className="shrink-0 text-white/60 text-xs font-bold tabular-nums">
+            {cardCount} kort
+          </span>
+        )}
+      </div>
     </button>
   )
 }

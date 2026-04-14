@@ -10,6 +10,7 @@ import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
 import { useCards } from '@/hooks/use-cards'
+import { useCardCounts } from '@/hooks/use-card-counts'
 import { useMemo } from 'react'
 import { INTENSITET_META } from '@/lib/game/sips'
 import { DROYHET_META, DROYHET_ORDER, getDroyhetCopies } from '@/lib/game/droyhet'
@@ -34,6 +35,7 @@ export default function PackSelectionPage() {
   const { isActive: athina } = useAthina()
   const { packs, loading: packsLoading } = usePacks()
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
+  const { counts: cardCounts } = useCardCounts(state.droyhet)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [startError, setStartError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -268,6 +270,7 @@ export default function PackSelectionPage() {
             packs={visiblePacks}
             selectedIds={selectedIds}
             onToggle={togglePack}
+            cardCounts={cardCounts}
           />
         )}
 

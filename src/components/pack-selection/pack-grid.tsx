@@ -8,9 +8,10 @@ interface PackGridProps {
   packs: Pack[]
   selectedIds: Set<string>
   onToggle: (packId: string) => void
+  cardCounts?: Record<string, number>
 }
 
-export function PackGrid({ packs, selectedIds, onToggle }: PackGridProps) {
+export function PackGrid({ packs, selectedIds, onToggle, cardCounts }: PackGridProps) {
   if (packs.length === 0) {
     return (
       <div className="text-center py-10 bg-white/50 rounded-3xl px-6">
@@ -31,6 +32,7 @@ export function PackGrid({ packs, selectedIds, onToggle }: PackGridProps) {
           pack={pack}
           selected={selectedIds.has(pack.id)}
           onToggle={() => onToggle(pack.id)}
+          cardCount={cardCounts?.[pack.id]}
         />
       ))}
     </div>

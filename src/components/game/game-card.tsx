@@ -1,24 +1,14 @@
 'use client'
 
 import { useMemo, useState, useRef, useEffect } from 'react'
-import { Droplets, Trophy, Timer } from 'lucide-react'
+import { Droplets, Trophy, Timer, Sparkles } from 'lucide-react'
+import JSConfetti from 'js-confetti'
 import { getCardTypeMeta } from '@/lib/game/card-types'
 import { interpolate } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips, isChugging } from '@/lib/game/sips'
 import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
-
-const CONFETTI_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#A8E63D', '#FF69B4', '#FFFFFF', '#FFA500', '#7B61FF']
-const CONFETTI_ITEMS = Array.from({ length: 32 }, (_, i) => ({
-  id: i,
-  left: (i * 3.2 + 1.6) % 100,
-  delay: (i * 0.055) % 1.1,
-  duration: 1.1 + (i * 0.045) % 0.9,
-  size: 5 + (i % 6),
-  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  isCircle: i % 4 === 0,
-}))
 
 const GLITTERS = [
   { top: '8%',  left: '12%',  delay: 0 },
@@ -68,10 +58,16 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
 
   const startRef = useRef<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const jsConfettiRef = useRef<JSConfetti | null>(null)
   const [timerPhase, setTimerPhase] = useState<TimerPhase>('idle')
   const [diffSec, setDiffSec] = useState(0)
   const [resultSips, setResultSips] = useState(0)
   const [countdown, setCountdown] = useState(card.timer_sekunder ?? 0)
+
+  useEffect(() => {
+    jsConfettiRef.current = new JSConfetti()
+    return () => { jsConfettiRef.current = null }
+  }, [])
 
   useEffect(() => {
     setTimerPhase('idle')
@@ -99,11 +95,10 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
         if (remaining <= 0) {
           clearInterval(intervalRef.current!)
           intervalRef.current = null
-          // Synlig timer: fullt sip-antall (kortets verdi eller intensitets-standard)
           setResultSips(sips)
           setTimerPhase('result')
-          // Lyd-ding KUN på synlig timer (skjult timer skal spilleren gjette på)
           playTimerDing()
+          jsConfettiRef.current?.addConfetti({ confettiNumber: 200 })
         }
       }, 100)
     }
@@ -131,27 +126,6 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
       className="absolute inset-0 flex flex-col items-center justify-center px-5 landscape:px-20 pt-16 pb-24 transition-colors duration-700"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
-
-      {/* Konfetti — synlig timer ferdig */}
-      {timerPhase === 'result' && timerSynlig && (
-        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-          {CONFETTI_ITEMS.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                position: 'absolute',
-                left: `${p.left}%`,
-                top: '-12px',
-                width: `${p.size}px`,
-                height: `${p.size}px`,
-                backgroundColor: p.color,
-                borderRadius: p.isCircle ? '50%' : '2px',
-                animation: `confetti-fall ${p.duration}s ${p.delay}s ease-in forwards`,
-              }}
-            />
-          ))}
-        </div>
-      )}
 
       {/* Glitter sparkles */}
       {athina && (
@@ -246,7 +220,9 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
 
                 {timerPhase === 'result' && timerSynlig && (
                   <div className="w-full rounded-2xl bg-black/25 px-5 py-4 flex flex-col items-center gap-2 text-center">
-                    <p className="text-white text-2xl font-black">Tid er ute! 🎉</p>
+                    <p className="text-white text-2xl font-black flex items-center gap-2">
+                      Tid er ute! <Sparkles className="w-6 h-6 text-yellow-300" />
+                    </p>
                     <button
                       onClick={onNext}
                       className="mt-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-bold text-sm px-6 py-2 rounded-xl transition-all"
