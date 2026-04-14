@@ -307,9 +307,9 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       <button
         type="button"
         onClick={() => setAdvancedOpen((v) => !v)}
-        className="flex items-center gap-1.5 text-xs font-bold text-forest/60 hover:text-forest"
+        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-dashed border-forest/25 text-sm font-bold text-forest/70 hover:border-forest/50 hover:text-forest hover:bg-forest/5 transition-colors"
       >
-        {advancedOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        {advancedOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         {advancedOpen ? 'Skjul avanserte innstillinger' : 'Vis avanserte innstillinger'}
       </button>
 
