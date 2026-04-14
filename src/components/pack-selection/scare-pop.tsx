@@ -27,7 +27,7 @@ export function ScarePop({ trigger }: ScarePopProps) {
     // Fire-and-forget
     playGhostMoan().catch(() => {})
 
-    const t = setTimeout(() => setVisible(false), 1700)
+    const t = setTimeout(() => setVisible(false), 1900)
     return () => clearTimeout(t)
   }, [trigger])
 
@@ -126,9 +126,9 @@ async function playGhostMoan() {
 
     // --- 3 detuned oscillators = chorus/ghost layering ---
     const voices: { freq: number; type: OscillatorType; detune: number }[] = [
-      { freq: 140, type: 'triangle', detune: 0 },
-      { freq: 140, type: 'sine', detune: -12 },
-      { freq: 140, type: 'sine', detune: +10 },
+      { freq: 185, type: 'triangle', detune: 0 },
+      { freq: 185, type: 'sine', detune: -14 },
+      { freq: 185, type: 'sine', detune: +12 },
     ]
 
     for (const v of voices) {
