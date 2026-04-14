@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, X, LogOut, KeyRound } from 'lucide-react'
+import { Menu, X, LogOut, KeyRound, Play } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAdminRole } from '@/hooks/use-admin-role'
 import { cn } from '@/lib/utils'
@@ -72,6 +72,13 @@ export function AdminNav() {
             </span>
           )}
           <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-lime hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-colors"
+          >
+            <Play className="w-3.5 h-3.5" />
+            Åpne spill
+          </Link>
+          <Link
             href="/admin/bytt-passord"
             className="text-sm text-white/50 hover:text-white transition-colors"
           >
@@ -121,6 +128,14 @@ export function AdminNav() {
               </span>
             )}
             <div className="ml-auto flex items-center gap-3">
+              <Link
+                href="/"
+                onClick={() => setMenuOpen(false)}
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-lime bg-white/10 px-2.5 py-1 rounded-lg"
+              >
+                <Play className="w-3.5 h-3.5" />
+                Spill
+              </Link>
               <Link
                 href="/admin/bytt-passord"
                 onClick={() => setMenuOpen(false)}
