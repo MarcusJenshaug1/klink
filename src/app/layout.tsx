@@ -3,6 +3,7 @@ import { Nunito, Playfair_Display } from 'next/font/google'
 import { GameProvider } from '@/context/game-context'
 import { AthinaProvider } from '@/context/athina-context'
 import { Analytics } from '@/components/analytics'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
 const nunito = Nunito({
@@ -153,6 +154,7 @@ export default function RootLayout({
           </GameProvider>
         </AthinaProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
