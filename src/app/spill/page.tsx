@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import QRCode from 'react-qr-code'
 import { GameCard } from '@/components/game/game-card'
 import { GameHud } from '@/components/game/game-hud'
 import { InfoModal } from '@/components/game/info-modal'
@@ -12,6 +13,9 @@ import { FlagModal } from '@/components/game/flag-modal'
 import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { useSwipe } from '@/hooks/use-swipe'
+import { useTvBroadcast } from '@/hooks/use-tv-cast'
+import { interpolateToSegments } from '@/lib/game/interpolate'
+import { getSips, replaceSips } from '@/lib/game/sips'
 import { track } from '@/lib/analytics/events'
 
 type SlideDir = 'in-left' | 'out-left' | 'in-right' | 'out-right' | null
@@ -24,8 +28,12 @@ export default function GamePage() {
   const [playersOpen, setPlayersOpen] = useState(false)
   const [exitOpen, setExitOpen] = useState(false)
   const [flagOpen, setFlagOpen] = useState(false)
+  const [castOpen, setCastOpen] = useState(false)
+  const [tvUrl, setTvUrl] = useState('')
   const [animating, setAnimating] = useState(false)
   const [slideDir, setSlideDir] = useState<SlideDir>(null)
+
+  const { broadcast } = useTvBroadcast(state.castCode)
 
   // Redirect if no deck loaded
   useEffect(() => {
@@ -33,6 +41,49 @@ export default function GamePage() {
       router.push('/')
     }
   }, [state.phase, router])
+
+  // Build TV URL client-side to avoid SSR mismatch
+  useEffect(() => {
+    if (state.castCode) setTvUrl(`${window.location.origin}/tv/${state.castCode}`)
+  }, [state.castCode])
+
+  // Broadcast current card to TV whenever it changes
+  useEffect(() => {
+    if (!currentCard || !currentPack || !state.castCode) return
+
+    const override =
+      state.intensitet === 'lett' ? currentCard.slurker_lett
+      : state.intensitet === 'medium' ? currentCard.slurker_medium
+      : currentCard.slurker_borst
+    const sips = override != null ? override : getSips(state.intensitet)
+
+    const raw = interpolateToSegments(currentCard.innhold, state.players)
+    const segments = raw.map((s) =>
+      s.type === 'text' ? { ...s, text: replaceSips(s.text, sips) } : s
+    )
+
+    const rawU = currentCard.utfordring
+      ? interpolateToSegments(currentCard.utfordring, state.players)
+      : null
+    const utfordringSegments =
+      rawU?.map((s) => (s.type === 'text' ? { ...s, text: replaceSips(s.text, sips) } : s)) ?? null
+
+    broadcast({
+      segments,
+      utfordringSegments,
+      type: currentCard.type,
+      tittel: currentCard.tittel,
+      custom_author: currentCard.custom_author,
+      hasTimer: !!currentCard.timer_sekunder,
+      timerSekunder: currentCard.timer_sekunder,
+      packFarge: currentPack.farge,
+      packNavn: currentPack.navn,
+      players: state.players,
+      sips,
+      cardIndex: progress.current,
+      total: progress.total,
+    })
+  }, [state.currentCardIndex, state.castCode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const animateTransition = useCallback(
     (direction: 'forward' | 'back', action: () => void) => {
@@ -56,7 +107,6 @@ export default function GamePage() {
   )
 
   const nextCard = useCallback(() => {
-    // Haptic feedback on mobile (best-effort, silent no-op on desktop/unsupported)
     try { if (navigator.vibrate) navigator.vibrate(10) } catch {}
     animateTransition('forward', () => dispatch({ type: 'NEXT_CARD' }))
   }, [animateTransition, dispatch])
@@ -71,7 +121,7 @@ export default function GamePage() {
     onSwipeRight: prevCard,
   })
 
-  // Keyboard navigation (desktop): ← → for prev/next, space = next, ESC = close modals
+  // Keyboard navigation
   useEffect(() => {
     if (state.phase !== 'playing') return
     const onKey = (e: KeyboardEvent) => {
@@ -79,10 +129,11 @@ export default function GamePage() {
         if (infoOpen) { setInfoOpen(false); return }
         if (playersOpen) { setPlayersOpen(false); return }
         if (flagOpen) { setFlagOpen(false); return }
+        if (castOpen) { setCastOpen(false); return }
         if (exitOpen) { setExitOpen(false); return }
         return
       }
-      if (infoOpen || playersOpen || exitOpen || flagOpen) return
+      if (infoOpen || playersOpen || exitOpen || flagOpen || castOpen) return
       const target = e.target as HTMLElement | null
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
       if (e.key === 'ArrowRight' || e.key === ' ') {
@@ -95,7 +146,7 @@ export default function GamePage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [state.phase, infoOpen, playersOpen, exitOpen, flagOpen, nextCard, prevCard])
+  }, [state.phase, infoOpen, playersOpen, exitOpen, flagOpen, castOpen, nextCard, prevCard])
 
   // Track deck_completed once when we enter deck-empty
   useEffect(() => {
@@ -125,7 +176,6 @@ export default function GamePage() {
     router.push('/velg-pakke')
   }
 
-  // Slide animation class
   const slideClass =
     slideDir === 'out-left'  ? 'animate-slide-out' :
     slideDir === 'out-right' ? 'animate-slide-out-right' :
@@ -133,7 +183,6 @@ export default function GamePage() {
     slideDir === 'in-left'   ? 'animate-slide-in-left' :
     ''
 
-  // Deck empty screen
   if (state.phase === 'deck-empty') {
     return (
       <DeckEmpty
@@ -160,6 +209,7 @@ export default function GamePage() {
           aria-hidden
         />
       )}
+
       {/* Card */}
       <div
         className={slideClass}
@@ -183,6 +233,7 @@ export default function GamePage() {
         onPrev={prevCard}
         onPlayers={() => setPlayersOpen(true)}
         onFlag={() => setFlagOpen(true)}
+        onCast={() => setCastOpen(true)}
         progress={progress}
       />
 
@@ -213,6 +264,32 @@ export default function GamePage() {
         cardId={currentCard?.id ?? null}
         onClose={() => setFlagOpen(false)}
       />
+
+      {/* Cast to TV modal */}
+      {castOpen && (
+        <div
+          className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6"
+          onClick={() => setCastOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-xs space-y-4 text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-black text-forest text-lg">Cast til TV</p>
+            <p className="text-forest/50 text-sm font-medium">Åpne denne adressen i nettleseren på TV-en</p>
+            <div className="inline-block bg-white rounded-2xl p-3 shadow-sm">
+              {tvUrl && <QRCode value={tvUrl} size={180} />}
+            </div>
+            <p className="text-forest/40 text-xs font-semibold break-all">{tvUrl}</p>
+            <button
+              onClick={() => setCastOpen(false)}
+              className="w-full min-h-[44px] rounded-2xl bg-forest text-lime font-black text-base transition-all active:scale-95"
+            >
+              Lukk
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -205,6 +205,13 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
               </div>
             )}
 
+            {/* Custom card author */}
+            {card.custom_author && (
+              <p className="text-white/35 text-xs font-medium text-center mt-1">
+                — {card.custom_author}
+              </p>
+            )}
+
             {/* Timer */}
             {hasTimer && (
               <div className="flex flex-col items-center gap-3">

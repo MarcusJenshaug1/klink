@@ -15,7 +15,18 @@ import { useMemo } from 'react'
 import { INTENSITET_META } from '@/lib/game/sips'
 import { DROYHET_META, DROYHET_ORDER, getDroyhetCopies } from '@/lib/game/droyhet'
 import { cn } from '@/lib/utils'
-import type { Intensitet, Droyhet } from '@/types/game'
+import type { Intensitet, Droyhet, Pack } from '@/types/game'
+
+const CUSTOM_PACK: Pack = {
+  id: '__custom__',
+  navn: 'Egne kort',
+  beskrivelse: 'Kort laget av spillerne',
+  regler: null,
+  farge: '#F59E0B',
+  ikon: 'pencil',
+  aktiv: true,
+  droyhet: 'droy',
+}
 
 const INTENSITET_ICONS: Record<Intensitet, typeof Droplets> = {
   lett: Droplets,
@@ -36,16 +47,19 @@ export default function PackSelectionPage() {
   const { packs, loading: packsLoading } = usePacks()
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
   const { counts: cardCounts } = useCardCounts(state.droyhet)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => (state.customCards?.length ?? 0) > 0 ? new Set(['__custom__']) : new Set()
+  )
   const [startError, setStartError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   // Filtrer bort pakker der pakkens drøyhet er høyere enn brukerens valg.
   // Mild valgt → viser kun mild-pakker. Normal → mild+normal. Drøy → alle.
-  const visiblePacks = useMemo(
-    () => packs.filter((p) => DROYHET_ORDER[p.droyhet ?? 'normal'] <= DROYHET_ORDER[state.droyhet]),
-    [packs, state.droyhet],
-  )
+  // Legg til virtuell "Egne kort"-pakke øverst om spillere har sendt inn kort.
+  const visiblePacks = useMemo(() => {
+    const base = packs.filter((p) => DROYHET_ORDER[p.droyhet ?? 'normal'] <= DROYHET_ORDER[state.droyhet])
+    return (state.customCards?.length ?? 0) > 0 ? [CUSTOM_PACK, ...base] : base
+  }, [packs, state.droyhet, state.customCards])
 
   const togglePack = (id: string) => {
     setStartError(null)
@@ -61,10 +75,14 @@ export default function PackSelectionPage() {
     setStartError(null)
     const selected = visiblePacks.filter((p) => selectedIds.has(p.id))
     dispatch({ type: 'SELECT_PACKS', packs: selected })
-    const [cards, korttyper] = await Promise.all([
-      fetchCards(Array.from(selectedIds)),
+    // Skip Supabase fetch for the virtual __custom__ pack
+    const packIds = Array.from(selectedIds).filter((id) => id !== '__custom__')
+    const [fetchedCards, korttyper] = await Promise.all([
+      packIds.length > 0 ? fetchCards(packIds) : Promise.resolve([] as import('@/types/game').Card[]),
       fetchKorttyper(),
     ])
+    const customSelected = selectedIds.has('__custom__') ? (state.customCards ?? []) : []
+    const cards = [...fetchedCards, ...customSelected]
     dispatch({ type: 'SET_KORTTYPER', korttyper })
     // Hard-krav filter: min_spillere + nummererte spillerslots
     const filtered = cards.filter((c) => {
@@ -104,6 +122,11 @@ export default function PackSelectionPage() {
   }
 
   const canStart = selectedIds.size > 0 && !cardsLoading
+
+  const enrichedCounts = useMemo(() => ({
+    ...cardCounts,
+    ...((state.customCards?.length ?? 0) > 0 ? { '__custom__': state.customCards.length } : {}),
+  }), [cardCounts, state.customCards])
 
   const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
 
@@ -277,7 +300,7 @@ export default function PackSelectionPage() {
             packs={visiblePacks}
             selectedIds={selectedIds}
             onToggle={togglePack}
-            cardCounts={cardCounts}
+            cardCounts={enrichedCounts}
           />
         )}
 

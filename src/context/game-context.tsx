@@ -9,6 +9,11 @@ import {
 } from 'react'
 import type { Card, Pack, GamePhase, GameState, Intensitet, Droyhet, Korttype } from '@/types/game'
 import { shuffle } from '@/lib/game/shuffle'
+
+function generateCastCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+}
 import { VEKT_MULTIPLIER } from '@/lib/game/vekt'
 import { getDroyhetCopies } from '@/lib/game/droyhet'
 
@@ -25,6 +30,7 @@ type GameAction =
   | { type: 'SET_INTENSITET'; intensitet: Intensitet }
   | { type: 'SET_DROYHET'; droyhet: Droyhet }
   | { type: 'SET_KORTTYPER'; korttyper: Korttype[] }
+  | { type: 'SET_CUSTOM_CARDS'; cards: Card[] }
   | { type: 'RESET' }
   | { type: 'RESTORE_STATE'; state: GameState }
 
@@ -38,6 +44,7 @@ const initialState: GameState = {
   intensitet: 'medium',
   droyhet: 'normal',
   korttyper: [],
+  customCards: [],
 }
 
 /**
@@ -91,6 +98,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         deck,
         currentCardIndex: 0,
         phase: deck.length === 0 ? 'deck-empty' : 'playing',
+        castCode: state.castCode ?? generateCastCode(),
       }
     }
 
@@ -129,6 +137,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SET_KORTTYPER':
       return { ...state, korttyper: action.korttyper }
+
+    case 'SET_CUSTOM_CARDS':
+      return { ...state, customCards: action.cards }
 
     case 'RESET':
       return initialState

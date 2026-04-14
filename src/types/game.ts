@@ -42,6 +42,7 @@ export interface Card {
   notater?: string | null
   kjonn?: Kjonn
   vekt?: Vekt
+  custom_author?: string
 }
 
 export type Intensitet = 'lett' | 'medium' | 'borst'
@@ -58,4 +59,6 @@ export interface GameState {
   intensitet: Intensitet
   droyhet: Droyhet
   korttyper: Korttype[]
+  customCards: Card[]
+  castCode?: string
 }

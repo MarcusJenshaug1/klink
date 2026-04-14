@@ -6,13 +6,14 @@ import { Users, Wifi, WifiOff, X } from 'lucide-react'
 import { useHostRoom } from '@/hooks/use-join-room'
 import { useAthina } from '@/context/athina-context'
 import { cn } from '@/lib/utils'
+import type { Card } from '@/types/game'
 
 interface QrJoinModeProps {
-  onPlayersReady: (players: string[]) => void
+  onPlayersReady: (players: string[], customCards: Card[]) => void
 }
 
 export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
-  const { code, players, connected, removePlayer } = useHostRoom()
+  const { code, players, customCards, connected, removePlayer } = useHostRoom()
   const { isActive: athina } = useAthina()
   const [joinUrl, setJoinUrl] = useState('')
 
@@ -125,10 +126,20 @@ export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
         </p>
       )}
 
+      {/* Custom card count */}
+      {customCards.length > 0 && (
+        <p className={cn(
+          'text-xs text-center font-semibold',
+          athina ? 'text-white/50' : 'text-forest/40'
+        )}>
+          {customCards.length} eget kort sendt inn
+        </p>
+      )}
+
       {/* Start button — only shown when enough players */}
       {canStart && (
         <button
-          onClick={() => onPlayersReady(players)}
+          onClick={() => onPlayersReady(players, customCards)}
           className={cn(
             'w-full min-h-[52px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
             athina

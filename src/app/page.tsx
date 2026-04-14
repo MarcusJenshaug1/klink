@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Play, Beer, QrCode, UserPlus } from 'lucide-react'
+import type { Card } from '@/types/game'
 import { Logo } from '@/components/landing/logo'
 import { PlayerForm } from '@/components/landing/player-form'
 import { QrJoinMode } from '@/components/landing/qr-join-mode'
@@ -30,8 +31,9 @@ export default function LandingPage() {
     router.push('/velg-pakke')
   }
 
-  const handleQrReady = (players: string[]) => {
+  const handleQrReady = (players: string[], customCards: Card[]) => {
     dispatch({ type: 'SET_PLAYERS', players })
+    if (customCards.length > 0) dispatch({ type: 'SET_CUSTOM_CARDS', cards: customCards })
     dispatch({ type: 'SET_PHASE', phase: 'pack-selection' })
     router.push('/velg-pakke')
   }
