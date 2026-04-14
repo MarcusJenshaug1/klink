@@ -1,7 +1,9 @@
 'use client'
 
-import { PartyPopper, RefreshCw, Package, Home } from 'lucide-react'
+import { useState } from 'react'
+import { PartyPopper, RefreshCw, Package, Home, Share2, Check } from 'lucide-react'
 import { useAthina } from '@/context/athina-context'
+import { track } from '@/lib/analytics/events'
 
 interface DeckEmptyProps {
   onReshuffle: () => void
@@ -11,6 +13,27 @@ interface DeckEmptyProps {
 
 export function DeckEmpty({ onReshuffle, onNewPacks, onReset }: DeckEmptyProps) {
   const { isActive: athina } = useAthina()
+  const [shared, setShared] = useState(false)
+
+  async function handleShare() {
+    track('share_clicked', { source: 'deck_empty' })
+    const shareData = {
+      title: 'Klink — Drikkespill',
+      text: 'Prøv Klink — norsk drikkespill gratis i nettleseren!',
+      url: 'https://www.klinkn.no/',
+    }
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(shareData.url)
+        setShared(true)
+        setTimeout(() => setShared(false), 2000)
+      }
+    } catch {
+      // user cancelled
+    }
+  }
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center p-8 transition-colors duration-700" style={{ backgroundColor: athina ? 'transparent' : '#A8E63D' }}>
       <div className="w-full max-w-sm animate-scale-in flex flex-col items-center">
@@ -41,6 +64,14 @@ export function DeckEmpty({ onReshuffle, onNewPacks, onReset }: DeckEmptyProps) 
           >
             <Package className="w-5 h-5" />
             Velg nye pakker
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="w-full min-h-[52px] bg-forest/10 text-forest rounded-2xl font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-forest/15"
+          >
+            {shared ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+            {shared ? 'Kopiert!' : 'Del med venner'}
           </button>
 
           <button

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, ChevronDown, ChevronUp, Settings, Play } from 'lucide-react'
 import { PackGrid } from '@/components/pack-selection/pack-grid'
 import { ScarePop } from '@/components/pack-selection/scare-pop'
+import { track } from '@/lib/analytics/events'
 import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
@@ -69,6 +70,14 @@ export default function PackSelectionPage() {
       setStartError('Ingen kort passer til valgene dine. Prøv flere pakker eller legg til flere spillere.')
       return
     }
+    track('game_started', {
+      players: state.players.length,
+      packs: selected.length,
+      pack_ids: selected.map((p) => p.id).join(','),
+      intensitet: state.intensitet,
+      droyhet: state.droyhet,
+      cards_in_pool: filtered.length,
+    })
     dispatch({ type: 'START_GAME', cards: filtered })
     router.push('/spill')
   }

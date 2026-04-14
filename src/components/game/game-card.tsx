@@ -5,6 +5,7 @@ import { Droplets, Trophy, Timer } from 'lucide-react'
 import { getCardTypeMeta } from '@/lib/game/card-types'
 import { interpolate } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips, isChugging } from '@/lib/game/sips'
+import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
@@ -91,6 +92,8 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
           setDiffSec(Math.round(diff))
           setResultSips(Math.floor(diff / 5) * sips)
           setTimerPhase('result')
+          // Lyd-ding KUN på synlig timer (skjult timer skal spilleren gjette på)
+          playTimerDing()
         }
       }, 100)
     }

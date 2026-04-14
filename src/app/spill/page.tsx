@@ -8,9 +8,11 @@ import { InfoModal } from '@/components/game/info-modal'
 import { PlayerModal } from '@/components/game/player-modal'
 import { ExitModal } from '@/components/game/exit-modal'
 import { DeckEmpty } from '@/components/game/deck-empty'
+import { FlagModal } from '@/components/game/flag-modal'
 import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { useSwipe } from '@/hooks/use-swipe'
+import { track } from '@/lib/analytics/events'
 
 type SlideDir = 'in-left' | 'out-left' | 'in-right' | 'out-right' | null
 
@@ -21,6 +23,7 @@ export default function GamePage() {
   const [infoOpen, setInfoOpen] = useState(false)
   const [playersOpen, setPlayersOpen] = useState(false)
   const [exitOpen, setExitOpen] = useState(false)
+  const [flagOpen, setFlagOpen] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [slideDir, setSlideDir] = useState<SlideDir>(null)
 
@@ -53,6 +56,8 @@ export default function GamePage() {
   )
 
   const nextCard = useCallback(() => {
+    // Haptic feedback on mobile (best-effort, silent no-op on desktop/unsupported)
+    try { if (navigator.vibrate) navigator.vibrate(10) } catch {}
     animateTransition('forward', () => dispatch({ type: 'NEXT_CARD' }))
   }, [animateTransition, dispatch])
 
@@ -66,11 +71,18 @@ export default function GamePage() {
     onSwipeRight: prevCard,
   })
 
-  // Keyboard navigation (desktop): ← → for prev/next, space = next
+  // Keyboard navigation (desktop): ← → for prev/next, space = next, ESC = close modals
   useEffect(() => {
     if (state.phase !== 'playing') return
     const onKey = (e: KeyboardEvent) => {
-      if (infoOpen || playersOpen || exitOpen) return
+      if (e.key === 'Escape') {
+        if (infoOpen) { setInfoOpen(false); return }
+        if (playersOpen) { setPlayersOpen(false); return }
+        if (flagOpen) { setFlagOpen(false); return }
+        if (exitOpen) { setExitOpen(false); return }
+        return
+      }
+      if (infoOpen || playersOpen || exitOpen || flagOpen) return
       const target = e.target as HTMLElement | null
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
       if (e.key === 'ArrowRight' || e.key === ' ') {
@@ -83,7 +95,14 @@ export default function GamePage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [state.phase, infoOpen, playersOpen, exitOpen, nextCard, prevCard])
+  }, [state.phase, infoOpen, playersOpen, exitOpen, flagOpen, nextCard, prevCard])
+
+  // Track deck_completed once when we enter deck-empty
+  useEffect(() => {
+    if (state.phase === 'deck-empty') {
+      track('deck_completed', { cards: state.deck.length, players: state.players.length })
+    }
+  }, [state.phase, state.deck.length, state.players.length])
 
   const handleClose = () => setExitOpen(true)
 
@@ -163,6 +182,7 @@ export default function GamePage() {
         onNext={nextCard}
         onPrev={prevCard}
         onPlayers={() => setPlayersOpen(true)}
+        onFlag={() => setFlagOpen(true)}
         progress={progress}
       />
 
@@ -186,6 +206,12 @@ export default function GamePage() {
         onClose={() => setExitOpen(false)}
         onNewPacks={handleNewPacks}
         onReset={handleReset}
+      />
+
+      <FlagModal
+        open={flagOpen}
+        cardId={currentCard?.id ?? null}
+        onClose={() => setFlagOpen(false)}
       />
     </div>
   )

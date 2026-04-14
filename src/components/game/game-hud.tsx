@@ -1,6 +1,6 @@
 'use client'
 
-import { Info, X, Users, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Info, X, Users, ChevronLeft, ChevronRight, Flag } from 'lucide-react'
 
 interface GameHudProps {
   onInfo: () => void
@@ -8,10 +8,11 @@ interface GameHudProps {
   onNext: () => void
   onPrev: () => void
   onPlayers: () => void
+  onFlag?: () => void
   progress: { current: number; total: number }
 }
 
-export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, progress }: GameHudProps) {
+export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, progress }: GameHudProps) {
   const canGoBack = progress.current > 1
   const pct = (progress.current / progress.total) * 100
 
@@ -54,13 +55,25 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, progress }
       {/* Bottom bar */}
       <div className="absolute bottom-[env(safe-area-inset-bottom,0px)] left-0 right-0 flex justify-between items-center px-4 pb-6 pointer-events-auto">
 
-        <button
-          onClick={onPlayers}
-          aria-label="Spillere"
-          className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
-        >
-          <Users className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onPlayers}
+            aria-label="Spillere"
+            className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
+          >
+            <Users className="w-5 h-5" />
+          </button>
+          {onFlag && (
+            <button
+              onClick={onFlag}
+              aria-label="Rapporter kort"
+              title="Rapporter kort"
+              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/25 active:scale-90 transition-all"
+            >
+              <Flag className="w-4 h-4" />
+            </button>
+          )}
+        </div>
 
         {/* Nav buttons */}
         <div className="flex items-center gap-2">

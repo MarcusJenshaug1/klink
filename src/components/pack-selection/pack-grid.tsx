@@ -12,9 +12,12 @@ interface PackGridProps {
 export function PackGrid({ packs, selectedIds, onToggle }: PackGridProps) {
   if (packs.length === 0) {
     return (
-      <div className="text-center py-12 text-charcoal/50">
-        <p className="text-lg font-medium">Ingen spillpakker tilgjengelig</p>
-        <p className="text-sm mt-1">Kontakt admin for a legge til pakker</p>
+      <div className="text-center py-10 bg-white/50 rounded-3xl px-6">
+        <p className="text-2xl mb-2">🤔</p>
+        <p className="text-forest font-bold">Ingen pakker matcher valgene dine</p>
+        <p className="text-forest/60 text-sm mt-1">
+          Prøv en annen drøyhet i <span className="font-semibold">Innstillinger</span> over.
+        </p>
       </div>
     )
   }

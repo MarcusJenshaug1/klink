@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Play } from 'lucide-react'
 import { Logo } from '@/components/landing/logo'
 import { PlayerForm } from '@/components/landing/player-form'
@@ -40,6 +41,16 @@ export default function LandingPage() {
             onUpdate={(players) => dispatch({ type: 'SET_PLAYERS', players })}
           />
         </div>
+
+        <p
+          className="text-center text-xs mt-6 max-w-xs"
+          style={{ color: isActive ? 'rgba(255,255,255,0.6)' : 'rgba(26,58,26,0.4)' }}
+        >
+          🍻 Drikk ansvarlig. 18+.{' '}
+          <Link href="/personvern" className="underline hover:opacity-80">
+            Personvern
+          </Link>
+        </p>
 
         <div className="h-4" />
       </div>
