@@ -161,6 +161,7 @@ export default function PackSelectionPage() {
                         onClick={() => dispatch({ type: 'SET_INTENSITET', intensitet: key })}
                         className={cn(
                           'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
+                          key === 'borst' && 'animate-scary-shake',
                           selected
                             ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
                             : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
@@ -198,6 +199,7 @@ export default function PackSelectionPage() {
                         onClick={() => { setStartError(null); dispatch({ type: 'SET_DROYHET', droyhet: key }) }}
                         className={cn(
                           'flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all active:scale-95',
+                          key === 'droy' && 'animate-scary-shake',
                           selected
                             ? athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
                             : athina ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-forest/5 text-forest hover:bg-forest/10'
