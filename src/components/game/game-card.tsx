@@ -88,9 +88,8 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
         if (remaining <= 0) {
           clearInterval(intervalRef.current!)
           intervalRef.current = null
-          const diff = Math.abs(elapsed - card.timer_sekunder!)
-          setDiffSec(Math.round(diff))
-          setResultSips(Math.floor(diff / 5) * sips)
+          // Synlig timer: fullt sip-antall (kortets verdi eller intensitets-standard)
+          setResultSips(sips)
           setTimerPhase('result')
           // Lyd-ding KUN på synlig timer (skjult timer skal spilleren gjette på)
           playTimerDing()
