@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface ScarePopProps {
   /** Trigger endres → animasjon + lyd spilles én gang */
@@ -11,20 +11,24 @@ interface ScarePopProps {
  * Easter egg: dødninghode + spøkelseslyd når bruker aktiverer
  * Blackout + Drøy samtidig. Spilles kun én gang per aktivering.
  */
+const SCARE_PLAYED_KEY = 'klink-scare-played'
+
 export function ScarePop({ trigger }: ScarePopProps) {
   const [visible, setVisible] = useState(false)
-  const wasTriggered = useRef(false)
 
   useEffect(() => {
     if (!trigger) {
-      wasTriggered.current = false
+      // Kombo er av → slett session-flagget så neste aktivering spiller på nytt
+      try { sessionStorage.removeItem(SCARE_PLAYED_KEY) } catch {}
       return
     }
-    if (wasTriggered.current) return
-    wasTriggered.current = true
-    setVisible(true)
+    // Kombo er på. Hvis vi allerede har spilt denne aktiveringen — hopp over.
+    let alreadyPlayed = false
+    try { alreadyPlayed = sessionStorage.getItem(SCARE_PLAYED_KEY) === '1' } catch {}
+    if (alreadyPlayed) return
 
-    // Fire-and-forget
+    try { sessionStorage.setItem(SCARE_PLAYED_KEY, '1') } catch {}
+    setVisible(true)
     playGhostMoan().catch(() => {})
 
     const t = setTimeout(() => setVisible(false), 1900)
