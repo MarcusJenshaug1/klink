@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, ChevronDown, ChevronUp, Settings, Play } from 'lucide-react'
 import { PackGrid } from '@/components/pack-selection/pack-grid'
+import { ScarePop } from '@/components/pack-selection/scare-pop'
 import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
@@ -71,8 +72,11 @@ export default function PackSelectionPage() {
 
   const canStart = selectedIds.size > 0 && !cardsLoading
 
+  const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
+
   return (
     <div className="min-h-dvh flex flex-col transition-colors duration-700" style={{ backgroundColor: athina ? 'transparent' : '#A8E63D' }}>
+      <ScarePop trigger={scareActive} />
       <div className="flex-1 flex flex-col p-6 gap-6 max-w-lg mx-auto w-full">
 
         {/* Header: back + players + title */}
