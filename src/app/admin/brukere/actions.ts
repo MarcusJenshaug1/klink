@@ -116,6 +116,28 @@ export async function fjernAdmin(userId: string) {
   return { success: true }
 }
 
+export async function settMidlertidigPassord(userId: string, passord: string) {
+  const user = await verifySuperAdmin()
+  if (!user) return { error: 'Ikke tilgang — kun super admin kan sette passord' }
+  if (!passord || passord.length < 8) return { error: 'Passord må være minst 8 tegn' }
+
+  const admin = createAdminClient()
+
+  const { error: updateError } = await admin.auth.admin.updateUserById(userId, {
+    password: passord,
+    email_confirm: true,
+  })
+  if (updateError) return { error: updateError.message }
+
+  const { error: flagError } = await admin
+    .from('admin_brukere')
+    .update({ passord_satt: false })
+    .eq('user_id', userId)
+  if (flagError) return { error: flagError.message }
+
+  return { success: true }
+}
+
 export async function oppdaterRolle(userId: string, rolle: AdminRolle) {
   const user = await verifySuperAdmin()
   if (!user) return { error: 'Ikke tilgang' }

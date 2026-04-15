@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { Mail, Trash2, Shield, ShieldCheck, ChevronDown, ChevronUp, Check, Send } from 'lucide-react'
+import { Mail, Trash2, Shield, ShieldCheck, ChevronDown, ChevronUp, Check, Send, Key, Copy, RefreshCw, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { inviterAdmin, fjernAdmin, oppdaterRolle, settPakkeTilgang, sendInvitasjonPaNytt } from '@/app/admin/brukere/actions'
+import { inviterAdmin, fjernAdmin, oppdaterRolle, settPakkeTilgang, sendInvitasjonPaNytt, settMidlertidigPassord } from '@/app/admin/brukere/actions'
 import { useConfirm } from '@/components/admin/confirm-modal'
 import type { AdminRolle } from '@/hooks/use-admin-role'
 
@@ -43,6 +43,13 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
 
   const [pending, startAction] = useTransition()
   const { confirm, ConfirmDialog } = useConfirm()
+
+  const [pwdModal, setPwdModal] = useState<{ userId: string; navn: string; epost: string } | null>(null)
+  const [pwdValue, setPwdValue] = useState('')
+  const [pwdSaving, startPwdSave] = useTransition()
+  const [pwdError, setPwdError] = useState('')
+  const [pwdSaved, setPwdSaved] = useState<string | null>(null)
+  const [pwdCopied, setPwdCopied] = useState(false)
 
   async function load() {
     const supabase = createClient()
@@ -107,6 +114,53 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
         setActionMsg({ type: 'ok', text: `Invitasjon sendt til ${navn || epost}` })
       }
     })
+  }
+
+  function generatePassord() {
+    const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    const arr = new Uint32Array(12)
+    crypto.getRandomValues(arr)
+    return Array.from(arr, n => chars[n % chars.length]).join('')
+  }
+
+  function openPwdModal(userId: string, navn: string | null, epost: string) {
+    setPwdModal({ userId, navn: navn || epost, epost })
+    setPwdValue(generatePassord())
+    setPwdError('')
+    setPwdSaved(null)
+    setPwdCopied(false)
+  }
+
+  function closePwdModal() {
+    setPwdModal(null)
+    setPwdValue('')
+    setPwdError('')
+    setPwdSaved(null)
+    setPwdCopied(false)
+  }
+
+  function handleLagrePwd() {
+    if (!pwdModal) return
+    setPwdError('')
+    startPwdSave(async () => {
+      const res = await settMidlertidigPassord(pwdModal.userId, pwdValue)
+      if (res.error) {
+        setPwdError(res.error)
+      } else {
+        setPwdSaved(pwdValue)
+        await load()
+      }
+    })
+  }
+
+  async function kopierPwd(pwd: string) {
+    try {
+      await navigator.clipboard.writeText(pwd)
+      setPwdCopied(true)
+      setTimeout(() => setPwdCopied(false), 2000)
+    } catch {
+      // ignore
+    }
   }
 
   function handleTilgang(brukerId: string, pakkeid: string, har: boolean) {
@@ -253,6 +307,18 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
                         </button>
                       )}
 
+                      {/* Set temporary password */}
+                      {!isSelf && (
+                        <button
+                          onClick={() => openPwdModal(bruker.user_id, bruker.navn, bruker.epost)}
+                          disabled={pending}
+                          title="Sett midlertidig passord"
+                          className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-1.5 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"
+                        >
+                          <Key className="w-3 h-3" />
+                        </button>
+                      )}
+
                       {/* Pack access toggle (only for regular admins) */}
                       {!isSuperAdmin && (
                         <button
@@ -315,6 +381,103 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
           </div>
         )}
       </div>
+
+      {/* Set temporary password modal */}
+      {pwdModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest/60 backdrop-blur-sm"
+          onClick={pwdSaving ? undefined : closePwdModal}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 w-full max-w-md border border-cream-dark/40 relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={closePwdModal}
+              disabled={pwdSaving}
+              className="absolute top-4 right-4 text-forest/40 hover:text-forest p-1 rounded-lg hover:bg-cream transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h3 className="font-display font-black text-xl text-forest mb-1">
+              Sett midlertidig passord
+            </h3>
+            <p className="text-sm text-forest/60 mb-5">
+              {pwdModal.navn} <span className="text-forest/40">({pwdModal.epost})</span>
+            </p>
+
+            {pwdSaved ? (
+              <>
+                <p className="text-sm text-forest/70 mb-2 font-medium">
+                  Passord satt. Send til brukeren:
+                </p>
+                <div className="bg-lime/30 border-2 border-lime rounded-xl p-4 mb-4">
+                  <p className="font-mono text-lg text-forest font-bold break-all select-all">
+                    {pwdSaved}
+                  </p>
+                </div>
+                <button
+                  onClick={() => kopierPwd(pwdSaved)}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-forest text-white px-4 py-3 rounded-xl font-bold text-sm hover:bg-forest/80 active:scale-[0.98] transition-all mb-2"
+                >
+                  {pwdCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {pwdCopied ? 'Kopiert!' : 'Kopier passord'}
+                </button>
+                <p className="text-xs text-forest/40 text-center">
+                  Brukeren må sette nytt passord ved første innlogging.
+                </p>
+              </>
+            ) : (
+              <>
+                <label className="block text-xs font-bold text-forest/50 uppercase tracking-wider mb-1.5">
+                  Passord (min 8 tegn)
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={pwdValue}
+                    onChange={e => setPwdValue(e.target.value)}
+                    className={inputCls + ' flex-1 font-mono'}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPwdValue(generatePassord())}
+                    title="Generer nytt"
+                    className="px-3 py-2.5 bg-cream border border-cream-dark/60 rounded-xl text-forest hover:bg-cream-dark/30 transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
+                {pwdError && (
+                  <p className="text-sm text-red-500 font-medium mb-3">{pwdError}</p>
+                )}
+                <p className="text-xs text-forest/50 mb-4">
+                  Brukeren tvinges til å sette eget passord ved første innlogging.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={closePwdModal}
+                    disabled={pwdSaving}
+                    className="flex-1 px-4 py-2.5 bg-cream border border-cream-dark/60 rounded-xl text-forest font-bold text-sm hover:bg-cream-dark/30 transition-colors"
+                  >
+                    Avbryt
+                  </button>
+                  <button
+                    onClick={handleLagrePwd}
+                    disabled={pwdSaving || pwdValue.length < 8}
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-forest text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-forest/80 active:scale-[0.98] disabled:opacity-50 transition-all"
+                  >
+                    <Key className="w-4 h-4" />
+                    {pwdSaving ? 'Lagrer...' : 'Sett passord'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

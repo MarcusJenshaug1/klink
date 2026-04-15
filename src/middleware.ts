@@ -29,18 +29,33 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+  const isAuthAllowed =
+    request.nextUrl.pathname.startsWith('/admin/logg-inn') ||
+    request.nextUrl.pathname.startsWith('/admin/glemt-passord') ||
+    request.nextUrl.pathname.startsWith('/admin/sett-passord') ||
+    request.nextUrl.pathname.startsWith('/admin/auth/callback')
+
   // Protect admin routes (except login)
-  if (
-    request.nextUrl.pathname.startsWith('/admin') &&
-    !request.nextUrl.pathname.startsWith('/admin/logg-inn') &&
-    !request.nextUrl.pathname.startsWith('/admin/glemt-passord') &&
-    !request.nextUrl.pathname.startsWith('/admin/sett-passord') &&
-    !request.nextUrl.pathname.startsWith('/admin/auth/callback') &&
-    !user
-  ) {
+  if (isAdminRoute && !isAuthAllowed && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/admin/logg-inn'
     return NextResponse.redirect(url)
+  }
+
+  // Force password reset for admins with passord_satt=false
+  if (isAdminRoute && !isAuthAllowed && user) {
+    const { data } = await supabase
+      .from('admin_brukere')
+      .select('passord_satt')
+      .eq('user_id', user.id)
+      .single()
+
+    if (data && data.passord_satt === false) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin/sett-passord'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
