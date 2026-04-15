@@ -25,12 +25,6 @@ async function verifySuperAdmin() {
   return data?.rolle === 'super_admin' ? user : null
 }
 
-function getAppUrl() {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
-  if (process.env.NODE_ENV === 'production') return 'https://klinkn.no'
-  return 'http://localhost:3000'
-}
-
 export async function inviterAdmin(epost: string, rolle: AdminRolle = 'admin', navn: string = '') {
   const user = await verifySuperAdmin()
   if (!user) return { error: 'Ikke tilgang — kun super admin kan invitere brukere' }
