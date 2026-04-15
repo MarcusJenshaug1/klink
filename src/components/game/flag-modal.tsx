@@ -50,10 +50,9 @@ export function FlagModal({ open, cardId, onClose }: FlagModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="relative w-full max-w-md bg-cream rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up"
+        className="relative w-full max-w-md bg-cream rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up max-h-[90dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">

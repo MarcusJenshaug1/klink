@@ -42,6 +42,7 @@ export interface Card {
   notater?: string | null
   kjonn?: Kjonn
   vekt?: Vekt
+  custom_author?: string
 }
 
 export type Intensitet = 'lett' | 'medium' | 'borst'
@@ -51,10 +52,13 @@ export type GamePhase = 'landing' | 'pack-selection' | 'playing' | 'deck-empty'
 export interface GameState {
   players: string[]
   selectedPacks: Pack[]
+  cards: Card[]   // original unweighted cards — used for reshuffle
   deck: Card[]
   currentCardIndex: number
   phase: GamePhase
   intensitet: Intensitet
   droyhet: Droyhet
   korttyper: Korttype[]
+  customCards: Card[]
+  castCode?: string
 }

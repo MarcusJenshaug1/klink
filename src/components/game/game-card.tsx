@@ -1,9 +1,10 @@
 'use client'
 
 import { useMemo, useState, useRef, useEffect } from 'react'
-import { Droplets, Trophy, Timer } from 'lucide-react'
+import { Droplets, Trophy, Timer, Sparkles } from 'lucide-react'
+import JSConfetti from 'js-confetti'
 import { getCardTypeMeta } from '@/lib/game/card-types'
-import { interpolate } from '@/lib/game/interpolate'
+import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips, isChugging } from '@/lib/game/sips'
 import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
@@ -41,26 +42,36 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
     return getSips(intensitet)
   }, [card.id, intensitet]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const content = useMemo(() => {
-    let text = interpolate(card.innhold, players)
-    text = replaceSips(text, sips)
-    return text
+  const segments = useMemo(() => {
+    const raw = interpolateToSegments(card.innhold, players)
+    return raw.map(seg =>
+      seg.type === 'text' ? { ...seg, text: replaceSips(seg.text, sips) } : seg
+    )
   }, [card.id, players, sips]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const utfordring = useMemo(() => {
+  const utfordringSegments = useMemo(() => {
     if (!card.utfordring) return null
-    return replaceSips(card.utfordring, sips)
-  }, [card.utfordring, sips])
+    const raw = interpolateToSegments(card.utfordring, players)
+    return raw.map(seg =>
+      seg.type === 'text' ? { ...seg, text: replaceSips(seg.text, sips) } : seg
+    )
+  }, [card.utfordring, players, sips]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasTimer = !!card.timer_sekunder
   const timerSynlig = !!card.timer_synlig
 
   const startRef = useRef<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const jsConfettiRef = useRef<JSConfetti | null>(null)
   const [timerPhase, setTimerPhase] = useState<TimerPhase>('idle')
   const [diffSec, setDiffSec] = useState(0)
   const [resultSips, setResultSips] = useState(0)
   const [countdown, setCountdown] = useState(card.timer_sekunder ?? 0)
+
+  useEffect(() => {
+    jsConfettiRef.current = new JSConfetti()
+    return () => { jsConfettiRef.current = null }
+  }, [])
 
   useEffect(() => {
     setTimerPhase('idle')
@@ -88,12 +99,10 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
         if (remaining <= 0) {
           clearInterval(intervalRef.current!)
           intervalRef.current = null
-          const diff = Math.abs(elapsed - card.timer_sekunder!)
-          setDiffSec(Math.round(diff))
-          setResultSips(Math.floor(diff / 5) * sips)
+          setResultSips(sips)
           setTimerPhase('result')
-          // Lyd-ding KUN på synlig timer (skjult timer skal spilleren gjette på)
           playTimerDing()
+          jsConfettiRef.current?.addConfetti({ confettiNumber: 200 })
         }
       }, 100)
     }
@@ -118,7 +127,7 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
 
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-5 landscape:px-20 transition-colors duration-700"
+      className="absolute inset-0 flex flex-col items-center justify-center px-5 landscape:px-20 pt-16 pb-24 transition-colors duration-700"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
 
@@ -167,17 +176,40 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
 
             {/* Card text */}
             <p className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl landscape:text-lg lg:landscape:text-3xl font-semibold leading-relaxed text-center">
-              {content}
+              {segments.map((seg, i) =>
+                seg.type === 'player' ? (
+                  <mark key={i} className="inline-block not-italic bg-white/30 text-white font-black px-2.5 py-0.5 rounded-full mx-0.5">
+                    {seg.name}
+                  </mark>
+                ) : (
+                  <span key={i}>{seg.text}</span>
+                )
+              )}
             </p>
 
             {/* Utfordring */}
-            {utfordring && (
+            {utfordringSegments && (
               <div className="rounded-2xl bg-black/20 px-4 py-3 flex items-start gap-3">
                 <Trophy className="w-4 h-4 text-white/60 shrink-0 mt-0.5" />
                 <p className="text-white/85 text-sm font-semibold leading-snug">
-                  {utfordring}
+                  {utfordringSegments.map((seg, i) =>
+                    seg.type === 'player' ? (
+                      <mark key={i} className="inline-block not-italic bg-white/20 text-white font-black px-2 py-0.5 rounded-full mx-0.5">
+                        {seg.name}
+                      </mark>
+                    ) : (
+                      <span key={i}>{seg.text}</span>
+                    )
+                  )}
                 </p>
               </div>
+            )}
+
+            {/* Custom card author */}
+            {card.custom_author && (
+              <p className="text-white/35 text-xs font-medium text-center mt-1">
+                — {card.custom_author}
+              </p>
             )}
 
             {/* Timer */}
@@ -213,16 +245,25 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
                   </div>
                 )}
 
-                {timerPhase === 'result' && (
+                {timerPhase === 'result' && timerSynlig && (
                   <div className="w-full rounded-2xl bg-black/25 px-5 py-4 flex flex-col items-center gap-2 text-center">
-                    {!timerSynlig && (
-                      <p className="text-white/70 text-sm font-semibold">
-                        Du bommet med <span className="text-white font-black">{diffSec} sek</span>
-                      </p>
-                    )}
-                    {timerSynlig && (
-                      <p className="text-white/70 text-sm font-semibold">Tiden er ute!</p>
-                    )}
+                    <p className="text-white text-2xl font-black flex items-center gap-2">
+                      Tid er ute! <Sparkles className="w-6 h-6 text-yellow-300" />
+                    </p>
+                    <button
+                      onClick={onNext}
+                      className="mt-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-bold text-sm px-6 py-2 rounded-xl transition-all"
+                    >
+                      Neste kort →
+                    </button>
+                  </div>
+                )}
+
+                {timerPhase === 'result' && !timerSynlig && (
+                  <div className="w-full rounded-2xl bg-black/25 px-5 py-4 flex flex-col items-center gap-2 text-center">
+                    <p className="text-white/70 text-sm font-semibold">
+                      Du bommet med <span className="text-white font-black">{diffSec} sek</span>
+                    </p>
                     <p className="text-white text-2xl font-black flex items-center gap-2">
                       {isChugging(resultSips) ? '' : 'Drikk '}{formatSips(resultSips)}
                       <Droplets className="w-6 h-6" />
@@ -241,7 +282,7 @@ export function GameCard({ card, pack, players, intensitet, korttyper, onNext }:
           </div>
 
         {/* Sip pill — centered below card */}
-        {timerPhase !== 'result' && (
+        {(timerPhase !== 'result' || timerSynlig) && (
           <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-sm text-white/70 text-sm font-bold">
             <Droplets className="w-4 h-4" />
             {formatSips(sips)}

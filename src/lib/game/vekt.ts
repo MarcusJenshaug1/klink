@@ -2,8 +2,8 @@ import type { Vekt } from '@/types/game'
 
 export const VEKT_MULTIPLIER: Record<Vekt, number> = {
   sjelden: 1,
-  vanlig: 3,
-  ofte: 5,
+  vanlig: 1,
+  ofte: 1,
 }
 
 export const VEKT_META: Record<Vekt, { label: string; beskrivelse: string }> = {

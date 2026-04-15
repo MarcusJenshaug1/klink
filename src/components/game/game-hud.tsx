@@ -1,6 +1,6 @@
 'use client'
 
-import { Info, X, Users, ChevronLeft, ChevronRight, Flag } from 'lucide-react'
+import { Info, X, Users, ChevronLeft, ChevronRight, Flag, Tv } from 'lucide-react'
 
 interface GameHudProps {
   onInfo: () => void
@@ -9,10 +9,11 @@ interface GameHudProps {
   onPrev: () => void
   onPlayers: () => void
   onFlag?: () => void
+  onCast?: () => void
   progress: { current: number; total: number }
 }
 
-export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, progress }: GameHudProps) {
+export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, onCast, progress }: GameHudProps) {
   const canGoBack = progress.current > 1
   const pct = (progress.current / progress.total) * 100
 
@@ -71,6 +72,16 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, pr
               className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/25 active:scale-90 transition-all"
             >
               <Flag className="w-4 h-4" />
+            </button>
+          )}
+          {onCast && (
+            <button
+              onClick={onCast}
+              aria-label="Cast til TV"
+              title="Cast til TV"
+              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/25 active:scale-90 transition-all"
+            >
+              <Tv className="w-4 h-4" />
             </button>
           )}
         </div>

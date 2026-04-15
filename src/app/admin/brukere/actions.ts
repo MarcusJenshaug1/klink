@@ -5,6 +5,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendAdminInvite } from '@/lib/email/resend'
 import type { AdminRolle } from '@/hooks/use-admin-role'
 
+function getAppUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
+  if (process.env.NODE_ENV === 'production') return 'https://www.klinkn.no'
+  return 'http://localhost:3000'
+}
+
 async function verifySuperAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

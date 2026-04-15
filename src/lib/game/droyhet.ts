@@ -28,9 +28,9 @@ export const DROYHET_META: Record<Droyhet, { label: string; beskrivelse: string 
  *   drøy  → flest drøy, noen normal, noen mild
  */
 export const DROYHET_BLEND: Record<Droyhet, Record<Droyhet, number>> = {
-  mild:   { mild: 3, normal: 0, droy: 0 },
-  normal: { mild: 1, normal: 3, droy: 0 },
-  droy:   { mild: 1, normal: 2, droy: 4 },
+  mild:   { mild: 2, normal: 0, droy: 0 },
+  normal: { mild: 1, normal: 2, droy: 0 },
+  droy:   { mild: 1, normal: 1, droy: 2 },
 }
 
 export function getDroyhetCopies(valgt: Droyhet, kortDroyhet: Droyhet): number {

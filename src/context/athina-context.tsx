@@ -22,9 +22,13 @@ export function AthinaProvider({ children }: { children: ReactNode }) {
     isActiveRef.current = stored
   }, [])
 
-  // Keep html background in sync (transparent in Athina mode — fixed bg div handles it)
+  // Keep html background + theme-color in sync with Athina mode
   useEffect(() => {
-    document.documentElement.style.backgroundColor = isActive ? 'transparent' : '#A8E63D'
+    const LIME = '#A8E63D'
+    const ATHINA = '#FF69B4'
+    document.documentElement.style.backgroundColor = isActive ? ATHINA : LIME
+    const meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
+    if (meta) meta.setAttribute('content', isActive ? ATHINA : LIME)
   }, [isActive])
 
   // Swap favicon — update ALL icon links (including ones Next.js adds after hydration)

@@ -9,6 +9,11 @@ import {
 } from 'react'
 import type { Card, Pack, GamePhase, GameState, Intensitet, Droyhet, Korttype } from '@/types/game'
 import { shuffle } from '@/lib/game/shuffle'
+
+function generateCastCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+}
 import { VEKT_MULTIPLIER } from '@/lib/game/vekt'
 import { getDroyhetCopies } from '@/lib/game/droyhet'
 
@@ -25,10 +30,12 @@ type GameAction =
   | { type: 'SET_INTENSITET'; intensitet: Intensitet }
   | { type: 'SET_DROYHET'; droyhet: Droyhet }
   | { type: 'SET_KORTTYPER'; korttyper: Korttype[] }
+  | { type: 'SET_CUSTOM_CARDS'; cards: Card[] }
   | { type: 'RESET' }
   | { type: 'RESTORE_STATE'; state: GameState }
 
 const initialState: GameState = {
+  cards: [],
   players: [],
   selectedPacks: [],
   deck: [],
@@ -36,7 +43,9 @@ const initialState: GameState = {
   phase: 'landing',
   intensitet: 'medium',
   droyhet: 'normal',
+  castCode: generateCastCode(),
   korttyper: [],
+  customCards: [],
 }
 
 /**
@@ -82,13 +91,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELECT_PACKS':
       return { ...state, selectedPacks: action.packs }
 
-    case 'START_GAME':
+    case 'START_GAME': {
+      const deck = buildWeightedDeck(action.cards, state.droyhet)
       return {
         ...state,
-        deck: buildWeightedDeck(action.cards, state.droyhet),
+        cards: action.cards,
+        deck,
         currentCardIndex: 0,
-        phase: 'playing',
+        phase: deck.length === 0 ? 'deck-empty' : 'playing',
+        castCode: state.castCode ?? generateCastCode(),
       }
+    }
 
     case 'NEXT_CARD': {
       const nextIndex = state.currentCardIndex + 1
@@ -104,13 +117,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, currentCardIndex: prevIndex, phase: 'playing' }
     }
 
-    case 'RESHUFFLE':
+    case 'RESHUFFLE': {
+      const deck = buildWeightedDeck(state.cards, state.droyhet)
       return {
         ...state,
-        deck: buildWeightedDeck(state.deck, state.droyhet),
+        deck,
         currentCardIndex: 0,
-        phase: 'playing',
+        phase: deck.length === 0 ? 'deck-empty' : 'playing',
       }
+    }
 
     case 'SET_PHASE':
       return { ...state, phase: action.phase }
@@ -123,6 +138,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SET_KORTTYPER':
       return { ...state, korttyper: action.korttyper }
+
+    case 'SET_CUSTOM_CARDS':
+      return { ...state, customCards: action.cards }
 
     case 'RESET':
       return initialState
