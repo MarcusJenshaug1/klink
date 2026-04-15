@@ -1,17 +1,33 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { markerPassordSatt } from '@/app/admin/brukere/actions'
 
 export default function SettPassordPage() {
-  const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [done, setDone] = useState(false)
+  const [navn, setNavn] = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const metaName = (user.user_metadata?.full_name as string | undefined) ?? null
+      if (metaName) {
+        setNavn(metaName.split(' ')[0])
+        return
+      }
+      const { data } = await supabase
+        .from('admin_brukere')
+        .select('navn')
+        .eq('user_id', user.id)
+        .single()
+      if (data?.navn) setNavn((data.navn as string).split(' ')[0])
+    })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,9 +49,13 @@ export default function SettPassordPage() {
       setError(err.message)
       setLoading(false)
     } else {
-      await markerPassordSatt()
-      setDone(true)
-      setTimeout(() => router.push('/admin'), 2000)
+      const res = await markerPassordSatt()
+      if (res?.error) {
+        setError(res.error)
+        setLoading(false)
+        return
+      }
+      window.location.href = '/admin'
     }
   }
 
@@ -51,16 +71,10 @@ export default function SettPassordPage() {
       </div>
 
       <div className="w-full max-w-sm">
-        {done ? (
-          <div className="text-center space-y-3">
-            <div className="text-5xl mb-2">🎉</div>
-            <p className="font-display font-black text-2xl text-lime">Du er klar!</p>
-            <p className="text-white/50 text-sm">Sender deg til dashbordet...</p>
-          </div>
-        ) : (
-          <>
-            <div className="text-center mb-8">
-              <h1 className="font-display font-black text-3xl text-white mb-2">Velkommen til Klink!</h1>
+        <div className="text-center mb-8">
+              <h1 className="font-display font-black text-3xl text-white mb-2">
+                {navn ? `Hei ${navn}!` : 'Velkommen til Klink!'}
+              </h1>
               <p className="text-white/50 text-sm leading-relaxed">
                 Sett et passord for kontoen din for å komme i gang.
               </p>
@@ -111,8 +125,6 @@ export default function SettPassordPage() {
                 {loading ? 'Lagrer...' : 'Kom i gang →'}
               </button>
             </form>
-          </>
-        )}
       </div>
     </div>
   )

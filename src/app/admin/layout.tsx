@@ -50,7 +50,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-dvh bg-cream">
       <AdminNav />
-      <main className="max-w-6xl mx-auto p-6">{children}</main>
+      <main className="max-w-6xl mx-auto p-4 sm:p-6">{children}</main>
     </div>
   )
 }

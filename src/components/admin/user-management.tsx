@@ -177,8 +177,8 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
       {ConfirmDialog}
 
       {/* Invite form */}
-      <div className="bg-white rounded-2xl p-6 border border-cream-dark/40">
-        <h2 className="font-display font-black text-xl text-forest mb-4">Inviter ny admin</h2>
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-cream-dark/40">
+        <h2 className="font-display font-black text-lg sm:text-xl text-forest mb-4">Inviter ny admin</h2>
         <form onSubmit={handleInvite} className="space-y-3">
           <div className="flex flex-wrap gap-3">
             <div className="flex-1 min-w-48">
@@ -208,15 +208,15 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
               />
             </div>
           </div>
-          <div className="flex flex-wrap gap-3 items-end">
-            <div>
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:items-end">
+            <div className="flex-1 sm:flex-none">
               <label className="block text-xs font-bold text-forest/50 uppercase tracking-wider mb-1.5">
                 Rolle
               </label>
               <select
                 value={inviteRolle}
                 onChange={e => setInviteRolle(e.target.value as AdminRolle)}
-                className={inputCls}
+                className={inputCls + ' w-full sm:w-auto'}
               >
                 <option value="admin">Admin</option>
                 <option value="super_admin">Super Admin</option>
@@ -225,7 +225,7 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
             <button
               type="submit"
               disabled={inviting}
-              className="inline-flex items-center gap-2 bg-forest text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-forest/80 active:scale-95 disabled:opacity-50 transition-all"
+              className="inline-flex items-center justify-center gap-2 bg-forest text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-forest/80 active:scale-95 disabled:opacity-50 transition-all w-full sm:w-auto"
             >
               <Mail className="w-4 h-4" />
               {inviting ? 'Sender...' : 'Send invitasjon'}
@@ -247,8 +247,8 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
 
       {/* User list */}
       <div className="bg-white rounded-2xl border border-cream-dark/40 overflow-hidden">
-        <div className="px-6 py-4 border-b border-cream-dark/40">
-          <h2 className="font-display font-black text-xl text-forest">Admin-brukere</h2>
+        <div className="px-4 sm:px-6 py-4 border-b border-cream-dark/40">
+          <h2 className="font-display font-black text-lg sm:text-xl text-forest">Admin-brukere</h2>
         </div>
 
         {loading ? (
@@ -267,29 +267,31 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
               return (
                 <div key={bruker.user_id}>
                   {/* Row */}
-                  <div className="flex items-center gap-4 px-6 py-4">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isSuperAdmin ? 'bg-lime' : 'bg-cream-dark/40'}`}>
-                      {isSuperAdmin
-                        ? <ShieldCheck className="w-4 h-4 text-forest" />
-                        : <Shield className="w-4 h-4 text-forest/40" />}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-6 py-4">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isSuperAdmin ? 'bg-lime' : 'bg-cream-dark/40'}`}>
+                        {isSuperAdmin
+                          ? <ShieldCheck className="w-4 h-4 text-forest" />
+                          : <Shield className="w-4 h-4 text-forest/40" />}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-forest text-sm truncate">{bruker.navn || bruker.epost}</p>
+                        <p className="text-xs text-forest/40 font-medium truncate">
+                          {bruker.navn ? `${bruker.epost} · ` : ''}
+                          {isSuperAdmin ? 'Super Admin' : 'Admin'}
+                          {isSelf && ' (deg)'}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-forest text-sm truncate">{bruker.navn || bruker.epost}</p>
-                      <p className="text-xs text-forest/40 font-medium truncate">
-                        {bruker.navn ? `${bruker.epost} · ` : ''}
-                        {isSuperAdmin ? 'Super Admin' : 'Admin'}
-                        {isSelf && ' (deg)'}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                       {/* Role toggle */}
                       {!isSelf && (
                         <button
                           onClick={() => handleRolle(bruker.user_id, isSuperAdmin ? 'admin' : 'super_admin')}
                           disabled={pending}
-                          className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-1.5 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60"
+                          className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-2 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60"
                         >
                           → {isSuperAdmin ? 'Admin' : 'Super'}
                         </button>
@@ -301,9 +303,9 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
                           onClick={() => handleResend(bruker.user_id, bruker.epost, bruker.rolle, bruker.navn)}
                           disabled={pending}
                           title="Send invitasjon på nytt"
-                          className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-1.5 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"
+                          className="text-xs font-bold text-forest/50 hover:text-forest p-2 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"
                         >
-                          <Send className="w-3 h-3" />
+                          <Send className="w-4 h-4" />
                         </button>
                       )}
 
@@ -313,9 +315,9 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
                           onClick={() => openPwdModal(bruker.user_id, bruker.navn, bruker.epost)}
                           disabled={pending}
                           title="Sett midlertidig passord"
-                          className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-1.5 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"
+                          className="text-xs font-bold text-forest/50 hover:text-forest p-2 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"
                         >
-                          <Key className="w-3 h-3" />
+                          <Key className="w-4 h-4" />
                         </button>
                       )}
 
@@ -323,7 +325,7 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
                       {!isSuperAdmin && (
                         <button
                           onClick={() => setExpandedId(isExpanded ? null : bruker.user_id)}
-                          className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-1.5 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"
+                          className="text-xs font-bold text-forest/50 hover:text-forest px-3 py-2 rounded-lg hover:bg-cream transition-colors border border-cream-dark/60 inline-flex items-center gap-1"
                         >
                           Pakker
                           {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -335,7 +337,8 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
                         <button
                           onClick={() => handleFjern(bruker.user_id)}
                           disabled={pending}
-                          className="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                          title="Fjern"
+                          className="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors border border-transparent"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -345,7 +348,7 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
 
                   {/* Pack access panel */}
                   {isExpanded && !isSuperAdmin && (
-                    <div className="px-6 pb-4 bg-cream/50 border-t border-cream-dark/30">
+                    <div className="px-4 sm:px-6 pb-4 bg-cream/50 border-t border-cream-dark/30">
                       <p className="text-xs font-bold text-forest/40 uppercase tracking-wider pt-4 mb-3">
                         Pakketilgang
                       </p>

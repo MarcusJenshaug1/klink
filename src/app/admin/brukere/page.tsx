@@ -26,7 +26,7 @@ export default function BrukerePage() {
 
   return (
     <div>
-      <h1 className="font-display font-black text-3xl text-forest mb-8">Brukere</h1>
+      <h1 className="font-display font-black text-2xl sm:text-3xl text-forest mb-6 sm:mb-8">Brukere</h1>
       <UserManagement currentUserId={userId!} />
     </div>
   )
