@@ -5,6 +5,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendAdminInvite } from '@/lib/email/resend'
 import type { AdminRolle } from '@/hooks/use-admin-role'
 
+function getAppUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL
+  if (process.env.NODE_ENV === 'production') return 'https://www.klinkn.no'
+  return 'http://localhost:3000'
+}
+
 async function verifySuperAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -24,7 +30,7 @@ export async function inviterAdmin(epost: string, rolle: AdminRolle = 'admin', n
   if (!user) return { error: 'Ikke tilgang — kun super admin kan invitere brukere' }
 
   const admin = createAdminClient()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const appUrl = getAppUrl()
 
   // Generate invite link without sending Supabase's default email
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
@@ -76,7 +82,7 @@ export async function sendInvitasjonPaNytt(userId: string, epost: string, rolle:
   if (!user) return { error: 'Ikke tilgang' }
 
   const admin = createAdminClient()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const appUrl = getAppUrl()
 
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
     type: 'magiclink',
