@@ -63,6 +63,11 @@ const games = [
     desc: 'Korte, direkte "Hvem ...?"-spørsmål. Rask runde, mye latter.',
   },
   {
+    name: 'Fem fingre',
+    slug: 'fem-fingre',
+    desc: 'Fem påstander. Bøy en finger per ting du har gjort. Drikk per treff – eller per miss. Du velger.',
+  },
+  {
     name: 'Klink-pakker',
     slug: 'klink',
     desc: 'Festspørsmål og utfordringer i flere kategorier – inkludert en drøy variant for de litt mer våghalsede.',

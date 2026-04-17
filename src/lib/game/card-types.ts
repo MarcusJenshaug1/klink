@@ -4,7 +4,7 @@ import {
   Star, Heart, Music, Laugh, Wine, PartyPopper, Gamepad2,
   Dices, Target, Award, Gift, Sparkles, Users, MessageCircle,
   ThumbsUp, Crown, Swords, Ghost, Rocket, Eye, Pizza,
-  Coffee, Globe, Puzzle, Timer, Smile, Trophy,
+  Coffee, Globe, Puzzle, Timer, Smile, Trophy, Hand,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -24,13 +24,14 @@ export const CARD_TYPE_META: Record<string, CardTypeMeta> = {
   alle_drikker:{ label: 'Jeg har aldri',icon: Beer       },
   kategori:    { label: 'Kategori',     icon: LayoutList },
   kaos:        { label: 'Klink',        icon: Zap        },
+  femfingre:   { label: 'Fem fingre',   icon: Hand       },
 }
 
 // Icon map: PascalCase name → LucideIcon component
 // Used by the icon picker and custom korttype rendering
 export const ICON_MAP: Record<string, LucideIcon> = {
   // Built-in reprisals
-  Pointer, Box, Flame, Scale, Beer, LayoutList, Zap,
+  Pointer, Box, Flame, Scale, Beer, LayoutList, Zap, Hand,
   // Custom-type icons
   Star, Heart, Music, Laugh, Wine, PartyPopper, Gamepad2,
   Dices, Target, Award, Gift, Sparkles, Users, MessageCircle,
@@ -44,7 +45,7 @@ export const PICKER_ICONS: string[] = [
   'Dices', 'Target', 'Award', 'Gift', 'Sparkles', 'Users', 'MessageCircle',
   'ThumbsUp', 'Crown', 'Swords', 'Ghost', 'Rocket', 'Eye', 'Pizza',
   'Coffee', 'Globe', 'Puzzle', 'Timer', 'Smile', 'Trophy',
-  'Flame', 'Zap', 'Beer', 'Box', 'Pointer',
+  'Flame', 'Zap', 'Beer', 'Box', 'Pointer', 'Hand',
 ]
 
 /**

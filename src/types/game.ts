@@ -43,6 +43,7 @@ export interface Card {
   kjonn?: Kjonn
   vekt?: Vekt
   custom_author?: string
+  paastander?: string[] | null
 }
 
 export type Intensitet = 'lett' | 'medium' | 'borst'
