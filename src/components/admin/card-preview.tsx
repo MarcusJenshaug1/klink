@@ -11,6 +11,8 @@ interface CardPreviewProps {
   utfordring?: string
   timerSekunder?: number | null
   timerSynlig?: boolean
+  timerAutoStart?: boolean
+  timerForsinkelse?: number | null
   paastander?: string[]
   packColor?: string
   korttyper?: Korttype[]
@@ -23,6 +25,8 @@ export function CardPreview({
   utfordring,
   timerSekunder,
   timerSynlig,
+  timerAutoStart,
+  timerForsinkelse,
   paastander,
   packColor = '#1A3A1A',
   korttyper = [],
@@ -84,7 +88,13 @@ export function CardPreview({
         {!isFemFingre && timerSekunder && (
           <div className="flex items-center justify-center gap-2 bg-white/20 text-white font-black py-3 rounded-xl text-sm">
             <Timer className="w-4 h-4" />
-            {timerSynlig ? `${timerSekunder}s nedtelling` : 'Hot Seat — skjult timer'}
+            {timerSynlig
+              ? timerAutoStart
+                ? timerForsinkelse
+                  ? `${timerSekunder}s nedtelling · Auto-start (etter ${timerForsinkelse}s)`
+                  : `${timerSekunder}s nedtelling · Auto-start`
+                : `${timerSekunder}s nedtelling`
+              : 'Hot Seat — skjult timer'}
           </div>
         )}
       </div>

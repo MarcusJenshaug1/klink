@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import { Droplets, Trophy, Timer, Sparkles } from 'lucide-react'
 import JSConfetti from 'js-confetti'
 import { getCardTypeMeta } from '@/lib/game/card-types'
@@ -29,7 +29,7 @@ interface GameCardProps {
   onNext: () => void
 }
 
-type TimerPhase = 'idle' | 'running' | 'result'
+type TimerPhase = 'idle' | 'delay' | 'running' | 'result'
 
 export function GameCard(props: GameCardProps) {
   if (props.card.type === 'femfingre') {
@@ -74,35 +74,24 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
 
   const hasTimer = !!card.timer_sekunder
   const timerSynlig = !!card.timer_synlig
+  const timerAutoStart = !!card.timer_auto_start
 
   const startRef = useRef<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const delayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const jsConfettiRef = useRef<JSConfetti | null>(null)
   const [timerPhase, setTimerPhase] = useState<TimerPhase>('idle')
   const [diffSec, setDiffSec] = useState(0)
   const [resultSips, setResultSips] = useState(0)
   const [countdown, setCountdown] = useState(card.timer_sekunder ?? 0)
+  const [delayCountdown, setDelayCountdown] = useState(0)
 
   useEffect(() => {
     jsConfettiRef.current = new JSConfetti()
     return () => { jsConfettiRef.current = null }
   }, [])
 
-  useEffect(() => {
-    setTimerPhase('idle')
-    setCountdown(card.timer_sekunder ?? 0)
-    startRef.current = null
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-  }, [card.id, card.timer_sekunder])
-
-  useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [])
-
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
     startRef.current = Date.now()
     setTimerPhase('running')
     if (timerSynlig && card.timer_sekunder) {
@@ -121,7 +110,48 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
         }
       }, 100)
     }
-  }
+  }, [card.timer_sekunder, timerSynlig, sips]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    setTimerPhase('idle')
+    setCountdown(card.timer_sekunder ?? 0)
+    startRef.current = null
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    if (delayIntervalRef.current) {
+      clearInterval(delayIntervalRef.current)
+      delayIntervalRef.current = null
+    }
+
+    if (timerAutoStart && card.timer_sekunder && timerSynlig) {
+      const delay = card.timer_forsinkelse ?? 0
+      if (delay > 0) {
+        setDelayCountdown(delay)
+        setTimerPhase('delay')
+        let remaining = delay
+        delayIntervalRef.current = setInterval(() => {
+          remaining -= 1
+          setDelayCountdown(remaining)
+          if (remaining <= 0) {
+            clearInterval(delayIntervalRef.current!)
+            delayIntervalRef.current = null
+            handleStart()
+          }
+        }, 1000)
+      } else {
+        handleStart()
+      }
+    }
+  }, [card.id, card.timer_sekunder]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (delayIntervalRef.current) clearInterval(delayIntervalRef.current)
+    }
+  }, [])
 
   const handleStop = () => {
     if (!startRef.current || !card.timer_sekunder) return
@@ -231,7 +261,7 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
             {hasTimer && (
               <div className="flex flex-col items-center gap-3">
 
-                {timerPhase === 'idle' && (
+                {timerPhase === 'idle' && !timerAutoStart && (
                   <button
                     onClick={handleStart}
                     className="w-full flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all"
@@ -239,6 +269,15 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
                     <Timer className="w-5 h-5" />
                     Start timer
                   </button>
+                )}
+
+                {timerPhase === 'delay' && (
+                  <div className="flex flex-col items-center gap-1">
+                    <p className="text-white/60 text-sm font-semibold">Starter om</p>
+                    <p className="text-white font-black tabular-nums" style={{ fontSize: '4rem', lineHeight: 1 }}>
+                      {delayCountdown}
+                    </p>
+                  </div>
                 )}
 
                 {timerPhase === 'running' && (

@@ -33,6 +33,8 @@ export interface Card {
   utfordring?: string | null
   timer_sekunder?: number | null
   timer_synlig?: boolean
+  timer_auto_start?: boolean
+  timer_forsinkelse?: number | null
   aktiv?: boolean
   droyhet?: Droyhet
   min_spillere?: number

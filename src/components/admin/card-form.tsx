@@ -28,6 +28,8 @@ interface CardFormProps {
     utfordring?: string | null
     timer_sekunder?: number | null
     timer_synlig?: boolean
+    timer_auto_start?: boolean
+    timer_forsinkelse?: number | null
     aktiv?: boolean
     droyhet?: Droyhet
     min_spillere?: number
@@ -84,6 +86,10 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     editCard?.timer_sekunder != null ? String(editCard.timer_sekunder) : ''
   )
   const [timerSynlig, setTimerSynlig] = useState<boolean>(editCard?.timer_synlig ?? false)
+  const [timerAutoStart, setTimerAutoStart] = useState<boolean>(editCard?.timer_auto_start ?? false)
+  const [timerForsinkelse, setTimerForsinkelse] = useState<string>(
+    editCard?.timer_forsinkelse != null ? String(editCard.timer_forsinkelse) : ''
+  )
   const [aktiv, setAktiv] = useState<boolean>(editCard?.aktiv ?? true)
   const [droyhet, setDroyhet] = useState<Droyhet>(editCard?.droyhet ?? 'normal')
   const [minSpillere, setMinSpillere] = useState<string>(
@@ -134,6 +140,8 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     setUtfordring('')
     setTimerSekunder('')
     setTimerSynlig(false)
+    setTimerAutoStart(false)
+    setTimerForsinkelse('')
     setAktiv(true)
     setDroyhet('normal')
     setMinSpillere('2')
@@ -172,6 +180,8 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       utfordring: isFemFingre ? null : (utfordring.trim() || null),
       timer_sekunder: isFemFingre ? null : (timerSekunder ? parseInt(timerSekunder, 10) : null),
       timer_synlig: isFemFingre ? false : (timerSekunder ? timerSynlig : false),
+      timer_auto_start: isFemFingre ? false : (timerSekunder && timerSynlig ? timerAutoStart : false),
+      timer_forsinkelse: isFemFingre ? null : (timerAutoStart && timerSynlig && timerForsinkelse ? parseInt(timerForsinkelse, 10) : null),
       aktiv,
       droyhet,
       min_spillere: minSpillere ? Math.max(1, parseInt(minSpillere, 10)) : 2,
@@ -201,6 +211,8 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       setUtfordring('')
       setTimerSekunder('')
       setTimerSynlig(false)
+      setTimerAutoStart(false)
+      setTimerForsinkelse('')
       setSlurkerLett('')
       setSlurkerMedium('')
       setSlurkerBorst('')
@@ -420,6 +432,38 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
                 </div>
               )}
             </div>
+            {timerSekunder && timerSynlig && (
+              <div className="flex flex-col gap-2 mt-2">
+                <div className="flex items-center justify-between bg-cream rounded-xl px-4 py-2.5">
+                  <div>
+                    <p className="text-sm font-bold text-forest">Auto-start</p>
+                    <p className="text-xs text-forest/50">{timerAutoStart ? 'Starter automatisk' : 'Manuell start'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setTimerAutoStart((v) => !v); setTimerForsinkelse('') }}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${timerAutoStart ? 'bg-lime' : 'bg-cream-dark'}`}
+                    aria-label={timerAutoStart ? 'Slå av auto-start' : 'Slå på auto-start'}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${timerAutoStart ? 'translate-x-5' : ''}`} />
+                  </button>
+                </div>
+                {timerAutoStart && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={timerForsinkelse}
+                      onChange={(e) => setTimerForsinkelse(e.target.value)}
+                      min={1}
+                      max={60}
+                      className="w-20 px-3 py-2 bg-cream border border-cream-dark/60 rounded-xl text-forest text-sm focus:outline-none focus:border-forest/40"
+                      placeholder="sek"
+                    />
+                    <span className="text-xs text-forest/50 font-medium">sek forsinkelse før start <span className="text-forest/30">(valgfritt)</span></span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           )}
 
@@ -552,6 +596,8 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
           utfordring={utfordring || undefined}
           timerSekunder={timerSekunder ? parseInt(timerSekunder, 10) : null}
           timerSynlig={timerSynlig}
+          timerAutoStart={timerAutoStart}
+          timerForsinkelse={timerForsinkelse ? parseInt(timerForsinkelse, 10) : null}
           paastander={paastander}
           packColor={packColor}
           korttyper={korttyper}
