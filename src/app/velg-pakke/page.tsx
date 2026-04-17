@@ -311,7 +311,7 @@ export default function PackSelectionPage() {
       </div>
 
       {/* Sticky start button */}
-      <div className="sticky bottom-0 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700" style={{ backgroundColor: athina ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}>
+      <div className="sticky bottom-0 p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700" style={{ backgroundColor: athina ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}>
         <div className="max-w-lg mx-auto">
           {startError && (
             <p

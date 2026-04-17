@@ -118,7 +118,7 @@ export default function LandingPage() {
       {/* Sticky start button — only shown in manual mode */}
       {mode === 'manual' && (
         <div
-          className="sticky bottom-0 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700"
+          className="sticky bottom-0 p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700"
           style={{ backgroundColor: isActive ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}
         >
           <div className="max-w-md mx-auto flex gap-2">

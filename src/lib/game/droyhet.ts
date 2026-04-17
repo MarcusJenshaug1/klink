@@ -13,24 +13,24 @@ export const DROYHET_META: Record<Droyhet, { label: string; beskrivelse: string 
   },
   normal: {
     label: 'Normal',
-    beskrivelse: 'Flest normale, litt mild.',
+    beskrivelse: 'Mild + normale kort.',
   },
   droy: {
     label: 'Drøy',
-    beskrivelse: 'Flest drøye, noen normal og mild.',
+    beskrivelse: 'Alle drøyhetsnivåer.',
   },
 }
 
 /**
- * Vektet blanding. Antall kopier-multiplikator per kort basert på valgt drøyhet.
- *   mild  → kun mild-kort
- *   normal → flest normal, noen mild
- *   drøy  → flest drøy, noen normal, noen mild
+ * Filtreringsmatrise. 1 = inkluder kortet (én gang), 0 = ekskluder.
+ *   mild   → kun mild-kort
+ *   normal → mild + normal
+ *   drøy   → alle
  */
 export const DROYHET_BLEND: Record<Droyhet, Record<Droyhet, number>> = {
-  mild:   { mild: 2, normal: 0, droy: 0 },
-  normal: { mild: 1, normal: 2, droy: 0 },
-  droy:   { mild: 1, normal: 1, droy: 2 },
+  mild:   { mild: 1, normal: 0, droy: 0 },
+  normal: { mild: 1, normal: 1, droy: 0 },
+  droy:   { mild: 1, normal: 1, droy: 1 },
 }
 
 export function getDroyhetCopies(valgt: Droyhet, kortDroyhet: Droyhet): number {

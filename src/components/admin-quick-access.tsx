@@ -50,7 +50,7 @@ export function AdminQuickAccess() {
       href="/admin"
       aria-label="Åpne admin"
       title="Åpne admin (Ctrl+Shift+A)"
-      className="fixed bottom-4 right-4 z-[70] inline-flex items-center gap-2 bg-forest text-lime rounded-full pl-3 pr-4 py-2 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+      className="fixed top-[max(0.75rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-[70] inline-flex items-center gap-2 bg-forest text-lime rounded-full pl-3 pr-4 py-2 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
     >
       <ShieldCheck className="w-4 h-4" />
       <span className="text-xs font-black">Admin</span>
