@@ -169,19 +169,19 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
       {/* The card */}
       <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl lg:landscape:max-w-3xl flex flex-col items-center gap-3 md:gap-5 landscape:gap-2">
 
-          {/* Category badge — above card */}
-          <div className="flex justify-center">
-            <div
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-xs font-black uppercase tracking-widest"
-              style={meta.farge
-                ? { backgroundColor: meta.farge }
-                : { backgroundColor: 'rgba(0,0,0,0.20)', backdropFilter: 'blur(4px)', color: 'rgba(255,255,255,0.9)' }
-              }
-            >
-              <meta.icon className="w-3.5 h-3.5" />
-              {card.tittel || meta.label}
-            </div>
+        {/* Category badge — above card */}
+        <div className="flex justify-center">
+          <div
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-xs font-black uppercase tracking-widest"
+            style={meta.farge
+              ? { backgroundColor: meta.farge }
+              : { backgroundColor: 'rgba(0,0,0,0.20)', backdropFilter: 'blur(4px)', color: 'rgba(255,255,255,0.9)' }
+            }
+          >
+            <meta.icon className="w-3.5 h-3.5" />
+            {card.tittel || meta.label}
           </div>
+        </div>
 
           {/* Main card — frosted glass */}
           <div
@@ -296,13 +296,13 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
             )}
           </div>
 
-        {/* Sip pill — centered below card */}
-        {(timerPhase !== 'result' || timerSynlig) && (
-          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-sm text-white/70 text-sm font-bold">
-            <Droplets className="w-4 h-4" />
-            {formatSips(sips)}
-          </span>
-        )}
+          {/* Sip pill — centered below card */}
+          {(timerPhase !== 'result' || timerSynlig) && (
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-sm text-white/70 text-sm font-bold">
+              <Droplets className="w-4 h-4" />
+              {formatSips(sips)}
+            </span>
+          )}
       </div>
     </div>
   )

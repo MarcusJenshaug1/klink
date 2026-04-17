@@ -91,7 +91,8 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
           {!allRevealed ? (
             <button
               onClick={handleReveal}
-              className="w-full flex items-center justify-center gap-2 bg-white/25 hover:bg-white/35 active:scale-95 text-white font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all"
+              className="w-full flex items-center justify-center gap-2 active:scale-95 font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all hover:opacity-90"
+              style={{ backgroundColor: 'white', color: pack.farge }}
             >
               Avslør påstand {revealed + 1}/{total}
             </button>
@@ -136,24 +137,34 @@ interface FiveFingerHandProps {
   total: number
 }
 
+// Natural hand heights in px: thumb, index, middle, ring, pinky
+const FINGER_HEIGHTS = [38, 64, 80, 60, 46]
+
 /** Stylized 5-finger hand. Fingers "fold down" as count increases. */
 function FiveFingerHand({ count, total }: FiveFingerHandProps) {
   const fingerCount = Math.max(total, 5)
 
   return (
-    <div className="flex items-end justify-center gap-2 md:gap-3 h-20 md:h-24 landscape:h-14">
+    <div className="flex items-end justify-center gap-2 md:gap-3" style={{ height: 88 }}>
       {Array.from({ length: fingerCount }).map((_, i) => {
         const isDown = i < count
+        const naturalH = FINGER_HEIGHTS[i] ?? 60
         return (
           <div
             key={i}
-            className="origin-bottom transition-transform duration-500 ease-out"
-            style={{ transform: isDown ? 'scaleY(0.28)' : 'scaleY(1)' }}
+            className="origin-bottom transition-all duration-500 ease-out"
+            style={{
+              height: naturalH,
+              transform: isDown ? 'scaleY(0.22)' : 'scaleY(1)',
+              opacity: isDown ? 0.35 : 1,
+            }}
           >
             <div
-              className={`w-5 md:w-6 h-16 md:h-20 landscape:h-12 rounded-t-full transition-colors duration-500 ${
-                isDown ? 'bg-white/30' : 'bg-white'
-              }`}
+              className="w-6 md:w-7 rounded-t-full"
+              style={{
+                height: naturalH,
+                backgroundColor: 'white',
+              }}
             />
           </div>
         )

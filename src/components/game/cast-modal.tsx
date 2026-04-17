@@ -74,13 +74,6 @@ export function CastModal({ open, onClose, castCode }: CastModalProps) {
           <p className="text-center text-xs font-semibold text-forest/50">Lenke kopiert!</p>
         )}
 
-        <div className="border-t border-forest/10 pt-3 space-y-1">
-          <p className="text-forest/50 text-xs font-bold uppercase tracking-widest">Har du Apple TV?</p>
-          <p className="text-forest/45 text-xs leading-relaxed">
-            Åpne lenken i Safari på iPhone → trykk Del → velg Apple TV fra AirPlay-listen.
-          </p>
-        </div>
-
         <button
           onClick={onClose}
           className="w-full min-h-[44px] rounded-2xl bg-forest text-lime font-black text-base transition-all active:scale-95"
