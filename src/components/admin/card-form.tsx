@@ -11,8 +11,10 @@ import { TokenInput, type TokenInputHandle } from './token-input'
 import type { KortType, Korttype, Droyhet, Kjonn, Vekt } from '@/types/game'
 
 const BUILT_IN_TYPES: KortType[] = [
-  'snusboks', 'pekelek', 'alle_drikker', 'kaos', 'utfordring', 'regel', 'kategori',
+  'snusboks', 'pekelek', 'alle_drikker', 'kaos', 'femfingre', 'utfordring', 'regel', 'kategori',
 ]
+
+const EMPTY_PAASTANDER: [string, string, string, string, string] = ['', '', '', '', '']
 
 interface CardFormProps {
   packId: string
@@ -35,6 +37,7 @@ interface CardFormProps {
     notater?: string | null
     kjonn?: Kjonn
     vekt?: Vekt
+    paastander?: string[] | null
   }
   onSaved: () => void
   onCancel?: () => void
@@ -72,6 +75,10 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
   const [type, setType] = useState<KortType>(editCard?.type ?? 'snusboks')
   const [tittel, setTittel] = useState(editCard?.tittel ?? '')
   const [innhold, setInnhold] = useState(editCard?.innhold ?? '')
+  const [paastander, setPaastander] = useState<string[]>(() => {
+    const src = editCard?.paastander ?? []
+    return [0, 1, 2, 3, 4].map((i) => src[i] ?? '')
+  })
   const [utfordring, setUtfordring] = useState(editCard?.utfordring ?? '')
   const [timerSekunder, setTimerSekunder] = useState<string>(
     editCard?.timer_sekunder != null ? String(editCard.timer_sekunder) : ''
@@ -123,6 +130,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     setType('snusboks')
     setTittel('')
     setInnhold('')
+    setPaastander([...EMPTY_PAASTANDER])
     setUtfordring('')
     setTimerSekunder('')
     setTimerSynlig(false)
@@ -140,7 +148,17 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!innhold.trim()) { setError('Innhold er påkrevd'); return }
+    const isFemFingre = type === 'femfingre'
+    const trimmedPaastander = paastander.map((p) => p.trim())
+    if (isFemFingre) {
+      if (trimmedPaastander.some((p) => !p)) {
+        setError('Alle 5 påstander må fylles ut')
+        return
+      }
+    } else if (!innhold.trim()) {
+      setError('Innhold er påkrevd')
+      return
+    }
     setSaving(true)
     setError('')
 
@@ -149,10 +167,11 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       spillpakke_id: packId,
       type,
       tittel: tittel.trim(),
-      innhold: innhold.trim(),
-      utfordring: utfordring.trim() || null,
-      timer_sekunder: timerSekunder ? parseInt(timerSekunder, 10) : null,
-      timer_synlig: timerSekunder ? timerSynlig : false,
+      innhold: isFemFingre ? '' : innhold.trim(),
+      paastander: isFemFingre ? trimmedPaastander : null,
+      utfordring: isFemFingre ? null : (utfordring.trim() || null),
+      timer_sekunder: isFemFingre ? null : (timerSekunder ? parseInt(timerSekunder, 10) : null),
+      timer_synlig: isFemFingre ? false : (timerSekunder ? timerSynlig : false),
       aktiv,
       droyhet,
       min_spillere: minSpillere ? Math.max(1, parseInt(minSpillere, 10)) : 2,
@@ -178,6 +197,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     if (!editCard) {
       setTittel('')
       setInnhold('')
+      setPaastander([...EMPTY_PAASTANDER])
       setUtfordring('')
       setTimerSekunder('')
       setTimerSynlig(false)
@@ -188,6 +208,8 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     }
     onSaved()
   }
+
+  const isFemFingre = type === 'femfingre'
 
   const FormFields = (
     <>
@@ -242,19 +264,46 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
         )}
       </div>
 
-      {/* Innhold */}
-      <div>
-        <label className={label}>Innhold *</label>
-        <TokenInput
-          ref={innholdRef}
-          value={innhold}
-          onChange={setInnhold}
-          rows={3}
-          autoFocus={!editCard}
-          placeholder="Skriv spørsmål eller innhold..."
-        />
-        <TokenInsertBar onInsert={(t) => insertToken(t, 'innhold')} />
-      </div>
+      {/* Innhold eller påstander (fem fingre) */}
+      {isFemFingre ? (
+        <div>
+          <label className={label}>Påstander * <span className="font-normal normal-case text-forest/30">(nøyaktig 5)</span></label>
+          <div className="space-y-2">
+            {paastander.map((p, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-forest/10 text-forest/60 flex items-center justify-center text-[11px] font-black">
+                  {i + 1}
+                </span>
+                <input
+                  type="text"
+                  value={p}
+                  onChange={(e) => {
+                    const next = [...paastander]
+                    next[i] = e.target.value
+                    setPaastander(next)
+                  }}
+                  autoFocus={!editCard && i === 0}
+                  className={inputCls}
+                  placeholder={`Påstand ${i + 1} …`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div>
+          <label className={label}>Innhold *</label>
+          <TokenInput
+            ref={innholdRef}
+            value={innhold}
+            onChange={setInnhold}
+            rows={3}
+            autoFocus={!editCard}
+            placeholder="Skriv spørsmål eller innhold..."
+          />
+          <TokenInsertBar onInsert={(t) => insertToken(t, 'innhold')} />
+        </div>
+      )}
 
       {/* Drøyhet — front-and-center as most impactful field */}
       <div>
@@ -309,17 +358,19 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
           </div>
 
           {/* Utfordring */}
-          <div>
-            <label className={label}>Utfordring <span className="font-normal normal-case text-forest/30">(valgfritt)</span></label>
-            <TokenInput
-              ref={utfordringRef}
-              value={utfordring ?? ''}
-              onChange={setUtfordring}
-              rows={2}
-              placeholder="f.eks. Den som klarer X kan dele ut {sips} slurker!"
-            />
-            <TokenInsertBar onInsert={(t) => insertToken(t, 'utfordring')} />
-          </div>
+          {!isFemFingre && (
+            <div>
+              <label className={label}>Utfordring <span className="font-normal normal-case text-forest/30">(valgfritt)</span></label>
+              <TokenInput
+                ref={utfordringRef}
+                value={utfordring ?? ''}
+                onChange={setUtfordring}
+                rows={2}
+                placeholder="f.eks. Den som klarer X kan dele ut {sips} slurker!"
+              />
+              <TokenInsertBar onInsert={(t) => insertToken(t, 'utfordring')} />
+            </div>
+          )}
 
           {/* Per-intensitet slurker */}
           <div>
@@ -349,6 +400,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
           </div>
 
           {/* Timer */}
+          {!isFemFingre && (
           <div>
             <label className={label}>Timer <span className="font-normal normal-case text-forest/30">(valgfritt, 5–600 sek)</span></label>
             <div className="flex items-center gap-2 flex-wrap">
@@ -369,6 +421,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
               )}
             </div>
           </div>
+          )}
 
           {/* Vekt + Min spillere in one row */}
           <div className="grid grid-cols-2 gap-3">
@@ -458,7 +511,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       <div className="flex gap-2 pt-1">
         <button
           type="submit"
-          disabled={saving || !innhold.trim()}
+          disabled={saving || (isFemFingre ? paastander.some((p) => !p.trim()) : !innhold.trim())}
           className="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-forest/80 active:scale-95 disabled:opacity-50 transition-all"
         >
           {saving ? 'Lagrer...' : editCard ? 'Oppdater' : 'Legg til kort'}
@@ -499,6 +552,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
           utfordring={utfordring || undefined}
           timerSekunder={timerSekunder ? parseInt(timerSekunder, 10) : null}
           timerSynlig={timerSynlig}
+          paastander={paastander}
           packColor={packColor}
           korttyper={korttyper}
         />

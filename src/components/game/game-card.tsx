@@ -8,6 +8,7 @@ import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips, isChugging } from '@/lib/game/sips'
 import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
+import { FemFingreCard } from './fem-fingre-card'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
 const GLITTERS = [
@@ -30,7 +31,21 @@ interface GameCardProps {
 
 type TimerPhase = 'idle' | 'running' | 'result'
 
-export function GameCard({ card, pack, players, intensitet, korttyper, onNext }: GameCardProps) {
+export function GameCard(props: GameCardProps) {
+  if (props.card.type === 'femfingre') {
+    return (
+      <FemFingreCard
+        card={props.card}
+        pack={props.pack}
+        korttyper={props.korttyper}
+        onNext={props.onNext}
+      />
+    )
+  }
+  return <StandardGameCard {...props} />
+}
+
+function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }: GameCardProps) {
   const { isActive: athina } = useAthina()
   const meta = getCardTypeMeta(card.type, korttyper)
   const sips = useMemo(() => {

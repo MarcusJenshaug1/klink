@@ -26,6 +26,7 @@ interface CardRow {
   notater?: string | null
   kjonn?: Kjonn
   vekt?: Vekt
+  paastander?: string[] | null
 }
 
 export default function CardManagementPage() {
@@ -54,7 +55,7 @@ export default function CardManagementPage() {
     const [{ data }, { data: ktData }] = await Promise.all([
       supabase
         .from('kort')
-        .select('id, type, tittel, innhold, utfordring, timer_sekunder, timer_synlig, aktiv, droyhet, min_spillere, slurker_lett, slurker_medium, slurker_borst, notater, kjonn, vekt')
+        .select('id, type, tittel, innhold, utfordring, timer_sekunder, timer_synlig, aktiv, droyhet, min_spillere, slurker_lett, slurker_medium, slurker_borst, notater, kjonn, vekt, paastander')
         .eq('spillpakke_id', packId)
         .order('opprettet_at', { ascending: false }),
       supabase

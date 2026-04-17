@@ -25,6 +25,7 @@ interface CardItem {
   notater?: string | null
   kjonn?: Kjonn
   vekt?: Vekt
+  paastander?: string[] | null
 }
 
 interface CardListProps {
@@ -73,7 +74,14 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }
       if (filter === 'droy' && c.droyhet !== 'droy') return false
       if (filter === 'timer' && c.timer_sekunder == null) return false
       if (filter === 'utfordring' && !c.utfordring) return false
-      if (q && !c.innhold.toLowerCase().includes(q) && !(c.tittel ?? '').toLowerCase().includes(q)) return false
+      if (q) {
+        const hay = [
+          c.innhold,
+          c.tittel ?? '',
+          ...(c.paastander ?? []),
+        ].join(' ').toLowerCase()
+        if (!hay.includes(q)) return false
+      }
       return true
     })
   }, [cards, filter, search])
@@ -349,9 +357,15 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }
                       {card.tittel && <span className="text-[11px] text-forest/40 font-medium">— {card.tittel}</span>}
                     </div>
 
-                    <p className={`text-sm text-forest leading-snug ${isExpanded ? '' : 'line-clamp-2'}`}>
-                      {card.innhold}
-                    </p>
+                    {card.type === 'femfingre' && card.paastander?.length ? (
+                      <ol className={`text-sm text-forest leading-snug list-decimal pl-5 space-y-0.5 ${isExpanded ? '' : 'line-clamp-2'}`}>
+                        {card.paastander.map((p, i) => <li key={i}>{p}</li>)}
+                      </ol>
+                    ) : (
+                      <p className={`text-sm text-forest leading-snug ${isExpanded ? '' : 'line-clamp-2'}`}>
+                        {card.innhold}
+                      </p>
+                    )}
 
                     {isExpanded && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
