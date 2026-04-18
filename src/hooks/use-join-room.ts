@@ -90,7 +90,7 @@ export function usePlayerJoin(code: string) {
 
   useEffect(() => {
     if (!connected || hostFound) return
-    const timer = setTimeout(() => setInvalidCode(true), 4000)
+    const timer = setTimeout(() => setInvalidCode(true), 2000)
     return () => clearTimeout(timer)
   }, [connected, hostFound])
 
