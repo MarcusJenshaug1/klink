@@ -9,6 +9,7 @@ import {
 } from 'react'
 import type { Card, Pack, GamePhase, GameState, Intensitet, Droyhet, Korttype } from '@/types/game'
 import { shuffle } from '@/lib/game/shuffle'
+import { shuffled } from '@/lib/game/interpolate'
 
 function generateCastCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -46,6 +47,7 @@ const initialState: GameState = {
   castCode: generateCastCode(),
   korttyper: [],
   customCards: [],
+  deckPlayerSeeds: [],
 }
 
 /**
@@ -93,10 +95,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'START_GAME': {
       const deck = buildWeightedDeck(action.cards, state.droyhet)
+      const players = state.players
+      const deckPlayerSeeds = deck.map(() => shuffled(players))
       return {
         ...state,
         cards: action.cards,
         deck,
+        deckPlayerSeeds,
         currentCardIndex: 0,
         phase: deck.length === 0 ? 'deck-empty' : 'playing',
         castCode: state.castCode ?? generateCastCode(),
@@ -119,9 +124,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'RESHUFFLE': {
       const deck = buildWeightedDeck(state.cards, state.droyhet)
+      const deckPlayerSeeds = deck.map(() => shuffled(state.players))
       return {
         ...state,
         deck,
+        deckPlayerSeeds,
         currentCardIndex: 0,
         phase: deck.length === 0 ? 'deck-empty' : 'playing',
       }

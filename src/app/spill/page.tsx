@@ -51,13 +51,14 @@ export default function GamePage() {
       : currentCard.slurker_borst
     const sips = override != null ? override : getSips(state.intensitet)
 
-    const raw = interpolateToSegments(currentCard.innhold, state.players)
+    const seed = state.deckPlayerSeeds?.[state.currentCardIndex]
+    const raw = interpolateToSegments(currentCard.innhold, state.players, seed)
     const segments = raw.map((s) =>
       s.type === 'text' ? { ...s, text: replaceSips(s.text, sips) } : s
     )
 
     const rawU = currentCard.utfordring
-      ? interpolateToSegments(currentCard.utfordring, state.players)
+      ? interpolateToSegments(currentCard.utfordring, state.players, seed)
       : null
     const utfordringSegments =
       rawU?.map((s) => (s.type === 'text' ? { ...s, text: replaceSips(s.text, sips) } : s)) ?? null

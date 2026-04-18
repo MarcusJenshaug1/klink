@@ -11,7 +11,7 @@ export type TextSegment   = { type: 'text';   text: string }
 export type PlayerSegment = { type: 'player'; name: string }
 export type Segment = TextSegment | PlayerSegment
 
-function shuffled<T>(arr: T[]): T[] {
+export function shuffled<T>(arr: T[]): T[] {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -60,7 +60,7 @@ export function interpolate(template: string, players: string[]): string {
  * Same as interpolate() but returns typed segments so the caller can render
  * player names differently (e.g. as highlighted badge spans).
  */
-export function interpolateToSegments(template: string, players: string[]): Segment[] {
+export function interpolateToSegments(template: string, players: string[], playerPool?: string[]): Segment[] {
   const MARK = (name: string) => `\x00player:${name}\x00`
 
   let result: string
@@ -69,7 +69,7 @@ export function interpolateToSegments(template: string, players: string[]): Segm
       .replace(/\{spiller(\d+)\}/g, (_, i) => MARK(`Person ${i}`))
       .replace(/\{spiller\}/g, () => MARK('Du'))
   } else {
-    const pool = shuffled(players)
+    const pool = playerPool ?? shuffled(players)
     let tmp = template
 
     // {spiller1}, {spiller2}, …

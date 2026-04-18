@@ -64,4 +64,5 @@ export interface GameState {
   korttyper: Korttype[]
   customCards: Card[]
   castCode?: string
+  deckPlayerSeeds: string[][]
 }
