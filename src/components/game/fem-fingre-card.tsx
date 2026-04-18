@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getCardTypeMeta } from '@/lib/game/card-types'
+import { useAthina } from '@/context/athina-context'
 import type { Card, Pack, Korttype } from '@/types/game'
 
 interface FemFingreCardProps {
@@ -12,6 +13,7 @@ interface FemFingreCardProps {
 }
 
 export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardProps) {
+  const { isActive: athina } = useAthina()
   const meta = getCardTypeMeta(card.type, korttyper)
   const paastander = card.paastander ?? []
   const [revealed, setRevealed] = useState(0)
@@ -31,7 +33,7 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
   return (
     <div
       className="absolute inset-0 flex flex-col items-center justify-center px-5 landscape:px-20 pt-16 pb-24 transition-colors duration-700"
-      style={{ backgroundColor: pack.farge }}
+      style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
       <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl lg:landscape:max-w-3xl flex flex-col items-center gap-3 md:gap-5 landscape:gap-2">
 
@@ -51,9 +53,12 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
 
         {/* Main card — frosted glass; stop propagation while revealing to avoid accidental next-card */}
         <div
-          className="w-full bg-white/15 backdrop-blur-md rounded-3xl landscape:rounded-2xl p-6 md:p-10 lg:p-12 landscape:p-5 lg:landscape:p-10 flex flex-col gap-5 md:gap-7 landscape:gap-3 lg:landscape:gap-6 shadow-xl"
+          className={`relative overflow-hidden w-full ${athina ? 'bg-white/18' : 'bg-white/15'} backdrop-blur-md rounded-3xl landscape:rounded-2xl p-6 md:p-10 lg:p-12 landscape:p-5 lg:landscape:p-10 flex flex-col gap-5 md:gap-7 landscape:gap-3 lg:landscape:gap-6 shadow-xl`}
           onClick={canReveal ? (e) => e.stopPropagation() : undefined}
         >
+          {athina && (
+            <div className="absolute inset-0 rounded-3xl landscape:rounded-2xl bg-[#FF1493]/30 pointer-events-none" />
+          )}
 
           {/* Hånd-visualisering: 5 fingre som bøyes ned etter hvert som påstander avsløres */}
           <FiveFingerHand count={revealed} total={total} />
@@ -73,7 +78,7 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
                 >
                   <span
                     className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-colors ${
-                      isRevealed ? 'bg-white text-forest' : 'bg-white/15 text-white/40'
+                      isRevealed ? (athina ? 'bg-white text-[#FF1493]' : 'bg-white text-forest') : 'bg-white/15 text-white/40'
                     }`}
                   >
                     {i + 1}
@@ -94,8 +99,8 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
           {!allRevealed ? (
             <button
               onClick={handleReveal}
-              className="w-full flex items-center justify-center gap-2 active:scale-95 font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all hover:opacity-90"
-              style={{ backgroundColor: 'white', color: pack.farge }}
+              className="relative w-full flex items-center justify-center gap-2 active:scale-95 font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all hover:opacity-90"
+              style={{ backgroundColor: 'white', color: athina ? '#FF1493' : pack.farge }}
             >
               Avslør påstand {revealed + 1}/{total}
             </button>

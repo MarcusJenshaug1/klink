@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, Download } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -349,6 +350,7 @@ function IosGuideModal({ onClose }: { onClose: () => void }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function InstallCta() {
+  const { isActive: athina } = useAthina()
   const [platform, setPlatform] = useState<'ios' | 'android' | null>(null)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showGuide, setShowGuide] = useState(false)
@@ -406,17 +408,21 @@ export function InstallCta() {
       <div className="flex items-center gap-2">
         <button
           onClick={platform === 'ios' ? () => setShowGuide(true) : handleAndroidInstall}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-forest/12 hover:bg-forest/20 active:scale-95 transition-all"
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full active:scale-95 transition-all ${
+            athina ? 'bg-white/25 hover:bg-white/35' : 'bg-forest/12 hover:bg-forest/20'
+          }`}
         >
-          <Download className="w-3.5 h-3.5 text-forest/70" />
-          <span className="text-xs font-bold text-forest/70">Installer appen</span>
+          <Download className={`w-3.5 h-3.5 ${athina ? 'text-white' : 'text-forest/70'}`} />
+          <span className={`text-xs font-bold ${athina ? 'text-white' : 'text-forest/70'}`}>Installer appen</span>
         </button>
         <button
           onClick={handleDismiss}
           aria-label="Ikke vis igjen"
-          className="w-6 h-6 rounded-full hover:bg-forest/10 flex items-center justify-center transition-colors"
+          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+            athina ? 'hover:bg-white/20' : 'hover:bg-forest/10'
+          }`}
         >
-          <X className="w-3 h-3 text-forest/40" />
+          <X className={`w-3 h-3 ${athina ? 'text-white/70' : 'text-forest/40'}`} />
         </button>
       </div>
 

@@ -102,8 +102,8 @@ export default function LandingPage() {
         <Link
           href="/join"
           className={cn(
-            'mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-black transition-all active:scale-95',
-            isActive ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-forest/10 text-forest hover:bg-forest/15'
+            'mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-black transition-all active:scale-95 shadow-sm',
+            isActive ? 'bg-white/40 text-[#FF1493] backdrop-blur-sm hover:bg-white/55' : 'bg-forest/10 text-forest hover:bg-forest/15'
           )}
         >
           <LogIn className="w-4 h-4" />
