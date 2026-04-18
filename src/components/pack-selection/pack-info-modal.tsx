@@ -1,6 +1,7 @@
 'use client'
 
 import { X } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
 import type { Pack } from '@/types/game'
 
 interface PackInfoModalProps {
@@ -10,16 +11,21 @@ interface PackInfoModalProps {
 }
 
 export function PackInfoModal({ pack, cardCount, onClose }: PackInfoModalProps) {
+  const { isActive: athina } = useAthina()
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up"
+        className="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up overflow-hidden"
         style={{ backgroundColor: pack.farge }}
         onClick={(e) => e.stopPropagation()}
       >
+        {athina && (
+          <div className="absolute inset-0 rounded-t-3xl sm:rounded-3xl bg-[#FF1493]/30 pointer-events-none" />
+        )}
         <div className="flex items-start justify-between gap-3 mb-4">
           <h2 className="font-display font-black text-2xl text-white leading-tight">{pack.navn}</h2>
           <button
