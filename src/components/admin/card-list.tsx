@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { Trash2, Trophy, Timer, Eye, EyeOff, Pencil, Search, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { getCardTypeMeta } from '@/lib/game/card-types'
@@ -34,6 +34,7 @@ interface CardListProps {
   cards: CardItem[]
   korttyper?: Korttype[]
   onRefresh: () => void
+  defaultEditId?: string
 }
 
 type FilterKey = 'alle' | 'aktive' | 'inaktive' | 'mild' | 'normal' | 'droy' | 'timer' | 'utfordring'
@@ -55,9 +56,21 @@ const DROYHET_BADGE: Record<Droyhet, { label: string; cls: string }> = {
   droy: { label: 'Drøy', cls: 'bg-red-50 text-red-700' },
 }
 
-export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }: CardListProps) {
+export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, defaultEditId }: CardListProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const autoOpenedRef = useRef(false)
+
+  useEffect(() => {
+    if (!defaultEditId || autoOpenedRef.current || cards.length === 0) return
+    const exists = cards.some((c) => c.id === defaultEditId)
+    if (!exists) return
+    autoOpenedRef.current = true
+    setEditingId(defaultEditId)
+    setTimeout(() => {
+      document.getElementById(`card-${defaultEditId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+  }, [defaultEditId, cards])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<FilterKey>('alle')
   const [search, setSearch] = useState('')
@@ -307,6 +320,7 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh }
             return (
               <div
                 key={card.id}
+                id={`card-${card.id}`}
                 className={`bg-white rounded-xl border border-cream-dark/40 hover:border-forest/20 transition-colors ${isInactive ? 'opacity-60' : ''}`}
               >
                 <div className="flex items-start gap-2 p-3">

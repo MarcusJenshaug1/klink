@@ -125,6 +125,7 @@ export default function GamePage() {
         if (flagOpen) { setFlagOpen(false); return }
         if (castOpen) { setCastOpen(false); return }
         if (exitOpen) { setExitOpen(false); return }
+        setExitOpen(true)
         return
       }
       if (infoOpen || playersOpen || exitOpen || flagOpen || castOpen) return
@@ -191,11 +192,21 @@ export default function GamePage() {
 
   const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
 
+  const anyModalOpen = infoOpen || playersOpen || exitOpen || flagOpen || castOpen
+
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (animating || anyModalOpen) return
+    const target = e.target as HTMLElement
+    if (target.closest('button, a, input, textarea, select')) return
+    nextCard()
+  }
+
   return (
     <div
       className="fixed inset-0 no-overscroll select-none"
       style={{ backgroundColor: athina ? 'transparent' : currentPack.farge }}
       {...swipeHandlers}
+      onClick={handleBackgroundClick}
     >
       {scareActive && (
         <div

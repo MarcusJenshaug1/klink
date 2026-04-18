@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Plus, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -31,7 +31,9 @@ interface CardRow {
 
 export default function CardManagementPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const packId = params.id as string
+  const kortId = searchParams.get('kortId') ?? undefined
   const [packName, setPackName] = useState('')
   const [packColor, setPackColor] = useState('#1A3A1A')
   const [cards, setCards] = useState<CardRow[]>([])
@@ -125,7 +127,7 @@ export default function CardManagementPage() {
           </button>
         </div>
       ) : (
-        <CardList packId={packId} packColor={packColor} cards={cards} korttyper={korttyper} onRefresh={loadCards} />
+        <CardList packId={packId} packColor={packColor} cards={cards} korttyper={korttyper} onRefresh={loadCards} defaultEditId={kortId} />
       )}
 
       {/* New card modal */}

@@ -19,6 +19,7 @@ export function useCardCounts(selectedDroyhet: Droyhet) {
       .from('kort')
       .select('spillpakke_id, droyhet')
       .eq('aktiv', true)
+      .limit(1000)
       .then(({ data }) => {
         setCardMeta(data ?? [])
       })

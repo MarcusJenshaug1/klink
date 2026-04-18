@@ -16,6 +16,7 @@ export function useHostRoom() {
   const [players, setPlayers] = useState<string[]>([])
   const [customCards, setCustomCards] = useState<Card[]>([])
   const [connected, setConnected] = useState(false)
+  const channelRef = useRef<RealtimeChannel | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -42,10 +43,14 @@ export function useHostRoom() {
         }
         setCustomCards((prev) => prev.some((c) => c.id === id) ? prev : [...prev, card])
       })
-      .subscribe((status) => {
-        setConnected(status === 'SUBSCRIBED')
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ role: 'host' })
+          setConnected(true)
+        }
       })
 
+    channelRef.current = channel
     return () => { supabase.removeChannel(channel) }
   }, [code])
 
@@ -59,6 +64,8 @@ export function useHostRoom() {
 export function usePlayerJoin(code: string) {
   const [connected, setConnected] = useState(false)
   const [sent, setSent] = useState(false)
+  const [hostFound, setHostFound] = useState(false)
+  const [invalidCode, setInvalidCode] = useState(false)
   const channelRef = useRef<RealtimeChannel | null>(null)
 
   useEffect(() => {
@@ -66,12 +73,26 @@ export function usePlayerJoin(code: string) {
     const supabase = createClient()
     const channel: RealtimeChannel = supabase
       .channel(`klink-${code}`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState<{ role?: string }>()
+        const hasHost = Object.values(state).flat().some((p) => p.role === 'host')
+        if (hasHost) setHostFound(true)
+      })
+      .on('presence', { event: 'join' }, ({ newPresences }: { newPresences: { role?: string }[] }) => {
+        if (newPresences.some((p) => p.role === 'host')) setHostFound(true)
+      })
       .subscribe((status) => {
         setConnected(status === 'SUBSCRIBED')
       })
     channelRef.current = channel
     return () => { supabase.removeChannel(channel) }
   }, [code])
+
+  useEffect(() => {
+    if (!connected || hostFound) return
+    const timer = setTimeout(() => setInvalidCode(true), 4000)
+    return () => clearTimeout(timer)
+  }, [connected, hostFound])
 
   const sendJoin = useCallback(async (name: string): Promise<boolean> => {
     const ch = channelRef.current
@@ -97,5 +118,5 @@ export function usePlayerJoin(code: string) {
     return result === 'ok'
   }, [])
 
-  return { connected, sent, sendJoin, sendCard }
+  return { connected, sent, sendJoin, sendCard, hostFound, invalidCode }
 }

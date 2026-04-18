@@ -49,8 +49,11 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
           </div>
         </div>
 
-        {/* Main card — frosted glass */}
-        <div className="w-full bg-white/15 backdrop-blur-md rounded-3xl landscape:rounded-2xl p-6 md:p-10 lg:p-12 landscape:p-5 lg:landscape:p-10 flex flex-col gap-5 md:gap-7 landscape:gap-3 lg:landscape:gap-6 shadow-xl">
+        {/* Main card — frosted glass; stop propagation while revealing to avoid accidental next-card */}
+        <div
+          className="w-full bg-white/15 backdrop-blur-md rounded-3xl landscape:rounded-2xl p-6 md:p-10 lg:p-12 landscape:p-5 lg:landscape:p-10 flex flex-col gap-5 md:gap-7 landscape:gap-3 lg:landscape:gap-6 shadow-xl"
+          onClick={canReveal ? (e) => e.stopPropagation() : undefined}
+        >
 
           {/* Hånd-visualisering: 5 fingre som bøyes ned etter hvert som påstander avsløres */}
           <FiveFingerHand count={revealed} total={total} />
@@ -97,22 +100,12 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
               Avslør påstand {revealed + 1}/{total}
             </button>
           ) : (
-            <div className="flex flex-col gap-3">
-              <div className="rounded-2xl bg-black/25 px-4 py-3.5 text-center">
-                <p className="text-white font-black text-sm md:text-base leading-snug">
-                  Drikk én slurk per finger nede — eller per finger oppe.
-                </p>
-                <p className="text-white/70 text-xs md:text-sm font-semibold mt-1">
-                  Bestem selv før runden.
-                </p>
-              </div>
-              <button
-                onClick={onNext}
-                className="w-full flex items-center justify-center gap-2 bg-white/25 hover:bg-white/35 active:scale-95 text-white font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all"
-              >
-                Neste kort →
-              </button>
-            </div>
+            <button
+              onClick={onNext}
+              className="w-full flex items-center justify-center gap-2 bg-white/25 hover:bg-white/35 active:scale-95 text-white font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all"
+            >
+              Neste kort →
+            </button>
           )}
 
           {/* Progress-dots */}

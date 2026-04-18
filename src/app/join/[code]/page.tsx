@@ -6,7 +6,7 @@ import { Beer, Check, Loader2, PenLine, Send } from 'lucide-react'
 
 export default function JoinPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params)
-  const { connected, sent, sendJoin, sendCard } = usePlayerJoin(code.toUpperCase())
+  const { connected, sent, sendJoin, sendCard, hostFound, invalidCode } = usePlayerJoin(code.toUpperCase())
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -33,7 +33,14 @@ export default function JoinPage({ params }: { params: Promise<{ code: string }>
         </div>
 
         <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg">
-          {sent ? (
+          {invalidCode ? (
+            <div className="text-center py-4 space-y-2">
+              <p className="text-forest font-black text-lg">Ugyldig kode</p>
+              <p className="text-forest/60 font-semibold text-sm">
+                Fant ingen aktiv sesjon med kode <span className="font-black text-forest">{code.toUpperCase()}</span>. Sjekk at koden er riktig.
+              </p>
+            </div>
+          ) : sent ? (
             /* Success state + card form */
             <div className="space-y-5">
               <div className="flex items-center gap-3">
@@ -78,15 +85,15 @@ export default function JoinPage({ params }: { params: Promise<{ code: string }>
 
               <button
                 type="submit"
-                disabled={!name.trim() || loading || !connected}
+                disabled={!name.trim() || loading || !hostFound}
                 className="w-full min-h-[52px] rounded-2xl bg-forest text-lime font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
-                ) : !connected ? (
+                ) : !hostFound ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Kobler til…
+                    Sjekker kode…
                   </>
                 ) : (
                   'Bli med!'
@@ -168,7 +175,7 @@ function CardSubmitForm({ name, sendCard }: CardSubmitFormProps) {
         onChange={(e) => setTittel(e.target.value)}
         placeholder="Tittel (valgfritt)"
         maxLength={60}
-        className="w-full bg-transparent border-b border-forest/15 focus:border-forest/50 outline-none text-forest font-semibold text-sm py-1.5 placeholder:text-forest/25 transition-colors"
+        className="w-full bg-transparent border-b border-forest/15 focus:border-forest/50 outline-none text-forest font-semibold text-base py-1.5 placeholder:text-forest/25 transition-colors"
       />
 
       <div className="space-y-1.5">
@@ -179,7 +186,7 @@ function CardSubmitForm({ name, sendCard }: CardSubmitFormProps) {
           placeholder="Skriv kortinnholdet her... Eks: Alle som har på seg rødt drikker {spiller} slurker!"
           rows={3}
           maxLength={280}
-          className="w-full bg-forest/5 rounded-xl border border-forest/10 focus:border-forest/30 outline-none text-forest font-medium text-sm px-3 py-2.5 placeholder:text-forest/25 transition-colors resize-none leading-relaxed"
+          className="w-full bg-forest/5 rounded-xl border border-forest/10 focus:border-forest/30 outline-none text-forest font-medium text-base px-3 py-2.5 placeholder:text-forest/25 transition-colors resize-none leading-relaxed"
         />
         <button
           type="button"

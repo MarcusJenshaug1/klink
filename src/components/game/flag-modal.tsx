@@ -90,13 +90,15 @@ export function FlagModal({ open, cardId, onClose }: FlagModalProps) {
               ))}
             </div>
 
-            <textarea
-              value={kommentar}
-              onChange={(e) => setKommentar(e.target.value)}
-              placeholder="Kommentar (valgfritt)"
-              rows={2}
-              className="w-full px-4 py-2.5 bg-white border border-cream-dark/60 rounded-xl text-forest text-sm focus:outline-none focus:border-forest/40 resize-none mb-4"
-            />
+            {reason === 'annet' && (
+              <textarea
+                value={kommentar}
+                onChange={(e) => setKommentar(e.target.value)}
+                placeholder="Beskriv problemet (valgfritt)"
+                rows={2}
+                className="w-full px-4 py-2.5 bg-white border border-cream-dark/60 rounded-xl text-forest text-sm focus:outline-none focus:border-forest/40 resize-none mb-4"
+              />
+            )}
 
             <button
               onClick={submit}

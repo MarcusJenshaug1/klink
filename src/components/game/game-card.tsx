@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
-import { Droplets, Trophy, Timer, Sparkles } from 'lucide-react'
+import { Droplets, Trophy, Timer, Sparkles, PenLine } from 'lucide-react'
 import JSConfetti from 'js-confetti'
 import { getCardTypeMeta } from '@/lib/game/card-types'
 import { interpolateToSegments } from '@/lib/game/interpolate'
@@ -252,9 +252,12 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
 
             {/* Custom card author */}
             {card.custom_author && (
-              <p className="text-white/35 text-xs font-medium text-center mt-1">
-                — {card.custom_author}
-              </p>
+              <div className="flex justify-center mt-1">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 text-white/70 text-xs font-semibold">
+                  <PenLine className="w-3 h-3" />
+                  Laget av {card.custom_author}
+                </span>
+              </div>
             )}
 
             {/* Timer */}
@@ -272,9 +275,9 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
                 )}
 
                 {timerPhase === 'delay' && (
-                  <div className="flex flex-col items-center gap-1">
-                    <p className="text-white/60 text-sm font-semibold">Starter om</p>
-                    <p className="text-white font-black tabular-nums" style={{ fontSize: '4rem', lineHeight: 1 }}>
+                  <div className="w-full rounded-2xl bg-black/20 px-5 py-4 flex flex-col items-center gap-1 animate-pulse">
+                    <p className="text-white/50 text-xs font-bold uppercase tracking-widest">Gjør deg klar…</p>
+                    <p className="text-white/70 font-black tabular-nums" style={{ fontSize: '3rem', lineHeight: 1 }}>
                       {delayCountdown}
                     </p>
                   </div>
@@ -283,9 +286,12 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
                 {timerPhase === 'running' && (
                   <div className="flex flex-col items-center gap-3 w-full">
                     {timerSynlig && (
-                      <p className="text-white font-black tabular-nums text-center landscape:text-6xl" style={{ fontSize: '5rem', lineHeight: 1 }}>
-                        {countdownDisplay}
-                      </p>
+                      <div className="flex flex-col items-center gap-1">
+                        <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Nedtelling</p>
+                        <p className="text-white font-black tabular-nums text-center landscape:text-6xl" style={{ fontSize: '5rem', lineHeight: 1 }}>
+                          {countdownDisplay}
+                        </p>
+                      </div>
                     )}
                     {!timerSynlig && (
                       <button

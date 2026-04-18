@@ -203,7 +203,7 @@ export default function RapporterPage() {
                 {r.kort && (
                   <>
                     <Link
-                      href={`/admin/pakker/${r.kort.spillpakke_id}/kort`}
+                      href={`/admin/pakker/${r.kort.spillpakke_id}/kort?kortId=${r.kort_id}`}
                       className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-forest/10 text-forest hover:bg-forest/15 transition"
                     >
                       <Pencil className="w-3 h-3" />
