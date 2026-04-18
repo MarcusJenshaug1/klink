@@ -31,18 +31,34 @@ export function AthinaProvider({ children }: { children: ReactNode }) {
     if (meta) meta.setAttribute('content', isActive ? ATHINA : LIME)
   }, [isActive])
 
-  // Swap favicon — update ALL icon links (including ones Next.js adds after hydration)
-  const originalIconsRef = useRef<Map<HTMLLinkElement, { href: string; type: string }>>(new Map())
+  // Swap favicon, apple-touch-icon and manifest — update ALL relevant links
+  // (including ones Next.js adds after hydration) so PWA install picks up the
+  // Athina-variant icons + manifest.
+  const originalLinksRef = useRef<Map<HTMLLinkElement, { href: string; type: string }>>(new Map())
   useEffect(() => {
+    function athinaHrefFor(link: HTMLLinkElement): { href: string; type: string } | null {
+      if (link.rel === 'manifest') return { href: '/manifest-athina.json', type: link.type }
+      if (link.rel === 'apple-touch-icon') return { href: '/apple-icon-athina', type: link.type }
+      if (link.rel === 'icon') {
+        const sizes = link.getAttribute('sizes') ?? ''
+        if (sizes.includes('192')) return { href: '/icon-192-athina', type: 'image/png' }
+        if (sizes.includes('512')) return { href: '/icon-512-athina', type: 'image/png' }
+        return { href: '/favicon-athina.svg', type: 'image/svg+xml' }
+      }
+      return null
+    }
+
     function updateLink(link: HTMLLinkElement) {
-      if (!originalIconsRef.current.has(link)) {
-        originalIconsRef.current.set(link, { href: link.href, type: link.type })
+      const target = athinaHrefFor(link)
+      if (!target) return
+      if (!originalLinksRef.current.has(link)) {
+        originalLinksRef.current.set(link, { href: link.href, type: link.type })
       }
       if (isActive) {
-        link.href = '/favicon-athina.svg'
-        link.type = 'image/svg+xml'
+        link.href = target.href
+        link.type = target.type
       } else {
-        const orig = originalIconsRef.current.get(link)
+        const orig = originalLinksRef.current.get(link)
         if (orig) {
           link.href = orig.href
           link.type = orig.type
@@ -50,14 +66,14 @@ export function AthinaProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Update existing icon links
-    document.querySelectorAll<HTMLLinkElement>("link[rel='icon']").forEach(updateLink)
+    const selector = "link[rel='icon'], link[rel='apple-touch-icon'], link[rel='manifest']"
+    document.querySelectorAll<HTMLLinkElement>(selector).forEach(updateLink)
 
-    // Watch for new icon links added by Next.js after hydration
+    // Watch for new relevant links added by Next.js after hydration
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
         for (const node of m.addedNodes) {
-          if (node instanceof HTMLLinkElement && node.rel === 'icon') {
+          if (node instanceof HTMLLinkElement && (node.rel === 'icon' || node.rel === 'apple-touch-icon' || node.rel === 'manifest')) {
             updateLink(node)
           }
         }

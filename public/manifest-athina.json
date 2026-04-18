@@ -1,0 +1,26 @@
+{
+  "name": "Klink - Drikkespillet",
+  "short_name": "Klink",
+  "description": "Det festligste drikkespillet! Velg spillpakke, legg til spillere og klink!",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FF1493",
+  "theme_color": "#FF1493",
+  "categories": ["games", "entertainment"],
+  "lang": "nb",
+  "icons": [
+    {
+      "src": "/icon-192-athina",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512-athina",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
