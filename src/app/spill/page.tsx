@@ -14,6 +14,7 @@ import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { useSwipe } from '@/hooks/use-swipe'
 import { useTvBroadcast } from '@/hooks/use-tv-cast'
+import { useThemeColor } from '@/hooks/use-theme-color'
 import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, replaceSips } from '@/lib/game/sips'
 import { track } from '@/lib/analytics/events'
@@ -33,6 +34,9 @@ export default function GamePage() {
   const [slideDir, setSlideDir] = useState<SlideDir>(null)
 
   const { broadcast } = useTvBroadcast(state.castCode)
+
+  // Sync iOS status bar / html-bg med aktivt kort sin pakke-farge
+  useThemeColor(currentPack?.farge ?? null)
 
   // Redirect if no deck loaded
   useEffect(() => {
