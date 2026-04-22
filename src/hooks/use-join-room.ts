@@ -58,7 +58,13 @@ export function useHostRoom() {
     setPlayers((prev) => prev.filter((p) => p !== name))
   }, [])
 
-  return { code, players, customCards, connected, removePlayer }
+  const addPlayer = useCallback((name: string) => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    setPlayers((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]))
+  }, [])
+
+  return { code, players, customCards, connected, removePlayer, addPlayer }
 }
 
 export function usePlayerJoin(code: string) {

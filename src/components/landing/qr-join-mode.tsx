@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
-import { Users, Wifi, WifiOff, X } from 'lucide-react'
+import { Plus, Users, Wifi, WifiOff, X } from 'lucide-react'
 import { useHostRoom } from '@/hooks/use-join-room'
 import { useAthina } from '@/context/athina-context'
 import { cn } from '@/lib/utils'
@@ -13,15 +13,23 @@ interface QrJoinModeProps {
 }
 
 export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
-  const { code, players, customCards, connected, removePlayer } = useHostRoom()
+  const { code, players, customCards, connected, removePlayer, addPlayer } = useHostRoom()
   const { isActive: athina } = useAthina()
   const [joinUrl, setJoinUrl] = useState('')
+  const [manualName, setManualName] = useState('')
 
   useEffect(() => {
     setJoinUrl(`${window.location.origin}/join/${code}`)
   }, [code])
 
   const canStart = players.length >= 2
+
+  const submitManual = () => {
+    const name = manualName.trim()
+    if (!name) return
+    addPlayer(name)
+    setManualName('')
+  }
 
   return (
     <div className="space-y-4">
@@ -116,6 +124,41 @@ export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
           <p className="text-sm font-semibold">Spillere som skanner QR-koden dukker opp her</p>
         </div>
       )}
+
+      {/* Manuell legg-til — supplement til QR-scan */}
+      <div className={cn(
+        'flex items-center gap-2 rounded-2xl px-3 py-1.5 transition-colors',
+        athina ? 'bg-white/10 focus-within:bg-white/15' : 'bg-forest/8 focus-within:bg-forest/12'
+      )}>
+        <input
+          type="text"
+          value={manualName}
+          onChange={(e) => setManualName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              submitManual()
+            }
+          }}
+          placeholder="Legg til spiller manuelt"
+          maxLength={20}
+          className={cn(
+            'flex-1 bg-transparent font-semibold text-sm focus:outline-none min-w-0',
+            athina ? 'text-white placeholder:text-white/40' : 'text-forest placeholder:text-forest/40'
+          )}
+        />
+        <button
+          onClick={submitManual}
+          disabled={!manualName.trim()}
+          aria-label="Legg til spiller"
+          className={cn(
+            'shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none',
+            athina ? 'bg-white/25 text-white hover:bg-white/35' : 'bg-forest text-lime hover:bg-forest-light'
+          )}
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
 
       {!canStart && players.length > 0 && (
         <p className={cn(
