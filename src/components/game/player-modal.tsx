@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Plus, UserRound } from 'lucide-react'
+import { X, Plus, UserRound, UserPlus, QrCode } from 'lucide-react'
 import { useAthina } from '@/context/athina-context'
+import { cn } from '@/lib/utils'
+import { QrScanPanel } from './qr-scan-panel'
 
 interface PlayerModalProps {
   open: boolean
@@ -12,8 +14,11 @@ interface PlayerModalProps {
   onRemovePlayer: (index: number) => void
 }
 
+type Mode = 'manual' | 'qr'
+
 export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlayer }: PlayerModalProps) {
   const [newName, setNewName] = useState('')
+  const [mode, setMode] = useState<Mode>('manual')
   const { isActive: athina } = useAthina()
 
   const handleAdd = () => {
@@ -25,6 +30,10 @@ export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlaye
   }
 
   if (!open) return null
+
+  const tabBase = 'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-black transition-all'
+  const tabActive = athina ? 'bg-white/30 text-white shadow-sm' : 'bg-forest text-lime shadow-sm'
+  const tabInactive = athina ? 'text-white/60 hover:text-white/80' : 'text-forest/50 hover:text-forest/80'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
@@ -83,26 +92,47 @@ export function PlayerModal({ open, onClose, players, onAddPlayer, onRemovePlaye
           )}
         </div>
 
-        {/* Add player */}
-        <div className="flex gap-2">
-          <div className="flex-1 bg-white/60 backdrop-blur-sm rounded-2xl px-4 flex items-center">
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Legg til spiller..."
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              className="w-full bg-transparent text-forest placeholder:text-forest/30 font-semibold text-base focus:outline-none py-3"
-            />
-          </div>
+        {/* Mode toggle */}
+        <div className={cn('flex gap-1 p-1 rounded-2xl mb-4', athina ? 'bg-white/15' : 'bg-forest/10')}>
           <button
-            onClick={handleAdd}
-            disabled={!newName.trim()}
-            aria-label="Legg til"
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center disabled:opacity-30 active:scale-95 transition-all ${athina ? 'bg-[#E91E8C] text-white' : 'bg-forest text-lime'}`}
+            onClick={() => setMode('manual')}
+            className={cn(tabBase, mode === 'manual' ? tabActive : tabInactive)}
           >
-            <Plus className="w-5 h-5" />
+            <UserPlus className="w-3.5 h-3.5" />
+            Legg til selv
+          </button>
+          <button
+            onClick={() => setMode('qr')}
+            className={cn(tabBase, mode === 'qr' ? tabActive : tabInactive)}
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            Skann inn
           </button>
         </div>
+
+        {mode === 'manual' ? (
+          <div className="flex gap-2">
+            <div className="flex-1 bg-white/60 backdrop-blur-sm rounded-2xl px-4 flex items-center">
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Legg til spiller..."
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                className="w-full bg-transparent text-forest placeholder:text-forest/30 font-semibold text-base focus:outline-none py-3"
+              />
+            </div>
+            <button
+              onClick={handleAdd}
+              disabled={!newName.trim()}
+              aria-label="Legg til"
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center disabled:opacity-30 active:scale-95 transition-all ${athina ? 'bg-[#E91E8C] text-white' : 'bg-forest text-lime'}`}
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <QrScanPanel existingPlayers={players} onAddPlayer={onAddPlayer} />
+        )}
       </div>
     </div>
   )
