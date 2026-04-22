@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { GameCard } from '@/components/game/game-card'
+import { CardTypeIntro } from '@/components/game/card-type-intro'
 import { CastModal } from '@/components/game/cast-modal'
 import { GameHud } from '@/components/game/game-hud'
 import { InfoModal } from '@/components/game/info-modal'
@@ -14,6 +15,7 @@ import { useGame } from '@/context/game-context'
 import { useAthina } from '@/context/athina-context'
 import { useSwipe } from '@/hooks/use-swipe'
 import { useTvBroadcast } from '@/hooks/use-tv-cast'
+import { useThemeColor } from '@/hooks/use-theme-color'
 import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, replaceSips } from '@/lib/game/sips'
 import { track } from '@/lib/analytics/events'
@@ -33,6 +35,9 @@ export default function GamePage() {
   const [slideDir, setSlideDir] = useState<SlideDir>(null)
 
   const { broadcast } = useTvBroadcast(state.castCode)
+
+  // Sync iOS status bar / html-bg med aktivt kort sin pakke-farge
+  useThemeColor(currentPack?.farge ?? null)
 
   // Redirect if no deck loaded
   useEffect(() => {
@@ -230,6 +235,9 @@ export default function GamePage() {
           onNext={nextCard}
         />
       </div>
+
+      {/* Tydelig "ny korttype"-overlay når kort-typen endrer seg */}
+      <CardTypeIntro type={currentCard.type} korttyper={state.korttyper} />
 
       {/* HUD */}
       <GameHud
