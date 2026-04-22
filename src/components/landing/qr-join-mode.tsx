@@ -143,7 +143,7 @@ export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
           placeholder="Legg til spiller manuelt"
           maxLength={20}
           className={cn(
-            'flex-1 bg-transparent font-semibold text-sm focus:outline-none min-w-0',
+            'flex-1 bg-transparent font-semibold text-base focus:outline-none min-w-0',
             athina ? 'text-white placeholder:text-white/40' : 'text-forest placeholder:text-forest/40'
           )}
         />
