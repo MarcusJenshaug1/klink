@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { GameCard } from '@/components/game/game-card'
+import { CardTypeIntro } from '@/components/game/card-type-intro'
 import { CastModal } from '@/components/game/cast-modal'
 import { GameHud } from '@/components/game/game-hud'
 import { InfoModal } from '@/components/game/info-modal'
@@ -234,6 +235,9 @@ export default function GamePage() {
           onNext={nextCard}
         />
       </div>
+
+      {/* Tydelig "ny korttype"-overlay når kort-typen endrer seg */}
+      <CardTypeIntro type={currentCard.type} korttyper={state.korttyper} />
 
       {/* HUD */}
       <GameHud
