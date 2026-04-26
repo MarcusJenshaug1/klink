@@ -1,9 +1,9 @@
 import type { Intensitet } from '@/types/game'
 
 const SIP_RANGES: Record<Intensitet, [number, number]> = {
-  lett: [1, 2],
-  medium: [3, 5],
-  borst: [7, 10],
+  lett: [1, 1],
+  medium: [1, 4],
+  borst: [1, 6],
 }
 
 export function getSips(intensitet: Intensitet): number {
@@ -45,14 +45,14 @@ export function replaceSips(text: string, sips: number): string {
 export const INTENSITET_META: Record<Intensitet, { label: string; beskrivelse: string }> = {
   lett: {
     label: 'Pils',
-    beskrivelse: 'Rolig runde. 1–2 slurker.',
+    beskrivelse: 'Rolig runde. 1 slurk.',
   },
   medium: {
     label: 'Party',
-    beskrivelse: 'Full stemning. 3–5 slurker.',
+    beskrivelse: 'Full stemning. 1–4 slurker.',
   },
   borst: {
     label: 'Blackout',
-    beskrivelse: 'Ingen vei tilbake. 7–10 slurker.',
+    beskrivelse: 'Ingen vei tilbake. 1–6 slurker.',
   },
 }
