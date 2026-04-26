@@ -391,9 +391,9 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { k: 'lett', label: 'Lett', val: slurkerLett, set: setSlurkerLett, ph: '1–2' },
-                { k: 'medium', label: 'Medium', val: slurkerMedium, set: setSlurkerMedium, ph: '3–5' },
-                { k: 'borst', label: 'Børst', val: slurkerBorst, set: setSlurkerBorst, ph: '7–10' },
+                { k: 'lett', label: 'Lett', val: slurkerLett, set: setSlurkerLett, ph: '1' },
+                { k: 'medium', label: 'Medium', val: slurkerMedium, set: setSlurkerMedium, ph: '1–4' },
+                { k: 'borst', label: 'Børst', val: slurkerBorst, set: setSlurkerBorst, ph: '1–6' },
               ].map(({ k, label: lab, val, set, ph }) => (
                 <div key={k}>
                   <p className="text-[10px] font-bold text-forest/40 uppercase mb-1">{lab}</p>
