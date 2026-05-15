@@ -8,6 +8,7 @@ import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips, isChugging } from '@/lib/game/sips'
 import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { FemFingreCard } from './fem-fingre-card'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
@@ -47,6 +48,7 @@ export function GameCard(props: GameCardProps) {
 
 function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }: GameCardProps) {
   const { isActive: athina } = useAthina()
+  const reducedMotion = useReducedMotion()
   const meta = getCardTypeMeta(card.type, korttyper)
   const sips = useMemo(() => {
     const override =
@@ -55,14 +57,14 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
       : card.slurker_borst
     if (override != null) return override
     return getSips(intensitet)
-  }, [card.id, intensitet]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [card.slurker_borst, card.slurker_lett, card.slurker_medium, intensitet])
 
   const segments = useMemo(() => {
     const raw = interpolateToSegments(card.innhold, players)
     return raw.map(seg =>
       seg.type === 'text' ? { ...seg, text: replaceSips(seg.text, sips) } : seg
     )
-  }, [card.id, players, sips]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [card.innhold, players, sips])
 
   const utfordringSegments = useMemo(() => {
     if (!card.utfordring) return null
@@ -70,7 +72,7 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
     return raw.map(seg =>
       seg.type === 'text' ? { ...seg, text: replaceSips(seg.text, sips) } : seg
     )
-  }, [card.utfordring, players, sips]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [card.utfordring, players, sips])
 
   const hasTimer = !!card.timer_sekunder
   const timerSynlig = !!card.timer_synlig
@@ -106,11 +108,11 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
           setResultSips(sips)
           setTimerPhase('result')
           playTimerDing()
-          jsConfettiRef.current?.addConfetti({ confettiNumber: 200 })
+          if (!reducedMotion) jsConfettiRef.current?.addConfetti({ confettiNumber: 200 })
         }
       }, 100)
     }
-  }, [card.timer_sekunder, timerSynlig, sips]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [card.timer_sekunder, timerSynlig, sips, reducedMotion])
 
   useEffect(() => {
     setTimerPhase('idle')

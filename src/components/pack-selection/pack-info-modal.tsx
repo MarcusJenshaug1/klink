@@ -1,7 +1,9 @@
 'use client'
 
+import { useId } from 'react'
 import { X } from 'lucide-react'
 import { useAthina } from '@/context/athina-context'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
 import type { Pack } from '@/types/game'
 
 interface PackInfoModalProps {
@@ -12,6 +14,8 @@ interface PackInfoModalProps {
 
 export function PackInfoModal({ pack, cardCount, onClose }: PackInfoModalProps) {
   const { isActive: athina } = useAthina()
+  const titleId = useId()
+  const dialogRef = useDialogA11y(true, onClose)
 
   return (
     <div
@@ -19,6 +23,11 @@ export function PackInfoModal({ pack, cardCount, onClose }: PackInfoModalProps) 
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         className="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up overflow-hidden"
         style={{ backgroundColor: pack.farge }}
         onClick={(e) => e.stopPropagation()}
@@ -27,11 +36,11 @@ export function PackInfoModal({ pack, cardCount, onClose }: PackInfoModalProps) 
           <div className="absolute inset-0 rounded-t-3xl sm:rounded-3xl bg-[#FF1493]/30 pointer-events-none" />
         )}
         <div className="flex items-start justify-between gap-3 mb-4">
-          <h2 className="font-display font-black text-2xl text-white leading-tight">{pack.navn}</h2>
+          <h2 id={titleId} className="font-display font-black text-2xl text-white leading-tight">{pack.navn}</h2>
           <button
             onClick={onClose}
             aria-label="Lukk"
-            className="shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
+            className="shrink-0 w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
           >
             <X className="w-4 h-4" />
           </button>

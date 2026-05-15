@@ -100,6 +100,10 @@ export function usePlayerJoin(code: string) {
     return () => clearTimeout(timer)
   }, [connected, hostFound])
 
+  useEffect(() => {
+    if (hostFound) setInvalidCode(false)
+  }, [hostFound])
+
   const sendJoin = useCallback(async (name: string): Promise<boolean> => {
     const ch = channelRef.current
     if (!ch) return false

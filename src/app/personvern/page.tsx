@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { PublicPageShell } from '@/components/public/public-page-shell'
+import { ConsentResetButton } from '@/components/consent-reset-button'
 export const metadata: Metadata = {
   title: 'Personvernerklæring',
   description: 'Hvordan Klink håndterer personopplysninger, cookies og analyseverktøy (GA4, Vercel Analytics, Supabase).',
@@ -9,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function PersonvernPage() {
   return (
-    <main className="min-h-dvh bg-lime text-forest">
+    <PublicPageShell>
       <div className="max-w-2xl mx-auto px-6 py-12">
         <nav className="mb-8 text-sm">
           <Link href="/" className="underline underline-offset-4 hover:opacity-70">← Tilbake</Link>
@@ -62,14 +64,15 @@ export default function PersonvernPage() {
 
         <section className="space-y-3 mb-8">
           <h2 className="font-display text-2xl font-black">7. Trekke samtykke</h2>
-          <p>Åpne nettleserens utvikler-konsoll og kjør: <code className="font-mono text-sm bg-white/50 px-2 py-0.5 rounded">localStorage.setItem(&apos;klink-consent-v1&apos;, &apos;declined&apos;); location.reload()</code></p>
-          <p>Eller besøk <Link href="/?notrack=1" className="underline">klinkn.no/?notrack=1</Link> som skrur av tracking permanent på denne nettleseren.</p>
+          <p>Du kan endre samtykket ditt når som helst.</p>
+          <ConsentResetButton />
+          <p>Du kan også besøke <Link href="/?notrack=1" className="underline">klinkn.no/?notrack=1</Link> som skrur av tracking permanent på denne nettleseren.</p>
         </section>
 
         <Link href="/" className="inline-block mt-6 bg-forest text-lime font-black px-6 py-3 rounded-2xl hover:opacity-90 transition">
           Tilbake til Klink
         </Link>
       </div>
-    </main>
+    </PublicPageShell>
   )
 }

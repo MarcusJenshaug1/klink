@@ -6,7 +6,7 @@ import { Beer, Check, Loader2, PenLine, Send } from 'lucide-react'
 
 export default function JoinPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params)
-  const { connected, sent, sendJoin, sendCard, hostFound, invalidCode } = usePlayerJoin(code.toUpperCase())
+  const { sent, sendJoin, sendCard, hostFound, invalidCode } = usePlayerJoin(code.toUpperCase())
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -71,16 +71,20 @@ export default function JoinPage({ params }: { params: Promise<{ code: string }>
               </div>
 
               <input
+                id="join-name"
                 value={name}
                 onChange={(e) => { setName(e.target.value); setError('') }}
                 placeholder="Navnet ditt"
                 autoFocus
+                autoComplete="given-name"
+                aria-label="Navnet ditt"
+                aria-describedby={error ? 'join-name-error' : undefined}
                 maxLength={24}
                 className="w-full bg-transparent border-b-2 border-forest/20 focus:border-forest/60 outline-none text-forest font-semibold text-xl py-2 placeholder:text-forest/30 transition-colors"
               />
 
               {error && (
-                <p className="text-red-600 text-sm font-semibold">{error}</p>
+                <p id="join-name-error" className="text-red-600 text-sm font-semibold">{error}</p>
               )}
 
               <button
@@ -171,6 +175,7 @@ function CardSubmitForm({ name, sendCard }: CardSubmitFormProps) {
       </div>
 
       <input
+        aria-label="Tittel på kortet"
         value={tittel}
         onChange={(e) => setTittel(e.target.value)}
         placeholder="Tittel (valgfritt)"
@@ -181,6 +186,8 @@ function CardSubmitForm({ name, sendCard }: CardSubmitFormProps) {
       <div className="space-y-1.5">
         <textarea
           ref={innholdRef}
+          aria-label="Kortinnhold"
+          aria-describedby={submitError ? 'card-submit-error' : undefined}
           value={innhold}
           onChange={(e) => { setInnhold(e.target.value); setSubmitError('') }}
           placeholder="Skriv kortinnholdet her... Eks: Alle som har på seg rødt drikker {spiller} slurker!"
@@ -198,7 +205,7 @@ function CardSubmitForm({ name, sendCard }: CardSubmitFormProps) {
       </div>
 
       {submitError && (
-        <p className="text-red-600 text-xs font-semibold">{submitError}</p>
+        <p id="card-submit-error" className="text-red-600 text-xs font-semibold">{submitError}</p>
       )}
 
       {lastSent && (

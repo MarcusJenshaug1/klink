@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { PublicPageShell } from '@/components/public/public-page-shell'
 export const metadata: Metadata = {
   title: 'Drøye drikkeleker – Frekke drikkespill for voksne vorspiel',
   description:
@@ -39,7 +40,7 @@ const faqLd = {
 
 export default function DroyePage() {
   return (
-    <main className="min-h-dvh bg-lime text-forest">
+    <PublicPageShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <div className="max-w-2xl mx-auto px-6 py-12">
         <nav className="mb-8 text-sm">
@@ -118,6 +119,6 @@ export default function DroyePage() {
           <Link href="/drikkeleker/snusboksen" className="underline underline-offset-4">Snusboksen</Link>
         </div>
       </div>
-    </main>
+    </PublicPageShell>
   )
 }

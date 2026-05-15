@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { PublicPageShell } from '@/components/public/public-page-shell'
 export const metadata: Metadata = {
   title: 'Fem fingre – Drikkelek med 5 påstander',
   description:
@@ -47,7 +48,7 @@ const faqLd = {
 
 export default function FemFingrePage() {
   return (
-    <main className="min-h-dvh bg-lime text-forest">
+    <PublicPageShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <div className="max-w-2xl mx-auto px-6 py-12">
         <nav className="mb-8 text-sm">
@@ -110,6 +111,6 @@ export default function FemFingrePage() {
           <Link href="/regler" className="underline underline-offset-4">Alle regler</Link>
         </div>
       </div>
-    </main>
+    </PublicPageShell>
   )
 }

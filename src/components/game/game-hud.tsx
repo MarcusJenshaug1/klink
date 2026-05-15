@@ -35,7 +35,7 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
         <button
           onClick={onInfo}
           aria-label="Spilleregler"
-          className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
+          className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
         >
           <Info className="w-5 h-5" />
         </button>
@@ -47,7 +47,7 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
         <button
           onClick={onClose}
           aria-label="Avslutt"
-          className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
+          className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
         >
           <X className="w-5 h-5" />
         </button>
@@ -60,7 +60,7 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
           <button
             onClick={onPlayers}
             aria-label="Spillere"
-            className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
+            className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all"
           >
             <Users className="w-5 h-5" />
           </button>
@@ -69,7 +69,7 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
               onClick={onFlag}
               aria-label="Rapporter kort"
               title="Rapporter kort"
-              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/25 active:scale-90 transition-all"
+              className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/25 active:scale-90 transition-all"
             >
               <Flag className="w-4 h-4" />
             </button>
@@ -79,7 +79,7 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
               onClick={onCast}
               aria-label="Cast til TV"
               title="Cast til TV"
-              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/25 active:scale-90 transition-all"
+              className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/25 active:scale-90 transition-all"
             >
               <Tv className="w-4 h-4" />
             </button>
@@ -91,7 +91,7 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
           <button
             onClick={onPrev}
             aria-label="Forrige kort"
-            className={`w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all ${
+            className={`w-11 h-11 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 active:scale-90 transition-all ${
               canGoBack ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >

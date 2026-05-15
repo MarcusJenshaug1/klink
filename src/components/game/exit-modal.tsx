@@ -1,7 +1,10 @@
 'use client'
 
+import { useId } from 'react'
 import { Package, LogOut, ArrowLeft } from 'lucide-react'
 import { useAthina } from '@/context/athina-context'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { cn } from '@/lib/utils'
 
 interface ExitModalProps {
   open: boolean
@@ -12,6 +15,8 @@ interface ExitModalProps {
 
 export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps) {
   const { isActive: athina } = useAthina()
+  const titleId = useId()
+  const dialogRef = useDialogA11y(open, onClose)
   if (!open) return null
 
   return (
@@ -19,15 +24,20 @@ export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps
 
       {/* Sheet */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         className="relative w-full max-w-lg rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up transition-colors duration-500"
         style={{ backgroundColor: athina ? '#FF69B4' : '#A8E63D' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
-        <div className="w-10 h-1 bg-forest/20 rounded-full mx-auto mb-6" />
+        <div className={cn('w-10 h-1 rounded-full mx-auto mb-6', athina ? 'bg-white/25' : 'bg-forest/20')} />
 
-        <h2 className="font-display text-3xl font-black text-forest mb-1">Pause</h2>
-        <p className="text-forest/50 text-sm mb-6">Spillerne beholdes til neste runde.</p>
+        <h2 id={titleId} className={cn('font-display text-3xl font-black mb-1', athina ? 'text-white' : 'text-forest')}>Pause</h2>
+        <p className={cn('text-sm mb-6', athina ? 'text-white/70' : 'text-forest/50')}>Spillerne beholdes til neste runde.</p>
 
         <div className="space-y-3">
           <button
@@ -48,7 +58,10 @@ export function ExitModal({ open, onClose, onNewPacks, onReset }: ExitModalProps
 
           <button
             onClick={onClose}
-            className="w-full min-h-[52px] text-forest/50 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 active:scale-95 transition-all hover:text-forest/70"
+            className={cn(
+              'w-full min-h-[52px] rounded-2xl font-semibold text-base flex items-center justify-center gap-2 active:scale-95 transition-all',
+              athina ? 'text-white/70 hover:text-white' : 'text-forest/50 hover:text-forest/70'
+            )}
           >
             <ArrowLeft className="w-4 h-4" />
             Fortsett spillet

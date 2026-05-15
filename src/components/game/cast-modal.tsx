@@ -1,7 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useId } from 'react'
 import { X, Copy, Check } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { cn } from '@/lib/utils'
 
 interface CastModalProps {
   open: boolean
@@ -10,8 +13,11 @@ interface CastModalProps {
 }
 
 export function CastModal({ open, onClose, castCode }: CastModalProps) {
+  const { isActive: athina } = useAthina()
   const [tvUrl, setTvUrl] = useState('')
   const [copied, setCopied] = useState(false)
+  const titleId = useId()
+  const dialogRef = useDialogA11y(open, onClose)
 
   useEffect(() => {
     if (castCode) setTvUrl(`${window.location.origin}/tv/${castCode}`)
@@ -29,54 +35,72 @@ export function CastModal({ open, onClose, castCode }: CastModalProps) {
   if (!open) return null
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6"
-      onClick={onClose}
-    >
       <div
-        className="bg-white rounded-3xl p-6 w-full max-w-xs space-y-4 shadow-2xl"
+        className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6"
+        onClick={onClose}
+      >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className={cn(
+          'rounded-3xl p-6 w-full max-w-xs space-y-4 shadow-2xl transition-colors',
+          athina ? 'bg-[#FF69B4] text-white' : 'bg-white'
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <p className="font-black text-forest text-lg">Cast til TV</p>
+          <p id={titleId} className={cn('font-black text-lg', athina ? 'text-white' : 'text-forest')}>Cast til TV</p>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-black/8 flex items-center justify-center text-forest/50 hover:bg-black/12 transition-colors"
+            aria-label="Lukk"
+            className={cn(
+              'w-11 h-11 rounded-full flex items-center justify-center transition-colors',
+              athina ? 'bg-white/15 text-white/70 hover:bg-white/25' : 'bg-black/8 text-forest/50 hover:bg-black/12'
+            )}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-forest/50 text-sm font-medium">Skriv inn denne adressen i nettleseren på TV-en</p>
+        <p className={cn('text-sm font-medium', athina ? 'text-white/70' : 'text-forest/50')}>Skriv inn denne adressen i nettleseren på TV-en</p>
 
         {/* URL — big, clear, easy to read on any screen */}
         <button
           onClick={handleCopy}
-          className="w-full bg-forest/6 hover:bg-forest/10 active:scale-95 transition-all rounded-2xl px-4 py-4 text-left group"
+          className={cn(
+            'w-full active:scale-95 transition-all rounded-2xl px-4 py-4 text-left group',
+            athina ? 'bg-white/15 hover:bg-white/25' : 'bg-forest/6 hover:bg-forest/10'
+          )}
         >
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-forest/40 text-[10px] font-bold uppercase tracking-widest mb-1">TV-adresse</p>
-              <p className="text-forest font-black text-lg leading-tight break-all">
+              <p className={cn('text-[10px] font-bold uppercase tracking-widest mb-1', athina ? 'text-white/50' : 'text-forest/40')}>TV-adresse</p>
+              <p className={cn('font-black text-lg leading-tight break-all', athina ? 'text-white' : 'text-forest')}>
                 {tvUrl || `…/tv/${castCode}`}
               </p>
             </div>
-            <div className="shrink-0 w-8 h-8 rounded-full bg-forest/10 group-hover:bg-forest/20 flex items-center justify-center transition-colors">
+            <div className={cn('shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors', athina ? 'bg-white/20 group-hover:bg-white/30' : 'bg-forest/10 group-hover:bg-forest/20')}>
               {copied
-                ? <Check className="w-4 h-4 text-forest" />
-                : <Copy className="w-3.5 h-3.5 text-forest/60" />
+                ? <Check className={cn('w-4 h-4', athina ? 'text-white' : 'text-forest')} />
+                : <Copy className={cn('w-3.5 h-3.5', athina ? 'text-white/70' : 'text-forest/60')} />
               }
             </div>
           </div>
         </button>
 
         {copied && (
-          <p className="text-center text-xs font-semibold text-forest/50">Lenke kopiert!</p>
+          <p className={cn('text-center text-xs font-semibold', athina ? 'text-white/70' : 'text-forest/50')}>Lenke kopiert!</p>
         )}
 
         <button
           onClick={onClose}
-          className="w-full min-h-[44px] rounded-2xl bg-forest text-lime font-black text-base transition-all active:scale-95"
+          className={cn(
+            'w-full min-h-[44px] rounded-2xl font-black text-base transition-all active:scale-95',
+            athina ? 'bg-white/30 text-white hover:bg-white/40' : 'bg-forest text-lime'
+          )}
         >
           Lukk
         </button>

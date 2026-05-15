@@ -1,7 +1,8 @@
 'use client'
 
-import { useRef, useState, useCallback } from 'react'
+import { useId, useState, useCallback } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
 
 interface ConfirmOptions {
   title: string
@@ -16,6 +17,7 @@ interface ConfirmState extends ConfirmOptions {
 
 export function useConfirm() {
   const [state, setState] = useState<ConfirmState | null>(null)
+  const titleId = useId()
 
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -23,15 +25,17 @@ export function useConfirm() {
     })
   }, [])
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     state?.resolve(true)
     setState(null)
-  }
+  }, [state])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     state?.resolve(false)
     setState(null)
-  }
+  }, [state])
+
+  const dialogRef = useDialogA11y(!!state, handleCancel)
 
   const ConfirmDialog = state ? (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -42,7 +46,14 @@ export function useConfirm() {
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 flex flex-col gap-4">
+      <div
+        ref={dialogRef}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 flex flex-col gap-4"
+      >
         <div className="flex items-start gap-3">
           {state.danger && (
             <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
@@ -50,7 +61,7 @@ export function useConfirm() {
             </div>
           )}
           <div>
-            <h3 className="font-display font-black text-lg text-forest leading-tight">
+            <h3 id={titleId} className="font-display font-black text-lg text-forest leading-tight">
               {state.title}
             </h3>
             {state.message && (

@@ -3,6 +3,8 @@
 import { use } from 'react'
 import { useTvReceive } from '@/hooks/use-tv-cast'
 import { Trophy } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
+import { cn } from '@/lib/utils'
 import type { TvCardPayload } from '@/hooks/use-tv-cast'
 import type { Segment } from '@/lib/game/interpolate'
 
@@ -25,31 +27,31 @@ function SegmentText({ segments }: { segments: Segment[] }) {
   )
 }
 
-function WaitingScreen({ code, connected }: { code: string; connected: boolean }) {
+function WaitingScreen({ code, connected, athina }: { code: string; connected: boolean; athina: boolean }) {
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center bg-[#A8E63D] p-8 text-center">
-      <p className="font-display text-8xl font-black text-forest tracking-tight leading-none">
+    <div className="min-h-dvh flex flex-col items-center justify-center p-8 text-center transition-colors duration-700" style={{ backgroundColor: athina ? 'transparent' : '#A8E63D' }}>
+      <p className={cn('font-display text-8xl font-black tracking-tight leading-none', athina ? 'text-white' : 'text-forest')}>
         Klink
       </p>
-      <p className="text-forest/60 font-bold text-2xl mt-3">TV-modus</p>
+      <p className={cn('font-bold text-2xl mt-3', athina ? 'text-white/70' : 'text-forest/60')}>TV-modus</p>
 
-      <div className="mt-10 px-8 py-5 bg-forest/10 rounded-3xl">
-        <p className="text-forest/40 text-sm font-bold uppercase tracking-widest mb-2">Kode</p>
-        <p className="text-forest font-black text-5xl tracking-[0.2em]">{code}</p>
+      <div className={cn('mt-10 px-8 py-5 rounded-3xl', athina ? 'bg-white/18' : 'bg-forest/10')}>
+        <p className={cn('text-sm font-bold uppercase tracking-widest mb-2', athina ? 'text-white/55' : 'text-forest/40')}>Kode</p>
+        <p className={cn('font-black text-5xl tracking-[0.2em]', athina ? 'text-white' : 'text-forest')}>{code}</p>
       </div>
 
-      <p className="text-forest/50 font-semibold mt-8 text-xl">
+      <p className={cn('font-semibold mt-8 text-xl', athina ? 'text-white/70' : 'text-forest/50')}>
         {connected ? 'Venter på at spillet starter…' : 'Kobler til…'}
       </p>
     </div>
   )
 }
 
-function PlayingScreen({ payload }: { payload: TvCardPayload }) {
+function PlayingScreen({ payload, athina }: { payload: TvCardPayload; athina: boolean }) {
   return (
     <div
       className="min-h-dvh flex flex-col p-8 lg:p-14 transition-colors duration-500"
-      style={{ backgroundColor: payload.packFarge }}
+      style={{ backgroundColor: athina ? 'transparent' : payload.packFarge }}
     >
       {/* Top bar */}
       <div className="flex justify-between items-center">
@@ -99,10 +101,11 @@ function PlayingScreen({ payload }: { payload: TvCardPayload }) {
 export default function TvPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params)
   const { payload, connected } = useTvReceive(code.toUpperCase())
+  const { isActive: athina } = useAthina()
 
   if (!payload) {
-    return <WaitingScreen code={code.toUpperCase()} connected={connected} />
+    return <WaitingScreen code={code.toUpperCase()} connected={connected} athina={athina} />
   }
 
-  return <PlayingScreen payload={payload} />
+  return <PlayingScreen payload={payload} athina={athina} />
 }

@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useId, useState, useTransition } from 'react'
 import { Mail, Trash2, Shield, ShieldCheck, ChevronDown, ChevronUp, Check, Send, Key, Copy, RefreshCw, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { inviterAdmin, fjernAdmin, oppdaterRolle, settPakkeTilgang, sendInvitasjonPaNytt, settMidlertidigPassord } from '@/app/admin/brukere/actions'
 import { useConfirm } from '@/components/admin/confirm-modal'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
 import type { AdminRolle } from '@/hooks/use-admin-role'
 
 interface AdminBruker {
@@ -50,6 +51,8 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
   const [pwdError, setPwdError] = useState('')
   const [pwdSaved, setPwdSaved] = useState<string | null>(null)
   const [pwdCopied, setPwdCopied] = useState(false)
+  const pwdTitleId = useId()
+  const pwdDialogRef = useDialogA11y(!!pwdModal, closePwdModal)
 
   async function load() {
     const supabase = createClient()
@@ -392,6 +395,11 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
           onClick={pwdSaving ? undefined : closePwdModal}
         >
           <div
+            ref={pwdDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={pwdTitleId}
+            tabIndex={-1}
             className="bg-white rounded-2xl p-6 w-full max-w-md border border-cream-dark/40 relative"
             onClick={e => e.stopPropagation()}
           >
@@ -403,7 +411,7 @@ export function UserManagement({ currentUserId }: { currentUserId: string }) {
               <X className="w-4 h-4" />
             </button>
 
-            <h3 className="font-display font-black text-xl text-forest mb-1">
+            <h3 id={pwdTitleId} className="font-display font-black text-xl text-forest mb-1">
               Sett midlertidig passord
             </h3>
             <p className="text-sm text-forest/60 mb-5">

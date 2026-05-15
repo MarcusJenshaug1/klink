@@ -16,6 +16,7 @@ import { useAthina } from '@/context/athina-context'
 import { useSwipe } from '@/hooks/use-swipe'
 import { useTvBroadcast } from '@/hooks/use-tv-cast'
 import { useThemeColor } from '@/hooks/use-theme-color'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, replaceSips } from '@/lib/game/sips'
 import { track } from '@/lib/analytics/events'
@@ -33,6 +34,7 @@ export default function GamePage() {
   const [castOpen, setCastOpen] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [slideDir, setSlideDir] = useState<SlideDir>(null)
+  const reducedMotion = useReducedMotion()
 
   const { broadcast } = useTvBroadcast(state.castCode)
 
@@ -88,6 +90,10 @@ export default function GamePage() {
   const animateTransition = useCallback(
     (direction: 'forward' | 'back', action: () => void) => {
       if (animating) return
+      if (reducedMotion) {
+        action()
+        return
+      }
       setAnimating(true)
 
       const outDir: SlideDir = direction === 'forward' ? 'out-left' : 'out-right'
@@ -103,13 +109,15 @@ export default function GamePage() {
         }, 300)
       }, 250)
     },
-    [animating]
+    [animating, reducedMotion]
   )
 
   const nextCard = useCallback(() => {
-    try { if (navigator.vibrate) navigator.vibrate(10) } catch {}
+    if (!reducedMotion) {
+      try { if (navigator.vibrate) navigator.vibrate(10) } catch {}
+    }
     animateTransition('forward', () => dispatch({ type: 'NEXT_CARD' }))
-  }, [animateTransition, dispatch])
+  }, [animateTransition, dispatch, reducedMotion])
 
   const prevCard = useCallback(() => {
     if (state.currentCardIndex <= 0) return
@@ -202,6 +210,7 @@ export default function GamePage() {
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (animating || anyModalOpen) return
+    if (e.target !== e.currentTarget) return
     const target = e.target as HTMLElement
     if (target.closest('button, a, input, textarea, select')) return
     nextCard()

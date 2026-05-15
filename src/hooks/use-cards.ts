@@ -23,7 +23,7 @@ export function useCards() {
 
     if (err) {
       setError(err.message)
-      return []
+      throw err
     }
 
     return data ?? []
@@ -31,10 +31,14 @@ export function useCards() {
 
   const fetchKorttyper = useCallback(async (): Promise<Korttype[]> => {
     const supabase = createClient()
-    const { data } = await supabase
+    const { data, error: err } = await supabase
       .from('korttyper')
       .select('id, label, icon_name, farge, beskrivelse')
       .order('opprettet_at', { ascending: true })
+    if (err) {
+      setError(err.message)
+      throw err
+    }
     return (data as Korttype[]) ?? []
   }, [])
 

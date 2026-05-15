@@ -15,14 +15,31 @@ export function useCardCounts(selectedDroyhet: Droyhet) {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase
-      .from('kort')
-      .select('spillpakke_id, droyhet')
-      .eq('aktiv', true)
-      .limit(1000)
-      .then(({ data }) => {
-        setCardMeta(data ?? [])
-      })
+    let cancelled = false
+
+    async function loadAll() {
+      const pageSize = 1000
+      let from = 0
+      const all: CardMeta[] = []
+
+      while (!cancelled) {
+        const { data, error } = await supabase
+          .from('kort')
+          .select('spillpakke_id, droyhet')
+          .eq('aktiv', true)
+          .range(from, from + pageSize - 1)
+
+        if (error || !data) break
+        all.push(...data)
+        if (data.length < pageSize) break
+        from += pageSize
+      }
+
+      if (!cancelled) setCardMeta(all)
+    }
+
+    loadAll()
+    return () => { cancelled = true }
   }, [])
 
   const counts = useMemo(() => {

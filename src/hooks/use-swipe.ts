@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useCallback } from 'react'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 interface SwipeHandlers {
   onTouchStart: (e: React.TouchEvent) => void
@@ -21,6 +22,7 @@ export function useSwipe(
   { onSwipeLeft, onSwipeRight, threshold = 50 }: UseSwipeOptions
 ): SwipeHandlers {
   const startX = useRef(0)
+  const reducedMotion = useReducedMotion()
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX
@@ -30,14 +32,14 @@ export function useSwipe(
     (e: React.TouchEvent) => {
       const deltaX = startX.current - e.changedTouches[0].clientX
       if (deltaX > threshold) {
-        vibrate(30)
+        if (!reducedMotion) vibrate(30)
         onSwipeLeft()
       } else if (deltaX < -threshold) {
-        vibrate(30)
+        if (!reducedMotion) vibrate(30)
         onSwipeRight()
       }
     },
-    [onSwipeLeft, onSwipeRight, threshold]
+    [onSwipeLeft, onSwipeRight, threshold, reducedMotion]
   )
 
   return { onTouchStart, onTouchEnd }

@@ -75,6 +75,7 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
   const [filter, setFilter] = useState<FilterKey>('alle')
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
+  const [notice, setNotice] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
   const { confirm, ConfirmDialog } = useConfirm()
 
   const filtered = useMemo(() => {
@@ -136,16 +137,28 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
   const clearSelection = () => setSelected(new Set())
 
   const toggleAktiv = async (id: string, current: boolean) => {
+    setNotice(null)
     const supabase = createClient()
-    await supabase.from('kort').update({ aktiv: !current }).eq('id', id)
+    const { error } = await supabase.from('kort').update({ aktiv: !current }).eq('id', id)
+    if (error) {
+      setNotice({ type: 'err', text: error.message })
+      return
+    }
+    setNotice({ type: 'ok', text: !current ? 'Kort aktivert.' : 'Kort deaktivert.' })
     onRefresh()
   }
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({ title: 'Slett kortet?', message: 'Dette kan ikke angres.', confirmLabel: 'Slett', danger: true })
     if (!ok) return
+    setNotice(null)
     const supabase = createClient()
-    await supabase.from('kort').delete().eq('id', id)
+    const { error } = await supabase.from('kort').delete().eq('id', id)
+    if (error) {
+      setNotice({ type: 'err', text: error.message })
+      return
+    }
+    setNotice({ type: 'ok', text: 'Kort slettet.' })
     onRefresh()
   }
 
@@ -153,37 +166,65 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
     const ok = await confirm({ title: `Slett ${selected.size} kort?`, message: 'Dette kan ikke angres.', confirmLabel: 'Slett alle', danger: true })
     if (!ok) return
     setBusy(true)
+    setNotice(null)
     const supabase = createClient()
-    await supabase.from('kort').delete().in('id', [...selected])
+    const { error } = await supabase.from('kort').delete().in('id', [...selected])
+    if (error) {
+      setNotice({ type: 'err', text: error.message })
+      setBusy(false)
+      return
+    }
     clearSelection()
     setBusy(false)
+    setNotice({ type: 'ok', text: 'Kortene ble slettet.' })
     onRefresh()
   }
 
   const bulkAktiv = async (aktiv: boolean) => {
     setBusy(true)
+    setNotice(null)
     const supabase = createClient()
-    await supabase.from('kort').update({ aktiv }).in('id', [...selected])
+    const { error } = await supabase.from('kort').update({ aktiv }).in('id', [...selected])
+    if (error) {
+      setNotice({ type: 'err', text: error.message })
+      setBusy(false)
+      return
+    }
     clearSelection()
     setBusy(false)
+    setNotice({ type: 'ok', text: aktiv ? 'Kortene ble aktivert.' : 'Kortene ble deaktivert.' })
     onRefresh()
   }
 
   const bulkDroyhet = async (droyhet: Droyhet) => {
     setBusy(true)
+    setNotice(null)
     const supabase = createClient()
-    await supabase.from('kort').update({ droyhet }).in('id', [...selected])
+    const { error } = await supabase.from('kort').update({ droyhet }).in('id', [...selected])
+    if (error) {
+      setNotice({ type: 'err', text: error.message })
+      setBusy(false)
+      return
+    }
     clearSelection()
     setBusy(false)
+    setNotice({ type: 'ok', text: 'Drøyhet oppdatert.' })
     onRefresh()
   }
 
   const bulkMinSpillere = async (n: number) => {
     setBusy(true)
+    setNotice(null)
     const supabase = createClient()
-    await supabase.from('kort').update({ min_spillere: n }).in('id', [...selected])
+    const { error } = await supabase.from('kort').update({ min_spillere: n }).in('id', [...selected])
+    if (error) {
+      setNotice({ type: 'err', text: error.message })
+      setBusy(false)
+      return
+    }
     clearSelection()
     setBusy(false)
+    setNotice({ type: 'ok', text: `Min. spillere satt til ${n}.` })
     onRefresh()
   }
 
@@ -193,6 +234,19 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
 
       {/* Search + filters */}
       <div className="space-y-3 mb-4">
+        {notice && (
+          <div
+            role="status"
+            className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+              notice.type === 'ok'
+                ? 'bg-green-50 text-green-700 border border-green-100'
+                : 'bg-red-50 text-red-700 border border-red-100'
+            }`}
+          >
+            {notice.text}
+          </div>
+        )}
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-forest/30" />
           <input
@@ -413,6 +467,7 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleAktiv(card.id, card.aktiv !== false) }}
                       title={isInactive ? 'Aktiver' : 'Deaktiver'}
+                      aria-label={isInactive ? 'Aktiver kort' : 'Deaktiver kort'}
                       className="p-2 rounded-lg text-forest/40 hover:text-forest hover:bg-cream transition-colors"
                     >
                       {isInactive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -420,6 +475,7 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
                     <button
                       onClick={(e) => { e.stopPropagation(); setEditingId(card.id) }}
                       title="Rediger"
+                      aria-label="Rediger kort"
                       className="p-2 rounded-lg text-forest/40 hover:text-forest hover:bg-cream transition-colors"
                     >
                       <Pencil className="w-4 h-4" />
@@ -427,6 +483,7 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDelete(card.id) }}
                       title="Slett"
+                      aria-label="Slett kort"
                       className="p-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />

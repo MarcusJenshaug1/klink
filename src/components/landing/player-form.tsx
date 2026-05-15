@@ -1,6 +1,8 @@
 'use client'
 
 import { Plus, X } from 'lucide-react'
+import { useAthina } from '@/context/athina-context'
+import { cn } from '@/lib/utils'
 
 interface PlayerFormProps {
   players: string[]
@@ -8,6 +10,7 @@ interface PlayerFormProps {
 }
 
 export function PlayerForm({ players, onUpdate }: PlayerFormProps) {
+  const { isActive: athina } = useAthina()
   const validCount = players.filter((n) => n.trim() !== '').length
 
   const hasBlank = players.some((n) => n.trim() === '')
@@ -24,17 +27,17 @@ export function PlayerForm({ players, onUpdate }: PlayerFormProps) {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs font-bold text-forest/50 uppercase tracking-widest">
+      <p className={cn('text-xs font-bold uppercase tracking-widest', athina ? 'text-white/60' : 'text-forest/50')}>
         Spillere
       </p>
 
       {/* Player list */}
       {players.length > 0 && (
-        <div className="divide-y divide-forest/10">
+        <div className={cn('divide-y', athina ? 'divide-white/10' : 'divide-forest/10')}>
           {players.map((name, i) => (
             <div key={i} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
               {/* Nummer */}
-              <span className="text-sm font-black text-forest/30 w-5 text-center shrink-0 tabular-nums">
+              <span className={cn('text-sm font-black w-5 text-center shrink-0 tabular-nums', athina ? 'text-white/30' : 'text-forest/30')}>
                 {i + 1}
               </span>
 
@@ -50,14 +53,22 @@ export function PlayerForm({ players, onUpdate }: PlayerFormProps) {
                 }}
                 placeholder={`Spiller ${i + 1}`}
                 autoFocus={i === players.length - 1 && name === ''}
-                className="flex-1 bg-transparent text-forest placeholder:text-forest/30 font-semibold text-base focus:outline-none min-w-0"
+                aria-label={`Navn på spiller ${i + 1}`}
+                maxLength={24}
+                className={cn(
+                  'flex-1 bg-transparent font-semibold text-base focus:outline-none min-w-0',
+                  athina ? 'text-white placeholder:text-white/35' : 'text-forest placeholder:text-forest/30'
+                )}
               />
 
               {/* Fjern */}
               <button
                 onClick={() => removePlayer(i)}
                 aria-label={`Fjern spiller ${i + 1}`}
-                className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-forest/25 hover:text-forest/50 hover:bg-forest/8 transition-colors"
+                className={cn(
+                  'shrink-0 w-11 h-11 -my-2 rounded-full flex items-center justify-center transition-colors',
+                  athina ? 'text-white/35 hover:text-white/70 hover:bg-white/10' : 'text-forest/25 hover:text-forest/50 hover:bg-forest/8'
+                )}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -70,14 +81,17 @@ export function PlayerForm({ players, onUpdate }: PlayerFormProps) {
       <button
         onClick={addPlayer}
         disabled={hasBlank}
-        className="w-full py-2.5 rounded-xl border-2 border-dashed border-forest/20 flex items-center justify-center gap-1.5 text-forest/50 font-semibold text-sm transition-all hover:border-forest/35 hover:text-forest/70 active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+        className={cn(
+          'w-full min-h-[44px] py-2.5 rounded-xl border-2 border-dashed flex items-center justify-center gap-1.5 font-semibold text-sm transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none',
+          athina ? 'border-white/20 text-white/55 hover:border-white/35 hover:text-white/80' : 'border-forest/20 text-forest/50 hover:border-forest/35 hover:text-forest/70'
+        )}
       >
         <Plus className="w-4 h-4" />
         Legg til spiller
       </button>
 
       {validCount < 2 && (
-        <p className="text-xs text-forest/35 text-center -mt-1">
+        <p className={cn('text-xs text-center -mt-1', athina ? 'text-white/35' : 'text-forest/35')}>
           Minst 2 spillere kreves for å starte
         </p>
       )}

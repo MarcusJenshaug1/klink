@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { PublicPageShell } from '@/components/public/public-page-shell'
 export const metadata: Metadata = {
   title: 'Vorspiel-leker – Beste leker og drikkespill til vorspiel',
   description:
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function VorspielPage() {
   return (
-    <main className="min-h-dvh bg-lime text-forest">
+    <PublicPageShell>
       <div className="max-w-2xl mx-auto px-6 py-12">
         <nav className="mb-8 text-sm">
           <Link href="/" className="underline underline-offset-4 hover:opacity-70">
@@ -97,6 +98,6 @@ export default function VorspielPage() {
           <Link href="/drikkespill" className="underline underline-offset-4">Drikkespill online</Link>
         </div>
       </div>
-    </main>
+    </PublicPageShell>
   )
 }

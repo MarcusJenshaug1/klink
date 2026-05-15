@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ShieldCheck } from 'lucide-react'
 import { useAdminRole } from '@/hooks/use-admin-role'
+import { useAthina } from '@/context/athina-context'
+import { cn } from '@/lib/utils'
 
 /**
  * Global hurtig-tilgang for admins:
@@ -17,6 +19,7 @@ export function AdminQuickAccess() {
   const router = useRouter()
   const pathname = usePathname()
   const { rolle, loading } = useAdminRole()
+  const { isActive: athina } = useAthina()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
@@ -50,7 +53,10 @@ export function AdminQuickAccess() {
       href="/admin"
       aria-label="Åpne admin"
       title="Åpne admin (Ctrl+Shift+A)"
-      className="fixed top-[max(0.75rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-[70] inline-flex items-center gap-2 bg-forest text-lime rounded-full pl-3 pr-4 py-2 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+      className={cn(
+        'fixed top-[max(0.75rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-[70] inline-flex items-center gap-2 rounded-full pl-3 pr-4 py-2 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all',
+        athina ? 'bg-white/30 text-white backdrop-blur-sm' : 'bg-forest text-lime'
+      )}
     >
       <ShieldCheck className="w-4 h-4" />
       <span className="text-xs font-black">Admin</span>

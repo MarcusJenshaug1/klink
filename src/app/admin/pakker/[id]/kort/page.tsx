@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useId, useState, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Plus, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { CardForm } from '@/components/admin/card-form'
 import { CardList } from '@/components/admin/card-list'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
 import type { KortType, Korttype, Droyhet, Kjonn, Vekt } from '@/types/game'
 
 interface CardRow {
@@ -40,6 +41,8 @@ export default function CardManagementPage() {
   const [korttyper, setKorttyper] = useState<Korttype[]>([])
   const [loading, setLoading] = useState(true)
   const [newCardOpen, setNewCardOpen] = useState(false)
+  const newCardTitleId = useId()
+  const newCardDialogRef = useDialogA11y(newCardOpen, () => setNewCardOpen(false))
 
   const loadCards = useCallback(async () => {
     const supabase = createClient()
@@ -137,13 +140,19 @@ export default function CardManagementPage() {
           onClick={() => setNewCardOpen(false)}
         >
           <div
+            ref={newCardDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={newCardTitleId}
+            tabIndex={-1}
             className="bg-cream rounded-3xl border border-cream-dark/40 w-full max-w-2xl my-8 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-cream-dark/40 sticky top-0 bg-cream rounded-t-3xl">
-              <h2 className="font-display font-black text-xl text-forest">Nytt kort</h2>
+              <h2 id={newCardTitleId} className="font-display font-black text-xl text-forest">Nytt kort</h2>
               <button
                 onClick={() => setNewCardOpen(false)}
+                aria-label="Lukk"
                 className="p-2 rounded-xl text-forest/50 hover:text-forest hover:bg-white transition-colors"
               >
                 <X className="w-5 h-5" />

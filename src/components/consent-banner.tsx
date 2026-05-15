@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import Link from 'next/link'
 import { Cookie } from 'lucide-react'
 
@@ -32,7 +32,14 @@ function applyConsent(consent: 'accepted' | 'declined') {
 
 export function ConsentBanner() {
   const [visible, setVisible] = useState(false)
+  const titleId = useId()
 
+  const choose = useCallback((consent: 'accepted' | 'declined') => {
+    applyConsent(consent)
+    setVisible(false)
+    // Reload so TrackingGate re-runs with new consent state
+    window.location.reload()
+  }, [])
   useEffect(() => {
     if (readConsent() === null) {
       // Default to notrack until user chooses — prevents GA4 firing before consent
@@ -43,21 +50,14 @@ export function ConsentBanner() {
 
   if (!visible) return null
 
-  function choose(consent: 'accepted' | 'declined') {
-    applyConsent(consent)
-    setVisible(false)
-    // Reload so TrackingGate re-runs with new consent state
-    window.location.reload()
-  }
-
   return (
     <div
-      role="dialog"
-      aria-label="Samtykke for analyse"
+      role="region"
+      aria-labelledby={titleId}
       className="fixed inset-x-0 bottom-0 z-[90] p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
     >
       <div className="max-w-2xl mx-auto bg-forest text-white rounded-3xl shadow-2xl p-5 sm:p-6">
-        <h2 className="font-display font-black text-lg sm:text-xl mb-2 flex items-center gap-2">
+        <h2 id={titleId} className="font-display font-black text-lg sm:text-xl mb-2 flex items-center gap-2">
           <Cookie className="w-5 h-5" />
           Cookies og analyse
         </h2>
