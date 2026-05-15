@@ -187,11 +187,13 @@ export const TokenInput = forwardRef<TokenInputHandle, Props>(
       <div
         ref={divRef}
         contentEditable
+        role="textbox"
+        aria-multiline="true"
+        aria-label={placeholder}
         suppressContentEditableWarning
         onInput={handleInput}
         onClick={handleClick}
         onPaste={handlePaste}
-        // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={autoFocus}
         data-placeholder={placeholder}
         className={cn(

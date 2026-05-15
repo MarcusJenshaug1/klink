@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useId, useState, useEffect } from 'react'
 import { X, Download } from 'lucide-react'
 import { useAthina } from '@/context/athina-context'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { cn } from '@/lib/utils'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -270,48 +272,66 @@ function getIosVersion(): number | null {
 // ─── iOS Guide Modal ──────────────────────────────────────────────────────────
 
 function IosGuideModal({ onClose }: { onClose: () => void }) {
+  const { isActive: athina } = useAthina()
   const [isIOS26, setIsIOS26] = useState<boolean>(() => {
     const ver = getIosVersion()
     return ver === null ? true : ver >= 26
   })
+  const titleId = useId()
+  const dialogRef = useDialogA11y(true, onClose)
 
   const steps = isIOS26 ? IOS26_STEPS : IOS_LEGACY_STEPS
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
       <div
-        className="relative w-full max-w-lg rounded-t-3xl bg-white pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className={cn(
+          'relative w-full max-w-lg rounded-t-3xl pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up',
+          athina ? 'bg-[#FF69B4]' : 'bg-white'
+        )}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
-        <div className="w-10 h-1 bg-black/10 rounded-full mx-auto mt-3 mb-5" />
+        <div className={cn('w-10 h-1 rounded-full mx-auto mt-3 mb-5', athina ? 'bg-white/25' : 'bg-black/10')} />
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 mb-4">
           <div>
-            <h2 className="font-display text-2xl font-black text-forest">Installer Klink</h2>
-            <p className="text-sm text-forest/50 mt-0.5">Legg til på hjemskjermen i Safari</p>
+            <h2 id={titleId} className={cn('font-display text-2xl font-black', athina ? 'text-white' : 'text-forest')}>Installer Klink</h2>
+            <p className={cn('text-sm mt-0.5', athina ? 'text-white/70' : 'text-forest/50')}>Legg til på hjemskjermen i Safari</p>
           </div>
           <button
             onClick={onClose}
             aria-label="Lukk"
-            className="w-9 h-9 rounded-full bg-black/8 flex items-center justify-center text-forest/60 hover:bg-black/12 transition-colors"
+            className={cn(
+              'w-11 h-11 rounded-full flex items-center justify-center transition-colors',
+              athina ? 'bg-white/15 text-white/70 hover:bg-white/25' : 'bg-black/8 text-forest/60 hover:bg-black/12'
+            )}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* iOS version toggle */}
-        <div className="mx-6 mb-5 flex gap-0.5 bg-black/6 rounded-xl p-1">
+        <div className={cn('mx-6 mb-5 flex gap-0.5 rounded-xl p-1', athina ? 'bg-white/10' : 'bg-black/6')}>
           <button
             onClick={() => setIsIOS26(true)}
-            className={`flex-1 text-xs font-black py-1.5 rounded-lg transition-all ${isIOS26 ? 'bg-white text-forest shadow-sm' : 'text-forest/45 hover:text-forest/70'}`}
+            className={cn('flex-1 text-xs font-black py-1.5 rounded-lg transition-all',
+              isIOS26 ? athina ? 'bg-white text-[#FF1493] shadow-sm' : 'bg-white text-forest shadow-sm' : athina ? 'text-white/55 hover:text-white' : 'text-forest/45 hover:text-forest/70'
+            )}
           >
             iOS 26+
           </button>
           <button
             onClick={() => setIsIOS26(false)}
-            className={`flex-1 text-xs font-black py-1.5 rounded-lg transition-all ${!isIOS26 ? 'bg-white text-forest shadow-sm' : 'text-forest/45 hover:text-forest/70'}`}
+            className={cn('flex-1 text-xs font-black py-1.5 rounded-lg transition-all',
+              !isIOS26 ? athina ? 'bg-white text-[#FF1493] shadow-sm' : 'bg-white text-forest shadow-sm' : athina ? 'text-white/55 hover:text-white' : 'text-forest/45 hover:text-forest/70'
+            )}
           >
             Eldre iOS
           </button>
@@ -322,13 +342,13 @@ function IosGuideModal({ onClose }: { onClose: () => void }) {
           {steps.map((step) => (
             <div key={step.number} className="flex gap-4 items-start">
               {/* Step number */}
-              <div className="shrink-0 w-7 h-7 rounded-full bg-forest flex items-center justify-center">
-                <span className="text-xs font-black text-lime">{step.number}</span>
+              <div className={cn('shrink-0 w-7 h-7 rounded-full flex items-center justify-center', athina ? 'bg-white/30' : 'bg-forest')}>
+                <span className={cn('text-xs font-black', athina ? 'text-white' : 'text-lime')}>{step.number}</span>
               </div>
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-forest text-sm">{step.title}</p>
-                <p className="text-forest/55 text-xs mt-0.5 leading-relaxed">{step.description}</p>
+                <p className={cn('font-bold text-sm', athina ? 'text-white' : 'text-forest')}>{step.title}</p>
+                <p className={cn('text-xs mt-0.5 leading-relaxed', athina ? 'text-white/70' : 'text-forest/55')}>{step.description}</p>
                 {/* Illustration */}
                 <div className="mt-2.5 flex justify-center bg-[#F2F2F7] rounded-2xl p-3 overflow-hidden">
                   {step.illustration}
@@ -339,7 +359,7 @@ function IosGuideModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Footer note */}
-        <p className="text-center text-[11px] text-forest/35 mt-5 px-6">
+        <p className={cn('text-center text-[11px] mt-5 px-6', athina ? 'text-white/50' : 'text-forest/35')}>
           Krever Safari på iPhone/iPad
         </p>
       </div>

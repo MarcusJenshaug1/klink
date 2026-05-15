@@ -93,8 +93,13 @@ export function PackForm({ initialData }: PackFormProps) {
     if (!isEdit) return
     const ok = await confirm({ title: 'Slett spillpakken?', message: 'Alle kort i pakken slettes også. Dette kan ikke angres.', confirmLabel: 'Slett pakken', danger: true })
     if (!ok) return
+    setError('')
     const supabase = createClient()
-    await supabase.from('spillpakker').delete().eq('id', initialData!.id)
+    const { error: err } = await supabase.from('spillpakker').delete().eq('id', initialData!.id)
+    if (err) {
+      setError(err.message)
+      return
+    }
     router.push('/admin/pakker')
     router.refresh()
   }
@@ -261,10 +266,13 @@ export function PackForm({ initialData }: PackFormProps) {
             <p className="font-semibold text-forest text-sm">Aktiv</p>
             <p className="text-xs text-forest/40">Synlig for spillere</p>
           </div>
-          <button
-            type="button"
-            onClick={() => update('aktiv', !data.aktiv)}
-            className={`relative w-12 h-6 rounded-full transition-colors ${
+	            <button
+	              type="button"
+	              onClick={() => update('aktiv', !data.aktiv)}
+	              role="switch"
+	              aria-checked={data.aktiv}
+	              aria-label={data.aktiv ? 'Skjul pakken' : 'Gjør pakken synlig'}
+	              className={`relative w-12 h-6 rounded-full transition-colors ${
               data.aktiv ? 'bg-lime' : 'bg-cream-dark'
             }`}
           >

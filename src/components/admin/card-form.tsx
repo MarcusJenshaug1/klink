@@ -167,6 +167,24 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       setError('Innhold er påkrevd')
       return
     }
+
+    const numericChecks: { value: string; label: string; min: number; max: number; required?: boolean }[] = [
+      { value: minSpillere, label: 'Min. spillere', min: 1, max: 20, required: true },
+      { value: slurkerLett, label: 'Lett slurker', min: 0, max: 50 },
+      { value: slurkerMedium, label: 'Medium slurker', min: 0, max: 50 },
+      { value: slurkerBorst, label: 'Børst slurker', min: 0, max: 50 },
+      { value: timerSekunder, label: 'Timer', min: 5, max: 600 },
+      { value: timerForsinkelse, label: 'Timer-forsinkelse', min: 1, max: 60 },
+    ]
+    for (const field of numericChecks) {
+      if (!field.value && !field.required) continue
+      const n = Number(field.value)
+      if (!Number.isInteger(n) || n < field.min || n > field.max) {
+        setError(`${field.label} må være et heltall fra ${field.min} til ${field.max}`)
+        return
+      }
+    }
+
     setSaving(true)
     setError('')
 
@@ -443,6 +461,8 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
                     type="button"
                     onClick={() => { setTimerAutoStart((v) => !v); setTimerForsinkelse('') }}
                     className={`relative w-10 h-5 rounded-full transition-colors ${timerAutoStart ? 'bg-lime' : 'bg-cream-dark'}`}
+                    role="switch"
+                    aria-checked={timerAutoStart}
                     aria-label={timerAutoStart ? 'Slå av auto-start' : 'Slå på auto-start'}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${timerAutoStart ? 'translate-x-5' : ''}`} />
@@ -542,6 +562,8 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
               type="button"
               onClick={() => setAktiv((v) => !v)}
               className={`relative w-12 h-6 rounded-full transition-colors ${aktiv ? 'bg-lime' : 'bg-cream-dark'}`}
+              role="switch"
+              aria-checked={aktiv}
               aria-label={aktiv ? 'Skjul' : 'Publiser'}
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${aktiv ? 'translate-x-6' : ''}`} />

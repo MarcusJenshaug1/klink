@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { X } from 'lucide-react'
 import Markdown from 'react-markdown'
 import { useAthina } from '@/context/athina-context'
+import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { cn } from '@/lib/utils'
 import type { Pack } from '@/types/game'
 
 interface InfoModalProps {
@@ -15,6 +17,8 @@ interface InfoModalProps {
 export function InfoModal({ open, onClose, packs }: InfoModalProps) {
   const [activeIdx, setActiveIdx] = useState(0)
   const { isActive: athina } = useAthina()
+  const titleId = useId()
+  const dialogRef = useDialogA11y(open, onClose)
 
   if (!open || packs.length === 0) return null
 
@@ -24,18 +28,23 @@ export function InfoModal({ open, onClose, packs }: InfoModalProps) {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
 
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         className="relative w-full max-w-lg rounded-t-3xl pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-slide-up max-h-[85vh] flex flex-col transition-colors duration-500"
         style={{ backgroundColor: athina ? '#FF69B4' : '#A8E63D' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
         <div className="pt-4 pb-2 flex justify-center shrink-0">
-          <div className="w-10 h-1 bg-forest/20 rounded-full" />
+          <div className={cn('w-10 h-1 rounded-full', athina ? 'bg-white/25' : 'bg-forest/20')} />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-3 shrink-0">
-          <h2 className="font-display text-2xl font-black text-forest">{pack.navn}</h2>
+          <h2 id={titleId} className={cn('font-display text-2xl font-black', athina ? 'text-white' : 'text-forest')}>{pack.navn}</h2>
           <button
             onClick={onClose}
             aria-label="Lukk"
@@ -71,11 +80,16 @@ export function InfoModal({ open, onClose, packs }: InfoModalProps) {
         {/* Rules content */}
         <div className="px-6 overflow-y-auto pb-2">
           {pack.regler ? (
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 prose prose-sm max-w-none text-forest/80 [&_strong]:text-forest [&_h1]:text-forest [&_h2]:text-forest [&_h3]:text-forest">
+            <div className={cn(
+              'backdrop-blur-sm rounded-2xl p-4 prose prose-sm max-w-none',
+              athina
+                ? 'bg-white/18 text-white/85 [&_strong]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white'
+                : 'bg-white/60 text-forest/80 [&_strong]:text-forest [&_h1]:text-forest [&_h2]:text-forest [&_h3]:text-forest'
+            )}>
               <Markdown>{pack.regler}</Markdown>
             </div>
           ) : (
-            <p className="text-forest/40 text-sm font-medium">
+            <p className={cn('text-sm font-medium', athina ? 'text-white/50' : 'text-forest/40')}>
               Ingen regler tilgjengelig for denne pakken.
             </p>
           )}

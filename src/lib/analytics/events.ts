@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 type GtagArgs = [string, string | Date, Record<string, unknown>?]
 
 declare global {

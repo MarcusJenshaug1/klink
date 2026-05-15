@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { GlassWater } from 'lucide-react'
 
+import { PublicPageShell } from '@/components/public/public-page-shell'
 export default function NotFound() {
   return (
-    <main className="min-h-dvh bg-lime flex flex-col items-center justify-center text-forest p-6 text-center">
+    <PublicPageShell className="flex flex-col items-center justify-center p-6 text-center">
       <GlassWater className="w-20 h-20 mb-4 text-forest/70" aria-hidden />
       <h1 className="font-display font-black text-5xl mb-3">Siden finnes ikke</h1>
       <p className="text-forest/70 mb-8 max-w-md">
@@ -16,6 +17,6 @@ export default function NotFound() {
       >
         Tilbake til Klink
       </Link>
-    </main>
+    </PublicPageShell>
   )
 }

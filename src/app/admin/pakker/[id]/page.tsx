@@ -6,11 +6,34 @@ import Link from 'next/link'
 import { ChevronLeft, LayoutList } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { PackForm } from '@/components/admin/pack-form'
+import type { Droyhet } from '@/types/game'
+
+interface EditablePack {
+  id: string
+  navn: string
+  beskrivelse: string
+  regler: string
+  farge: string
+  ikon: string
+  aktiv: boolean
+  droyhet: Droyhet
+}
+
+interface PackRow {
+  id: string
+  navn: string | null
+  beskrivelse: string | null
+  regler: string | null
+  farge: string | null
+  ikon: string | null
+  aktiv: boolean | null
+  droyhet: Droyhet | null
+}
 
 export default function EditPackPage() {
   const params = useParams()
   const id = params.id as string
-  const [pack, setPack] = useState<any>(null)
+  const [pack, setPack] = useState<EditablePack | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -21,7 +44,17 @@ export default function EditPackPage() {
         .select('*')
         .eq('id', id)
         .single()
-      setPack(data)
+      const row = data as PackRow | null
+      setPack(row ? {
+        id: row.id,
+        navn: row.navn ?? '',
+        beskrivelse: row.beskrivelse ?? '',
+        regler: row.regler ?? '',
+        farge: row.farge ?? '#4B3FC7',
+        ikon: row.ikon ?? 'default',
+        aktiv: row.aktiv ?? true,
+        droyhet: row.droyhet ?? 'normal',
+      } : null)
       setLoading(false)
     }
     load()

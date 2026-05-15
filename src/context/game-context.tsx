@@ -204,7 +204,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (loaded !== initialState) {
       dispatch({ type: 'RESTORE_STATE', state: loaded })
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   // Sync full state to sessionStorage, players to localStorage
   useEffect(() => {

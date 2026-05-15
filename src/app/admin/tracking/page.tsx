@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Trash2, Shield, Globe, Monitor } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAdminRole } from '@/hooks/use-admin-role'
@@ -22,16 +22,7 @@ export default function TrackingPage() {
   const [browserBlocked, setBrowserBlocked] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetch('/api/tracking/my-ip')
-      .then((r) => r.json())
-      .then((d) => setMyIp(d.ip))
-      .catch(() => setMyIp('ukjent'))
-    setBrowserBlocked(localStorage.getItem('klink_notrack') === '1')
-    loadList()
-  }, [])
-
-  async function loadList() {
+  const loadList = useCallback(async () => {
     setLoading(true)
     const supa = createClient()
     const { data, error } = await supa
@@ -41,7 +32,16 @@ export default function TrackingPage() {
     if (error) setError(error.message)
     else setRows(data ?? [])
     setLoading(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/tracking/my-ip')
+      .then((r) => r.json())
+      .then((d) => setMyIp(d.ip))
+      .catch(() => setMyIp('ukjent'))
+    setBrowserBlocked(localStorage.getItem('klink_notrack') === '1')
+    loadList()
+  }, [loadList])
 
   async function addIp(ip: string, label: string) {
     setError(null)

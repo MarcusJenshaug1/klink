@@ -104,7 +104,7 @@ export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
                 onClick={() => removePlayer(name)}
                 aria-label={`Fjern ${name}`}
                 className={cn(
-                  'shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors',
+                  'shrink-0 w-11 h-11 -my-2 rounded-full flex items-center justify-center transition-colors',
                   athina
                     ? 'text-white/25 hover:text-white/60 hover:bg-white/10'
                     : 'text-forest/25 hover:text-forest/50 hover:bg-forest/8'

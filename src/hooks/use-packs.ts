@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Pack } from '@/types/game'
 
@@ -9,26 +9,28 @@ export function usePacks() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchPacks = useCallback(async () => {
     const supabase = createClient()
+    setLoading(true)
+    setError(null)
+    const { data, error: err } = await supabase
+      .from('spillpakker')
+      .select('id, navn, beskrivelse, regler, farge, ikon, aktiv, droyhet')
+      .eq('aktiv', true)
+      .order('opprettet_at', { ascending: true })
 
-    async function fetchPacks() {
-      const { data, error: err } = await supabase
-        .from('spillpakker')
-        .select('id, navn, beskrivelse, regler, farge, ikon, aktiv, droyhet')
-        .eq('aktiv', true)
-        .order('opprettet_at', { ascending: true })
-
-      if (err) {
-        setError(err.message)
-      } else {
-        setPacks(data ?? [])
-      }
-      setLoading(false)
+    if (err) {
+      setError(err.message)
+      setPacks([])
+    } else {
+      setPacks(data ?? [])
     }
-
-    fetchPacks()
+    setLoading(false)
   }, [])
 
-  return { packs, loading, error }
+  useEffect(() => {
+    fetchPacks()
+  }, [fetchPacks])
+
+  return { packs, loading, error, refetch: fetchPacks }
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 interface ScarePopProps {
   /** Trigger endres → animasjon + lyd spilles én gang */
@@ -15,8 +16,13 @@ const SCARE_PLAYED_KEY = 'klink-scare-played'
 
 export function ScarePop({ trigger }: ScarePopProps) {
   const [visible, setVisible] = useState(false)
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
+    if (reducedMotion) {
+      setVisible(false)
+      return
+    }
     if (!trigger) {
       // Kombo er av → slett session-flagget så neste aktivering spiller på nytt
       try { sessionStorage.removeItem(SCARE_PLAYED_KEY) } catch {}
@@ -33,7 +39,7 @@ export function ScarePop({ trigger }: ScarePopProps) {
 
     const t = setTimeout(() => setVisible(false), 1900)
     return () => clearTimeout(t)
-  }, [trigger])
+  }, [trigger, reducedMotion])
 
   if (!visible) return null
 

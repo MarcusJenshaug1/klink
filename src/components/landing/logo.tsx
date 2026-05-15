@@ -47,13 +47,15 @@ export function Logo({ className }: { className?: string }) {
 
   return (
     <div className={className}>
-      <div
+      <button
+        type="button"
+        aria-label="Klink-logo"
         onClick={handleClick}
         onPointerDown={onPointerDown}
         onPointerUp={cancelLongPress}
         onPointerLeave={cancelLongPress}
         onPointerCancel={cancelLongPress}
-        className="select-none touch-manipulation"
+        className="select-none touch-manipulation bg-transparent border-0 p-0"
       >
         <div
           className="inline-block px-6 py-4 rounded-3xl transition-all duration-500"
@@ -88,7 +90,7 @@ export function Logo({ className }: { className?: string }) {
             Drikkespillet
           </p>
         </div>
-      </div>
+      </button>
 
       {/* Activation toast */}
       {toast && (

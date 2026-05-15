@@ -45,7 +45,7 @@ export default function PackSelectionPage() {
   const router = useRouter()
   const { state, dispatch } = useGame()
   const { isActive: athina } = useAthina()
-  const { packs, loading: packsLoading } = usePacks()
+  const { packs, loading: packsLoading, error: packsError, refetch: refetchPacks } = usePacks()
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
   const { counts: cardCounts } = useCardCounts(state.droyhet)
   const [castOpen, setCastOpen] = useState(false)
@@ -79,10 +79,17 @@ export default function PackSelectionPage() {
     dispatch({ type: 'SELECT_PACKS', packs: selected })
     // Skip Supabase fetch for the virtual __custom__ pack
     const packIds = Array.from(selectedIds).filter((id) => id !== '__custom__')
-    const [fetchedCards, korttyper] = await Promise.all([
-      packIds.length > 0 ? fetchCards(packIds) : Promise.resolve([] as import('@/types/game').Card[]),
-      fetchKorttyper(),
-    ])
+    let fetchedCards: import('@/types/game').Card[] = []
+    let korttyper: import('@/types/game').Korttype[] = []
+    try {
+      ;[fetchedCards, korttyper] = await Promise.all([
+        packIds.length > 0 ? fetchCards(packIds) : Promise.resolve([] as import('@/types/game').Card[]),
+        fetchKorttyper(),
+      ])
+    } catch {
+      setStartError('Klarte ikke hente kortene akkurat nå. Sjekk nett og prøv igjen.')
+      return
+    }
     const customSelected = selectedIds.has('__custom__') ? (state.customCards ?? []) : []
     const cards = [...fetchedCards, ...customSelected]
     dispatch({ type: 'SET_KORTTYPER', korttyper })
@@ -294,8 +301,38 @@ export default function PackSelectionPage() {
 
         {/* Pack grid */}
         {packsLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-[3px] border-forest/20 border-t-forest rounded-full animate-spin" />
+          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3 sm:gap-4" aria-label="Laster pakker">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'min-h-[118px] rounded-2xl animate-pulse',
+                  athina ? 'bg-white/18' : 'bg-white/45'
+                )}
+              />
+            ))}
+          </div>
+        ) : packsError ? (
+          <div
+            className={cn(
+              'rounded-3xl px-6 py-10 text-center',
+              athina ? 'bg-white/18 text-white' : 'bg-white/60 text-forest'
+            )}
+          >
+            <p className="font-black">Klarte ikke hente pakker</p>
+            <p className={cn('text-sm mt-1', athina ? 'text-white/70' : 'text-forest/60')}>
+              Sjekk nettet og prøv igjen.
+            </p>
+            <button
+              type="button"
+              onClick={refetchPacks}
+              className={cn(
+                'mt-4 min-h-[44px] px-4 rounded-xl text-sm font-black transition-all active:scale-95',
+                athina ? 'bg-white/30 text-white hover:bg-white/40' : 'bg-forest text-lime hover:bg-forest-light'
+              )}
+            >
+              Prøv igjen
+            </button>
           </div>
         ) : (
           <PackGrid

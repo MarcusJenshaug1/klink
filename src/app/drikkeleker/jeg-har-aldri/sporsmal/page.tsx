@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { PublicPageShell } from '@/components/public/public-page-shell'
 export const metadata: Metadata = {
   title: 'Jeg har aldri spørsmål – 100+ norske spørsmål',
   description:
@@ -60,7 +61,7 @@ function List({ items }: { items: string[] }) {
 
 export default function SporsmalPage() {
   return (
-    <main className="min-h-dvh bg-lime text-forest">
+    <PublicPageShell>
       <div className="max-w-2xl mx-auto px-6 py-12">
         <nav className="mb-8 text-sm">
           <Link href="/drikkeleker/jeg-har-aldri" className="underline underline-offset-4 hover:opacity-70">
@@ -109,6 +110,6 @@ export default function SporsmalPage() {
           <Link href="/drikkeleker" className="underline underline-offset-4">Alle drikkeleker</Link>
         </div>
       </div>
-    </main>
+    </PublicPageShell>
   )
 }
