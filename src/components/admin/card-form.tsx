@@ -12,7 +12,40 @@ import type { KortType, Korttype, Droyhet, Kjonn, Vekt } from '@/types/game'
 
 const BUILT_IN_TYPES: KortType[] = [
   'snusboks', 'pekelek', 'alle_drikker', 'kaos', 'femfingre', 'utfordring', 'regel', 'kategori',
+  'bomba', 'duell', 'reaksjon', 'trekning', 'roulette', 'bussen', 'oppdrag', 'sannhet',
 ]
+
+interface TypeFieldConfig {
+  showInnhold: boolean
+  innholdRequired: boolean
+  innholdLabel?: string
+  innholdPlaceholder?: string
+  showUtfordring: boolean
+  showTimer: boolean
+}
+
+const TYPE_FIELDS: Record<string, TypeFieldConfig> = {
+  snusboks:     { showInnhold: true,  innholdRequired: true,  showUtfordring: false, showTimer: false, innholdPlaceholder: 'f.eks. "Hvem er den morsomste?"' },
+  pekelek:      { showInnhold: true,  innholdRequired: true,  showUtfordring: false, showTimer: false, innholdPlaceholder: 'f.eks. "Hvem ville overlevd en zombie-apokalypse?"' },
+  alle_drikker: { showInnhold: true,  innholdRequired: true,  showUtfordring: false, showTimer: false, innholdPlaceholder: 'f.eks. "Jeg har aldri skutt sprettert"' },
+  kaos:         { showInnhold: true,  innholdRequired: true,  showUtfordring: true,  showTimer: true,  innholdPlaceholder: 'f.eks. "Alle med briller drikker"' },
+  femfingre:    { showInnhold: false, innholdRequired: false, showUtfordring: false, showTimer: false },
+  utfordring:   { showInnhold: true,  innholdRequired: true,  showUtfordring: true,  showTimer: true,  innholdPlaceholder: 'f.eks. "Gjør 10 armhevinger"' },
+  regel:        { showInnhold: true,  innholdRequired: true,  showUtfordring: false, showTimer: false, innholdPlaceholder: 'f.eks. "Ingen bruk av navn – si heller fingertupp!"' },
+  kategori:     { showInnhold: true,  innholdRequired: true,  showUtfordring: false, showTimer: false, innholdPlaceholder: 'f.eks. "Ting man tar med på camping"' },
+  bomba:        { showInnhold: true,  innholdRequired: false, showUtfordring: false, showTimer: false, innholdLabel: 'Innhold (valgfritt)', innholdPlaceholder: 'Valgfri tekst som vises mens bomba tikker' },
+  duell:        { showInnhold: false, innholdRequired: false, showUtfordring: false, showTimer: false },
+  reaksjon:     { showInnhold: false, innholdRequired: false, showUtfordring: false, showTimer: false },
+  trekning:     { showInnhold: true,  innholdRequired: false, showUtfordring: false, showTimer: false, innholdLabel: 'Innhold (valgfritt)', innholdPlaceholder: 'Ekstra tekst som vises under trekninga' },
+  roulette:     { showInnhold: false, innholdRequired: false, showUtfordring: false, showTimer: false },
+  bussen:       { showInnhold: false, innholdRequired: false, showUtfordring: false, showTimer: false },
+  oppdrag:      { showInnhold: false, innholdRequired: false, showUtfordring: false, showTimer: false },
+  sannhet:      { showInnhold: true,  innholdRequired: true,  showUtfordring: false, showTimer: false, innholdPlaceholder: 'f.eks. "Hvem er din hemmelige crush?"' },
+}
+
+const DEFAULT_TYPE_FIELDS: TypeFieldConfig = {
+  showInnhold: true, innholdRequired: true, showUtfordring: true, showTimer: true,
+}
 
 const EMPTY_PAASTANDER: [string, string, string, string, string] = ['', '', '', '', '']
 
@@ -73,10 +106,22 @@ const KJONN_META: Record<Kjonn, string> = {
 const label = 'block text-xs font-bold text-forest/50 uppercase tracking-wider mb-1.5'
 const inputCls = 'w-full px-3 py-2 bg-cream border border-cream-dark/60 rounded-xl text-forest text-sm focus:outline-none focus:border-forest/40 transition-colors'
 
+function parseMissions(raw: string): string[] {
+  if (!raw) return ['']
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed
+  } catch {}
+  return [raw]
+}
+
 export function CardForm({ packId, packColor, initialKorttyper, editCard, onSaved, onCancel, compact = false }: CardFormProps) {
   const [type, setType] = useState<KortType>(editCard?.type ?? 'snusboks')
   const [tittel, setTittel] = useState(editCard?.tittel ?? '')
   const [innhold, setInnhold] = useState(editCard?.innhold ?? '')
+  const [oppdragMissions, setOppdragMissions] = useState<string[]>(() =>
+    editCard?.type === 'oppdrag' ? parseMissions(editCard.innhold) : ['']
+  )
   const [paastander, setPaastander] = useState<string[]>(() => {
     const src = editCard?.paastander ?? []
     return [0, 1, 2, 3, 4].map((i) => src[i] ?? '')
@@ -151,19 +196,27 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
     setKjonn('alle')
     setVekt('vanlig')
     setNotater('')
+    setOppdragMissions([''])
     setError('')
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const isFemFingre = type === 'femfingre'
+    const isOppdrag = type === 'oppdrag'
+    const fieldConfig = TYPE_FIELDS[type] ?? DEFAULT_TYPE_FIELDS
     const trimmedPaastander = paastander.map((p) => p.trim())
     if (isFemFingre) {
       if (trimmedPaastander.some((p) => !p)) {
         setError('Alle 5 påstander må fylles ut')
         return
       }
-    } else if (!innhold.trim()) {
+    } else if (isOppdrag) {
+      if (oppdragMissions.every(m => !m.trim())) {
+        setError('Minst ett oppdrag må fylles ut')
+        return
+      }
+    } else if (fieldConfig.showInnhold && fieldConfig.innholdRequired && !innhold.trim()) {
       setError('Innhold er påkrevd')
       return
     }
@@ -193,7 +246,9 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       spillpakke_id: packId,
       type,
       tittel: tittel.trim(),
-      innhold: isFemFingre ? '' : innhold.trim(),
+      innhold: isFemFingre ? '' : isOppdrag
+        ? JSON.stringify(oppdragMissions.filter(m => m.trim()))
+        : (!fieldConfig.showInnhold ? '' : innhold.trim()),
       paastander: isFemFingre ? trimmedPaastander : null,
       utfordring: isFemFingre ? null : (utfordring.trim() || null),
       timer_sekunder: isFemFingre ? null : (timerSekunder ? parseInt(timerSekunder, 10) : null),
@@ -235,18 +290,22 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       setSlurkerMedium('')
       setSlurkerBorst('')
       setNotater('')
+      setOppdragMissions([''])
     }
     onSaved()
   }
 
   const isFemFingre = type === 'femfingre'
+  const isOppdrag = type === 'oppdrag'
+  const fieldConfig = TYPE_FIELDS[type] ?? DEFAULT_TYPE_FIELDS
+  const selectedMeta = CARD_TYPE_META[type]
 
   const FormFields = (
     <>
       {/* Type selector */}
       <div>
         <p className={label}>Korttype</p>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
           {BUILT_IN_TYPES.map((t) => {
             const meta = CARD_TYPE_META[t]
             const Icon = meta.icon
@@ -267,6 +326,12 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
             )
           })}
         </div>
+        {selectedMeta?.beskrivelse && (
+          <div className="mt-2.5 flex items-start gap-2 rounded-xl bg-forest/8 px-3 py-2.5">
+            <selectedMeta.icon className="w-3.5 h-3.5 shrink-0 mt-0.5 text-forest/60" />
+            <p className="text-xs text-forest/70 leading-snug">{selectedMeta.beskrivelse}</p>
+          </div>
+        )}
         {korttyper.length > 0 && (
           <>
             <p className="text-[10px] font-bold text-forest/30 uppercase tracking-wider mt-3 mb-1.5">Egendefinerte</p>
@@ -294,8 +359,51 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
         )}
       </div>
 
-      {/* Innhold eller påstander (fem fingre) */}
-      {isFemFingre ? (
+      {/* Innhold, påstander (fem fingre), eller oppdragsliste */}
+      {isOppdrag ? (
+        <div>
+          <label className={label}>Hemmelige oppdrag *</label>
+          <p className="mb-3 text-xs text-forest/50">Legg inn så mange du vil — spillet velger ett tilfeldig hver gang kortet vises.</p>
+          <div className="space-y-2">
+            {oppdragMissions.map((mission, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-forest/10 text-[11px] font-black text-forest/60">
+                  {i + 1}
+                </span>
+                <input
+                  type="text"
+                  value={mission}
+                  onChange={(e) => {
+                    const next = [...oppdragMissions]
+                    next[i] = e.target.value
+                    setOppdragMissions(next)
+                  }}
+                  autoFocus={!editCard && i === 0}
+                  className={inputCls}
+                  placeholder={`Oppdrag ${i + 1} …`}
+                />
+                {oppdragMissions.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setOppdragMissions(prev => prev.filter((_, j) => j !== i))}
+                    className="shrink-0 text-sm text-forest/30 hover:text-red-500 transition-colors"
+                    aria-label="Fjern oppdrag"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOppdragMissions(prev => [...prev, ''])}
+            className="mt-3 flex items-center gap-1.5 text-xs font-bold text-forest/50 hover:text-forest transition-colors"
+          >
+            + Legg til oppdrag
+          </button>
+        </div>
+      ) : isFemFingre ? (
         <div>
           <label className={label}>Påstander * <span className="font-normal normal-case text-forest/30">(nøyaktig 5)</span></label>
           <div className="space-y-2">
@@ -320,20 +428,41 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
             ))}
           </div>
         </div>
-      ) : (
+      ) : fieldConfig.showInnhold ? (
         <div>
-          <label className={label}>Innhold *</label>
+          <label className={label}>
+            {fieldConfig.innholdLabel ?? (fieldConfig.innholdRequired ? 'Innhold *' : 'Innhold')}
+          </label>
           <TokenInput
             ref={innholdRef}
             value={innhold}
             onChange={setInnhold}
             rows={3}
             autoFocus={!editCard}
-            placeholder="Skriv spørsmål eller innhold..."
+            placeholder={fieldConfig.innholdPlaceholder ?? 'Skriv spørsmål eller innhold...'}
           />
           <TokenInsertBar onInsert={(t) => insertToken(t, 'innhold')} />
+          {type === 'sannhet' && (
+            <div className="mt-3 rounded-xl border border-forest/15 bg-forest/5 px-3.5 py-3 space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-forest/50">Hvem havner på teppet?</p>
+              <p className="text-xs text-forest/70 leading-snug">
+                Spillet velger automatisk én tilfeldig spiller basert på kortets ID — den samme spilleren
+                havner alltid på teppet for dette kortet.
+              </p>
+              <p className="text-xs text-forest/70 leading-snug">
+                Bruk <code className="rounded bg-forest/10 px-1 py-0.5 font-mono text-forest/80">{'{spiller}'}</code> i
+                teksten for å navngi spilleren i spørsmålet.
+                Den vil alltid peke på den samme som er på teppet.
+              </p>
+              <p className="text-xs text-forest/70 leading-snug">
+                Vil du ha en <em>annen</em> spiller i teksten enn den som svarer?
+                Bruk <code className="rounded bg-forest/10 px-1 py-0.5 font-mono text-forest/80">{'{spiller2}'}</code> — det
+                blir en tilfeldig annen enn den på teppet.
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* Drøyhet — front-and-center as most impactful field */}
       <div>
@@ -388,7 +517,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
           </div>
 
           {/* Utfordring */}
-          {!isFemFingre && (
+          {fieldConfig.showUtfordring && (
             <div>
               <label className={label}>Utfordring <span className="font-normal normal-case text-forest/30">(valgfritt)</span></label>
               <TokenInput
@@ -430,7 +559,7 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
           </div>
 
           {/* Timer */}
-          {!isFemFingre && (
+          {fieldConfig.showTimer && (
           <div>
             <label className={label}>Timer <span className="font-normal normal-case text-forest/30">(valgfritt, 5–600 sek)</span></label>
             <div className="flex items-center gap-2 flex-wrap">
@@ -577,7 +706,12 @@ export function CardForm({ packId, packColor, initialKorttyper, editCard, onSave
       <div className="flex gap-2 pt-1">
         <button
           type="submit"
-          disabled={saving || (isFemFingre ? paastander.some((p) => !p.trim()) : !innhold.trim())}
+          disabled={saving || (isFemFingre
+            ? paastander.some((p) => !p.trim())
+            : isOppdrag
+              ? oppdragMissions.every(m => !m.trim())
+              : (fieldConfig.showInnhold && fieldConfig.innholdRequired && !innhold.trim())
+          )}
           className="bg-forest text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-forest/80 active:scale-95 disabled:opacity-50 transition-all"
         >
           {saving ? 'Lagrer...' : editCard ? 'Oppdater' : 'Legg til kort'}

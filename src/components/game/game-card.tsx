@@ -11,6 +11,16 @@ import { useAthina } from '@/context/athina-context'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { cn } from '@/lib/utils'
 import { FemFingreCard } from './fem-fingre-card'
+import { SnusboksCard } from './snusboks-card'
+import { BombaCard } from './bomba-card'
+import { DuellCard } from './duell-card'
+import { ReaksjonsCard } from './reaksjon-card'
+import { TrekkingCard } from './trekning-card'
+import { KategoriCard } from './kategori-card'
+import { RouletteCard } from './roulette-card'
+import { BussenCard } from './bussen-card'
+import { OppdragCard } from './oppdrag-card'
+import { SannhetCard } from './sannhet-card'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
 const GLITTERS = [
@@ -55,6 +65,36 @@ export function GameCard(props: GameCardProps) {
         onNext={props.onNext}
       />
     )
+  }
+  if (props.card.type === 'snusboks') {
+    return <SnusboksCard {...props} />
+  }
+  if (props.card.type === 'kategori') {
+    return <KategoriCard {...props} />
+  }
+  if (props.card.type === 'bomba') {
+    return <BombaCard {...props} />
+  }
+  if (props.card.type === 'duell') {
+    return <DuellCard {...props} />
+  }
+  if (props.card.type === 'reaksjon') {
+    return <ReaksjonsCard {...props} />
+  }
+  if (props.card.type === 'trekning') {
+    return <TrekkingCard {...props} />
+  }
+  if (props.card.type === 'roulette') {
+    return <RouletteCard {...props} />
+  }
+  if (props.card.type === 'bussen') {
+    return <BussenCard {...props} />
+  }
+  if (props.card.type === 'oppdrag') {
+    return <OppdragCard {...props} />
+  }
+  if (props.card.type === 'sannhet') {
+    return <SannhetCard {...props} />
   }
   return <StandardGameCard {...props} />
 }

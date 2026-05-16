@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef, useId } from 'react'
 import { Trash2, Trophy, Timer, Eye, EyeOff, Pencil, Search, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { getCardTypeMeta } from '@/lib/game/card-types'
@@ -60,6 +60,8 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const autoOpenedRef = useRef(false)
+  const editModalRef = useRef<HTMLDivElement>(null)
+  const editTitleId = useId()
 
   useEffect(() => {
     if (!defaultEditId || autoOpenedRef.current || cards.length === 0) return
@@ -353,23 +355,7 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
           {filtered.map((card) => {
             const isSelected = selected.has(card.id)
             const isExpanded = expandedId === card.id
-            const isEditing = editingId === card.id
             const isInactive = card.aktiv === false
-
-            if (isEditing) {
-              return (
-                <div key={card.id} className="bg-white rounded-2xl border-2 border-forest/30 p-5">
-                  <CardForm
-                    packId={packId}
-                    packColor={packColor}
-                    editCard={card}
-                    onSaved={() => { setEditingId(null); onRefresh() }}
-                    onCancel={() => setEditingId(null)}
-                    initialKorttyper={korttyper}
-                  />
-                </div>
-              )
-            }
 
             return (
               <div
@@ -495,6 +481,50 @@ export function CardList({ packId, packColor, cards, korttyper = [], onRefresh, 
           })}
         </div>
       )}
+
+      {/* Edit card modal */}
+      {editingId && (() => {
+        const card = cards.find((c) => c.id === editingId)
+        if (!card) return null
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-forest/50 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto"
+            onClick={() => setEditingId(null)}
+          >
+            <div
+              ref={editModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={editTitleId}
+              tabIndex={-1}
+              className="bg-cream rounded-3xl border border-cream-dark/40 w-full max-w-2xl my-8 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-cream-dark/40 sticky top-0 bg-cream rounded-t-3xl">
+                <h2 id={editTitleId} className="font-display font-black text-xl text-forest">Rediger kort</h2>
+                <button
+                  onClick={() => setEditingId(null)}
+                  aria-label="Lukk"
+                  className="p-2 rounded-xl text-forest/50 hover:text-forest hover:bg-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6">
+                <CardForm
+                  packId={packId}
+                  packColor={packColor}
+                  editCard={card}
+                  initialKorttyper={korttyper}
+                  compact
+                  onSaved={() => { setEditingId(null); onRefresh() }}
+                  onCancel={() => setEditingId(null)}
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
