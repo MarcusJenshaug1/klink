@@ -74,7 +74,12 @@
       "Bash(git stash:*)",
       "Bash(lsof -i :3000 -sTCP:LISTEN)",
       "Bash(awk 'NR>1 {print $2}')",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --title 'feat\\(timer\\): auto-start med valgfri forsinkelse for synlig timer' --body ' *)",
+      "Bash(gh pr create --base master --head claude/timer-auto-start --title 'feat\\(timer\\): auto-start med valgfri forsinkelse for synlig timer' --body ' *)",
+      "Bash(git branch *)"
     ]
   }
 }

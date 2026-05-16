@@ -3,12 +3,13 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import { Droplets, Trophy, Timer, Sparkles, PenLine } from 'lucide-react'
 import JSConfetti from 'js-confetti'
-import { getCardTypeMeta } from '@/lib/game/card-types'
+import { colorWithAlpha, getCardTypeMeta } from '@/lib/game/card-types'
 import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips, isChugging } from '@/lib/game/sips'
 import { playTimerDing } from '@/lib/game/timer-sound'
 import { useAthina } from '@/context/athina-context'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { cn } from '@/lib/utils'
 import { FemFingreCard } from './fem-fingre-card'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
@@ -31,6 +32,18 @@ interface GameCardProps {
 }
 
 type TimerPhase = 'idle' | 'delay' | 'running' | 'result'
+
+function getCardTextClass(length: number) {
+  if (length > 220) {
+    return 'text-lg sm:text-xl md:text-2xl lg:text-3xl landscape:text-base lg:landscape:text-2xl leading-normal'
+  }
+
+  if (length > 140) {
+    return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl landscape:text-lg lg:landscape:text-3xl leading-snug'
+  }
+
+  return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl landscape:text-lg lg:landscape:text-3xl leading-snug'
+}
 
 export function GameCard(props: GameCardProps) {
   if (props.card.type === 'femfingre') {
@@ -172,9 +185,20 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
     return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}`
   })()
 
+  const accent = athina ? '#FF1493' : meta.farge ?? pack.farge
+  const cardTextClass = getCardTextClass(card.innhold.length + (card.utfordring?.length ?? 0))
+  const primaryActionClass = cn(
+    'w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 font-black text-base shadow-lg transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-50 landscape:py-2.5 landscape:text-sm',
+    athina ? 'bg-white/30 text-white' : 'bg-forest text-lime'
+  )
+  const secondaryActionClass = cn(
+    'rounded-xl px-6 py-2 text-sm font-bold transition-all hover:opacity-95 active:scale-[0.98]',
+    athina ? 'bg-white/25 text-white' : 'bg-white/20 text-white'
+  )
+
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-5 landscape:px-20 pt-16 pb-24 transition-colors duration-700"
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-20 landscape:pt-14 landscape:pb-20"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
 
@@ -199,154 +223,181 @@ function StandardGameCard({ card, pack, players, intensitet, korttyper, onNext }
         </div>
       )}
       {/* The card */}
-      <div className="w-full max-w-sm md:max-w-xl lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl lg:landscape:max-w-3xl flex flex-col items-center gap-3 md:gap-5 landscape:gap-2">
+      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl landscape:gap-2 lg:landscape:max-w-3xl">
 
         {/* Category badge — above card */}
         <div className="flex justify-center">
           <div
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-xs font-black uppercase tracking-widest"
-            style={meta.farge
-              ? { backgroundColor: meta.farge }
-              : { backgroundColor: 'rgba(0,0,0,0.20)', backdropFilter: 'blur(4px)', color: 'rgba(255,255,255,0.9)' }
-            }
+            className={cn(
+              'inline-flex max-w-[calc(100vw_-_2rem)] items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-sm backdrop-blur-sm sm:max-w-sm',
+              athina ? 'border-white/30 bg-white/18' : 'border-white/20'
+            )}
+            style={athina ? undefined : { backgroundColor: accent }}
           >
             <meta.icon className="w-3.5 h-3.5" />
-            {card.tittel || meta.label}
+            <span className="truncate">{card.tittel || meta.label}</span>
           </div>
         </div>
 
           {/* Main card — frosted glass */}
           <div
-            className="w-full bg-white/15 backdrop-blur-md rounded-3xl landscape:rounded-2xl p-7 md:p-10 lg:p-12 landscape:p-5 lg:landscape:p-10 flex flex-col gap-5 md:gap-7 landscape:gap-3 lg:landscape:gap-6 shadow-xl transition-all duration-500"
-            style={athina ? { boxShadow: '0 0 0 2px rgba(255,215,0,0.5), 0 20px 25px -5px rgba(0,0,0,0.1)' } : undefined}
+            className={cn(
+              'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-x-hidden overflow-y-auto rounded-3xl border p-6 shadow-2xl backdrop-blur-md transition-all duration-500 sm:p-7 md:gap-7 md:p-10 lg:p-12 landscape:max-h-[calc(100dvh-8.5rem)] landscape:gap-3 landscape:rounded-2xl landscape:p-5 lg:landscape:gap-6 lg:landscape:p-10',
+              athina ? 'border-white/30 bg-white/18' : 'border-white/25 bg-white/18'
+            )}
+            style={{
+              boxShadow: athina
+                ? '0 0 0 2px rgba(255,215,0,0.35), 0 24px 45px rgba(0,0,0,0.16)'
+                : '0 24px 45px rgba(0,0,0,0.16)',
+            }}
           >
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5" style={{ backgroundColor: accent }} />
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-28"
+              style={{ background: `linear-gradient(180deg, ${colorWithAlpha(accent, 0.24, 'rgba(255,255,255,0.14)')}, transparent)` }}
+            />
+            {athina && <div className="pointer-events-none absolute inset-0 bg-[#FF1493]/30" />}
 
             {/* Card text */}
-            <p className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl landscape:text-lg lg:landscape:text-3xl font-semibold leading-relaxed text-center">
-              {segments.map((seg, i) =>
-                seg.type === 'player' ? (
-                  <mark key={i} className="inline-block not-italic bg-white/30 text-white font-black px-2.5 py-0.5 rounded-full mx-0.5">
-                    {seg.name}
-                  </mark>
-                ) : (
-                  <span key={i}>{seg.text}</span>
-                )
+            <div className="relative z-10 flex flex-col gap-5 md:gap-7 landscape:gap-3 lg:landscape:gap-6">
+              <p className={cn('break-words text-center font-semibold text-white [overflow-wrap:anywhere]', cardTextClass)}>
+                {segments.map((seg, i) =>
+                  seg.type === 'player' ? (
+                    <mark key={i} className={cn(
+                      'mx-0.5 inline-block rounded-full px-2.5 py-0.5 align-baseline font-black not-italic shadow-sm',
+                      athina ? 'bg-white text-[#FF1493]' : 'bg-white/30 text-white'
+                    )}>
+                      {seg.name}
+                    </mark>
+                  ) : (
+                    <span key={i}>{seg.text}</span>
+                  )
+                )}
+              </p>
+
+              {/* Utfordring */}
+              {utfordringSegments && (
+                <div
+                  className="flex items-start gap-3 rounded-2xl border px-4 py-3"
+                  style={{
+                    backgroundColor: athina ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.18)',
+                    borderColor: colorWithAlpha(accent, 0.32, 'rgba(255,255,255,0.18)'),
+                  }}
+                >
+                  <Trophy className="mt-0.5 h-4 w-4 shrink-0 text-white/70" />
+                  <p className="flex-1 break-words text-sm font-semibold leading-snug text-white/90 [overflow-wrap:anywhere]">
+                    {utfordringSegments.map((seg, i) =>
+                      seg.type === 'player' ? (
+                        <mark key={i} className={cn(
+                          'mx-0.5 inline-block rounded-full px-2 py-0.5 align-baseline font-black not-italic',
+                          athina ? 'bg-white text-[#FF1493]' : 'bg-white/20 text-white'
+                        )}>
+                          {seg.name}
+                        </mark>
+                      ) : (
+                        <span key={i}>{seg.text}</span>
+                      )
+                    )}
+                  </p>
+                </div>
               )}
-            </p>
 
-            {/* Utfordring */}
-            {utfordringSegments && (
-              <div className="rounded-2xl bg-black/20 px-4 py-3 flex items-start gap-3">
-                <Trophy className="w-4 h-4 text-white/60 shrink-0 mt-0.5" />
-                <p className="text-white/85 text-sm font-semibold leading-snug">
-                  {utfordringSegments.map((seg, i) =>
-                    seg.type === 'player' ? (
-                      <mark key={i} className="inline-block not-italic bg-white/20 text-white font-black px-2 py-0.5 rounded-full mx-0.5">
-                        {seg.name}
-                      </mark>
-                    ) : (
-                      <span key={i}>{seg.text}</span>
-                    )
+              {/* Custom card author */}
+              {card.custom_author && (
+                <div className="mt-1 flex justify-center">
+                  <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold text-white/75">
+                    <PenLine className="h-3 w-3 shrink-0" />
+                    <span className="truncate">Laget av {card.custom_author}</span>
+                  </span>
+                </div>
+              )}
+
+              {/* Timer */}
+              {hasTimer && (
+                <div className="flex flex-col items-center gap-3">
+
+                  {timerPhase === 'idle' && !timerAutoStart && (
+                    <button
+                      onClick={handleStart}
+                      className={primaryActionClass}
+                    >
+                      <Timer className="h-5 w-5" />
+                      Start timer
+                    </button>
                   )}
-                </p>
-              </div>
-            )}
 
-            {/* Custom card author */}
-            {card.custom_author && (
-              <div className="flex justify-center mt-1">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 text-white/70 text-xs font-semibold">
-                  <PenLine className="w-3 h-3" />
-                  Laget av {card.custom_author}
-                </span>
-              </div>
-            )}
+                  {timerPhase === 'delay' && (
+                    <div className="flex w-full animate-pulse flex-col items-center gap-1 rounded-2xl bg-black/20 px-5 py-4">
+                      <p className="text-xs font-bold uppercase tracking-widest text-white/60">Gjør deg klar…</p>
+                      <p className="font-black tabular-nums text-white/75" style={{ fontSize: '3rem', lineHeight: 1 }}>
+                        {delayCountdown}
+                      </p>
+                    </div>
+                  )}
 
-            {/* Timer */}
-            {hasTimer && (
-              <div className="flex flex-col items-center gap-3">
+                  {timerPhase === 'running' && (
+                    <div className="flex w-full flex-col items-center gap-3">
+                      {timerSynlig && (
+                        <div className="flex flex-col items-center gap-1">
+                          <p className="text-xs font-bold uppercase tracking-widest text-white/60">Nedtelling</p>
+                          <p className="text-center font-black tabular-nums text-white landscape:text-6xl" style={{ fontSize: '5rem', lineHeight: 1 }}>
+                            {countdownDisplay}
+                          </p>
+                        </div>
+                      )}
+                      {!timerSynlig && (
+                        <button
+                          onClick={handleStop}
+                          className="flex w-full animate-pulse items-center justify-center gap-2 rounded-2xl bg-red-500/80 py-3.5 text-base font-black text-white shadow-lg transition-all hover:bg-red-500 active:scale-[0.98] landscape:py-2.5"
+                        >
+                          <Timer className="h-5 w-5" />
+                          Stopp!
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-                {timerPhase === 'idle' && !timerAutoStart && (
-                  <button
-                    onClick={handleStart}
-                    className="w-full flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-black text-base py-3.5 landscape:py-2.5 rounded-2xl transition-all"
-                  >
-                    <Timer className="w-5 h-5" />
-                    Start timer
-                  </button>
-                )}
-
-                {timerPhase === 'delay' && (
-                  <div className="w-full rounded-2xl bg-black/20 px-5 py-4 flex flex-col items-center gap-1 animate-pulse">
-                    <p className="text-white/50 text-xs font-bold uppercase tracking-widest">Gjør deg klar…</p>
-                    <p className="text-white/70 font-black tabular-nums" style={{ fontSize: '3rem', lineHeight: 1 }}>
-                      {delayCountdown}
-                    </p>
-                  </div>
-                )}
-
-                {timerPhase === 'running' && (
-                  <div className="flex flex-col items-center gap-3 w-full">
-                    {timerSynlig && (
-                      <div className="flex flex-col items-center gap-1">
-                        <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Nedtelling</p>
-                        <p className="text-white font-black tabular-nums text-center landscape:text-6xl" style={{ fontSize: '5rem', lineHeight: 1 }}>
-                          {countdownDisplay}
-                        </p>
-                      </div>
-                    )}
-                    {!timerSynlig && (
+                  {timerPhase === 'result' && timerSynlig && (
+                    <div className="flex w-full flex-col items-center gap-2 rounded-2xl bg-black/25 px-5 py-4 text-center">
+                      <p className="flex items-center gap-2 text-2xl font-black text-white">
+                        Tid er ute! <Sparkles className="h-6 w-6 text-yellow-300" />
+                      </p>
                       <button
-                        onClick={handleStop}
-                        className="w-full flex items-center justify-center gap-2 bg-red-500/80 hover:bg-red-500 active:scale-95 text-white font-black text-base py-3.5 landscape:py-2.5 rounded-2xl animate-pulse transition-all"
+                        onClick={onNext}
+                        className={secondaryActionClass}
                       >
-                        <Timer className="w-5 h-5" />
-                        Stopp!
+                        Neste kort →
                       </button>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {timerPhase === 'result' && timerSynlig && (
-                  <div className="w-full rounded-2xl bg-black/25 px-5 py-4 flex flex-col items-center gap-2 text-center">
-                    <p className="text-white text-2xl font-black flex items-center gap-2">
-                      Tid er ute! <Sparkles className="w-6 h-6 text-yellow-300" />
-                    </p>
-                    <button
-                      onClick={onNext}
-                      className="mt-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-bold text-sm px-6 py-2 rounded-xl transition-all"
-                    >
-                      Neste kort →
-                    </button>
-                  </div>
-                )}
+                  {timerPhase === 'result' && !timerSynlig && (
+                    <div className="flex w-full flex-col items-center gap-2 rounded-2xl bg-black/25 px-5 py-4 text-center">
+                      <p className="text-sm font-semibold text-white/75">
+                        Du bommet med <span className="font-black text-white">{diffSec} sek</span>
+                      </p>
+                      <p className="flex items-center gap-2 text-2xl font-black text-white">
+                        {isChugging(resultSips) ? '' : 'Drikk '}{formatSips(resultSips)}
+                        <Droplets className="h-6 w-6" />
+                      </p>
+                      <button
+                        onClick={onNext}
+                        className={secondaryActionClass}
+                      >
+                        Neste kort →
+                      </button>
+                    </div>
+                  )}
 
-                {timerPhase === 'result' && !timerSynlig && (
-                  <div className="w-full rounded-2xl bg-black/25 px-5 py-4 flex flex-col items-center gap-2 text-center">
-                    <p className="text-white/70 text-sm font-semibold">
-                      Du bommet med <span className="text-white font-black">{diffSec} sek</span>
-                    </p>
-                    <p className="text-white text-2xl font-black flex items-center gap-2">
-                      {isChugging(resultSips) ? '' : 'Drikk '}{formatSips(resultSips)}
-                      <Droplets className="w-6 h-6" />
-                    </p>
-                    <button
-                      onClick={onNext}
-                      className="mt-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-bold text-sm px-6 py-2 rounded-xl transition-all"
-                    >
-                      Neste kort →
-                    </button>
-                  </div>
-                )}
-
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Sip pill — centered below card */}
           {(timerPhase !== 'result' || timerSynlig) && (
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-sm text-white/70 text-sm font-bold">
-              <Droplets className="w-4 h-4" />
+            <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-black/20 px-4 py-1.5 text-sm font-bold text-white/75 shadow-sm backdrop-blur-sm">
+              <Droplets className="h-4 w-4 shrink-0" />
               {formatSips(sips)}
             </span>
           )}

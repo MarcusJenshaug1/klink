@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { getCardTypeMeta } from '@/lib/game/card-types'
 import { useAthina } from '@/context/athina-context'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import type { Korttype } from '@/types/game'
 
 interface CardTypeIntroProps {
@@ -18,6 +19,7 @@ interface CardTypeIntroProps {
  */
 export function CardTypeIntro({ type, korttyper }: CardTypeIntroProps) {
   const { isActive: athina } = useAthina()
+  const reducedMotion = useReducedMotion()
   const prevTypeRef = useRef<string | undefined>(type)
   const [animKey, setAnimKey] = useState<number | null>(null)
 
@@ -28,10 +30,12 @@ export function CardTypeIntro({ type, korttyper }: CardTypeIntroProps) {
     prevTypeRef.current = type
     if (isFirst) return
     setAnimKey(Date.now())
-    try { if (navigator.vibrate) navigator.vibrate(25) } catch {}
+    if (!reducedMotion) {
+      try { if (navigator.vibrate) navigator.vibrate(25) } catch {}
+    }
     const t = setTimeout(() => setAnimKey(null), 1400)
     return () => clearTimeout(t)
-  }, [type])
+  }, [type, reducedMotion])
 
   if (animKey === null || !type) return null
   const meta = getCardTypeMeta(type, korttyper)
@@ -44,7 +48,7 @@ export function CardTypeIntro({ type, korttyper }: CardTypeIntroProps) {
       aria-hidden
     >
       <div
-        className="flex items-center gap-3 px-7 py-4 rounded-full shadow-2xl text-white uppercase tracking-[0.15em] font-black text-xl sm:text-2xl"
+        className="flex items-center gap-2.5 rounded-full border border-white/20 px-5 py-3 text-base font-black uppercase tracking-widest text-white shadow-2xl backdrop-blur-sm sm:gap-3 sm:px-6 sm:py-3.5 sm:text-xl"
         style={
           meta.farge && !athina
             ? { backgroundColor: meta.farge }

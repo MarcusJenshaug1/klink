@@ -17,14 +17,14 @@ export interface CardTypeMeta {
 
 // Built-in card types
 export const CARD_TYPE_META: Record<string, CardTypeMeta> = {
-  pekelek:     { label: 'Pekelek',      icon: Pointer    },
-  snusboks:    { label: 'Snusboks',     icon: Box        },
-  utfordring:  { label: 'Utfordring',   icon: Flame      },
-  regel:       { label: 'Regel',        icon: Scale      },
-  alle_drikker:{ label: 'Jeg har aldri',icon: Beer       },
-  kategori:    { label: 'Kategori',     icon: LayoutList },
-  kaos:        { label: 'Klink',        icon: Zap        },
-  femfingre:   { label: 'Fem fingre',   icon: Hand       },
+  pekelek:      { label: 'Pekelek',       icon: Pointer,    farge: '#E8357A' },
+  snusboks:     { label: 'Snusboks',      icon: Box,        farge: '#4B3FC7' },
+  utfordring:   { label: 'Utfordring',    icon: Flame,      farge: '#FF7B35' },
+  regel:        { label: 'Regel',         icon: Scale,      farge: '#6B2D6B' },
+  alle_drikker: { label: 'Jeg har aldri', icon: Beer,       farge: '#2D5A2D' },
+  kategori:     { label: 'Kategori',      icon: LayoutList, farge: '#0E9E8E' },
+  kaos:         { label: 'Klink',         icon: Zap,        farge: '#1A3A1A' },
+  femfingre:    { label: 'Fem fingre',    icon: Hand,       farge: '#1A3A1A' },
 }
 
 // Icon map: PascalCase name → LucideIcon component
@@ -73,4 +73,25 @@ export function getCardTypeMeta(
 
   // 3. Fallback
   return { label: type, icon: Star }
+}
+
+export function colorWithAlpha(
+  color: string | undefined,
+  alpha: number,
+  fallback = `rgba(255, 255, 255, ${alpha})`
+): string {
+  if (!color?.startsWith('#')) return fallback
+
+  const raw = color.slice(1)
+  const hex = raw.length === 3
+    ? raw.split('').map((ch) => `${ch}${ch}`).join('')
+    : raw
+
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return fallback
+
+  const r = Number.parseInt(hex.slice(0, 2), 16)
+  const g = Number.parseInt(hex.slice(2, 4), 16)
+  const b = Number.parseInt(hex.slice(4, 6), 16)
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }

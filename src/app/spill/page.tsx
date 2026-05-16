@@ -106,8 +106,8 @@ export default function GamePage() {
         setTimeout(() => {
           setSlideDir(null)
           setAnimating(false)
-        }, 300)
-      }, 250)
+        }, 220)
+      }, 160)
     },
     [animating, reducedMotion]
   )
@@ -258,6 +258,7 @@ export default function GamePage() {
         onFlag={() => setFlagOpen(true)}
         onCast={() => setCastOpen(true)}
         progress={progress}
+        isTransitioning={animating}
       />
 
       {/* Modals */}
