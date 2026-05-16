@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, ChevronDown, ChevronUp, Settings, Play, Tv } from 'lucide-react'
 import { CastModal } from '@/components/game/cast-modal'
@@ -12,7 +12,7 @@ import { useAthina } from '@/context/athina-context'
 import { usePacks } from '@/hooks/use-packs'
 import { useCards } from '@/hooks/use-cards'
 import { useCardCounts } from '@/hooks/use-card-counts'
-import { useMemo } from 'react'
+
 import { INTENSITET_META } from '@/lib/game/sips'
 import { DROYHET_META, DROYHET_ORDER, getDroyhetCopies } from '@/lib/game/droyhet'
 import { cn } from '@/lib/utils'
@@ -47,7 +47,7 @@ export default function PackSelectionPage() {
   const { isActive: athina } = useAthina()
   const { packs, loading: packsLoading, error: packsError, refetch: refetchPacks } = usePacks()
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
-  const { counts: cardCounts } = useCardCounts(state.droyhet)
+  const { counts: cardCounts, loaded: countsLoaded } = useCardCounts(state.droyhet)
   const [castOpen, setCastOpen] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     () => (state.customCards?.length ?? 0) > 0 ? new Set(['__custom__']) : new Set()
@@ -55,13 +55,32 @@ export default function PackSelectionPage() {
   const [startError, setStartError] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  // Filtrer bort pakker der pakkens drøyhet er høyere enn brukerens valg.
+  const enrichedCounts = useMemo((): Record<string, number> => ({
+    ...cardCounts,
+    ...((state.customCards?.length ?? 0) > 0 ? { '__custom__': state.customCards!.length } : {}),
+  }), [cardCounts, state.customCards])
+
+  // Filtrer bort pakker der pakkens drøyhet er høyere enn brukerens valg,
+  // og pakker som ikke har noen kort som matcher valgt drøyhet.
   // Mild valgt → viser kun mild-pakker. Normal → mild+normal. Drøy → alle.
   // Legg til virtuell "Egne kort"-pakke øverst om spillere har sendt inn kort.
   const visiblePacks = useMemo(() => {
-    const base = packs.filter((p) => DROYHET_ORDER[p.droyhet ?? 'normal'] <= DROYHET_ORDER[state.droyhet])
+    const base = packs.filter((p) => {
+      if (DROYHET_ORDER[p.droyhet ?? 'normal'] > DROYHET_ORDER[state.droyhet]) return false
+      if (countsLoaded && (enrichedCounts[p.id] ?? 0) === 0) return false
+      return true
+    })
     return (state.customCards?.length ?? 0) > 0 ? [CUSTOM_PACK, ...base] : base
-  }, [packs, state.droyhet, state.customCards])
+  }, [packs, state.droyhet, state.customCards, enrichedCounts, countsLoaded])
+
+  useEffect(() => {
+    if (!countsLoaded) return
+    const visibleIds = new Set(visiblePacks.map((p) => p.id))
+    setSelectedIds((prev) => {
+      const next = new Set([...prev].filter((id) => visibleIds.has(id)))
+      return next.size !== prev.size ? next : prev
+    })
+  }, [visiblePacks, countsLoaded])
 
   const togglePack = (id: string) => {
     setStartError(null)
@@ -131,11 +150,6 @@ export default function PackSelectionPage() {
   }
 
   const canStart = selectedIds.size > 0 && !cardsLoading
-
-  const enrichedCounts = useMemo(() => ({
-    ...cardCounts,
-    ...((state.customCards?.length ?? 0) > 0 ? { '__custom__': state.customCards.length } : {}),
-  }), [cardCounts, state.customCards])
 
   const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
 

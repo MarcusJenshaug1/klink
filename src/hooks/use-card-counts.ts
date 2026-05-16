@@ -12,6 +12,7 @@ interface CardMeta {
 
 export function useCardCounts(selectedDroyhet: Droyhet) {
   const [cardMeta, setCardMeta] = useState<CardMeta[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -35,7 +36,10 @@ export function useCardCounts(selectedDroyhet: Droyhet) {
         from += pageSize
       }
 
-      if (!cancelled) setCardMeta(all)
+      if (!cancelled) {
+        setCardMeta(all)
+        setLoaded(true)
+      }
     }
 
     loadAll()
@@ -53,5 +57,5 @@ export function useCardCounts(selectedDroyhet: Droyhet) {
     return result
   }, [cardMeta, selectedDroyhet])
 
-  return { counts }
+  return { counts, loaded }
 }
