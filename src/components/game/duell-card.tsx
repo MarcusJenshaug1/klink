@@ -83,10 +83,10 @@ export function DuellCard({ card, pack, players, intensitet, korttyper, onNext }
 
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-20 landscape:pt-14 landscape:pb-20"
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-10 landscape:pt-10 landscape:pb-14"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
-      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl landscape:gap-2 lg:landscape:max-w-3xl">
+      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-3xl landscape:gap-2 lg:landscape:max-w-4xl">
 
         {/* Category badge */}
         <div className="flex justify-center">
@@ -105,7 +105,7 @@ export function DuellCard({ card, pack, players, intensitet, korttyper, onNext }
         {/* Main card */}
         <div
           className={cn(
-            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-x-hidden overflow-y-auto rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:gap-7 md:p-10 landscape:max-h-[calc(100dvh-8.5rem)] landscape:gap-4 landscape:rounded-2xl landscape:p-5',
+            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-hidden rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:gap-7 md:p-10 landscape:max-h-[calc(100dvh-6rem)] landscape:gap-2 landscape:rounded-2xl landscape:p-4',
             athina ? 'border-white/30 bg-white/18' : 'border-white/25 bg-white/18'
           )}
           style={{
@@ -121,20 +121,20 @@ export function DuellCard({ card, pack, players, intensitet, korttyper, onNext }
           />
           {athina && <div className="pointer-events-none absolute inset-0 bg-[#FF1493]/30" />}
 
-          <div className="relative z-10 flex flex-col items-center gap-5 md:gap-6 landscape:gap-3">
+          <div className="relative z-10 flex flex-col items-center gap-5 md:gap-6 landscape:gap-2">
 
             {/* VS header */}
             <div className="flex w-full items-center justify-between gap-2 text-center">
               <span className={cn(
-                'flex-1 truncate rounded-2xl px-3 py-2 text-base font-black text-white transition-all',
+                'flex-1 truncate rounded-2xl px-3 py-2 text-base font-black text-white transition-all landscape:py-1 landscape:text-sm',
                 phase === 'p1' ? 'ring-2 ring-white/60' : 'opacity-60',
                 athina ? 'bg-white/20' : 'bg-white/15'
               )}>
                 {p1}
               </span>
-              <span className="shrink-0 text-lg font-black text-white/50">VS</span>
+              <span className="shrink-0 text-lg font-black text-white/50 landscape:text-sm">VS</span>
               <span className={cn(
-                'flex-1 truncate rounded-2xl px-3 py-2 text-base font-black text-white transition-all',
+                'flex-1 truncate rounded-2xl px-3 py-2 text-base font-black text-white transition-all landscape:py-1 landscape:text-sm',
                 phase === 'p2' ? 'ring-2 ring-white/60' : 'opacity-60',
                 athina ? 'bg-white/20' : 'bg-white/15'
               )}>
@@ -144,18 +144,18 @@ export function DuellCard({ card, pack, players, intensitet, korttyper, onNext }
 
             {phase === 'p1' && (
               <>
-                <p className="text-center text-sm font-bold text-white/70">
+                <p className="text-center text-sm font-bold text-white/70 landscape:text-xs">
                   {p1}, velg — ikke la {p2} se! 🙈
                 </p>
-                <div className="flex w-full justify-center gap-3">
+                <div className="flex w-full justify-center gap-3 landscape:gap-2">
                   {SSP_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
                       onClick={() => { setP1choice(opt.value); setPhase('handoff') }}
-                      className="flex flex-1 flex-col items-center gap-1 rounded-2xl bg-white/15 py-4 text-3xl transition-all hover:bg-white/25 active:scale-95 landscape:py-3 landscape:text-2xl"
+                      className="flex flex-1 flex-col items-center gap-1 rounded-2xl bg-white/15 py-4 text-3xl transition-all hover:bg-white/25 active:scale-95 landscape:py-2 landscape:text-2xl landscape:flex-row landscape:justify-center landscape:gap-2"
                     >
-                      {opt.emoji}
-                      <span className="text-xs font-bold text-white/80">{opt.label}</span>
+                      <span>{opt.emoji}</span>
+                      <span className="text-xs font-bold text-white/80 landscape:text-sm">{opt.label}</span>
                     </button>
                   ))}
                 </div>
@@ -163,30 +163,32 @@ export function DuellCard({ card, pack, players, intensitet, korttyper, onNext }
             )}
 
             {phase === 'handoff' && (
-              <div className="flex flex-col items-center gap-4 text-center">
+              <div className="flex flex-col items-center gap-4 text-center landscape:flex-row landscape:gap-5 landscape:text-left">
                 <p className="text-4xl landscape:text-3xl">🤝</p>
-                <p className="text-lg font-black text-white">{p1} har valgt!</p>
-                <p className="text-sm text-white/70">Gi telefonen til {p2}</p>
-                <button onClick={() => setPhase('p2')} className={primaryActionClass}>
-                  {p2} er klar →
-                </button>
+                <div className="flex flex-col items-center gap-2 landscape:flex-1 landscape:items-stretch landscape:gap-1.5">
+                  <p className="text-lg font-black text-white landscape:text-base">{p1} har valgt!</p>
+                  <p className="text-sm text-white/70 landscape:text-xs">Gi telefonen til {p2}</p>
+                  <button onClick={() => setPhase('p2')} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>
+                    {p2} er klar →
+                  </button>
+                </div>
               </div>
             )}
 
             {phase === 'p2' && (
               <>
-                <p className="text-center text-sm font-bold text-white/70">
+                <p className="text-center text-sm font-bold text-white/70 landscape:text-xs">
                   {p2}, velg ditt trekk!
                 </p>
-                <div className="flex w-full justify-center gap-3">
+                <div className="flex w-full justify-center gap-3 landscape:gap-2">
                   {SSP_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
                       onClick={() => { setP2choice(opt.value); setPhase('result') }}
-                      className="flex flex-1 flex-col items-center gap-1 rounded-2xl bg-white/15 py-4 text-3xl transition-all hover:bg-white/25 active:scale-95 landscape:py-3 landscape:text-2xl"
+                      className="flex flex-1 flex-col items-center gap-1 rounded-2xl bg-white/15 py-4 text-3xl transition-all hover:bg-white/25 active:scale-95 landscape:py-2 landscape:text-2xl landscape:flex-row landscape:justify-center landscape:gap-2"
                     >
-                      {opt.emoji}
-                      <span className="text-xs font-bold text-white/80">{opt.label}</span>
+                      <span>{opt.emoji}</span>
+                      <span className="text-xs font-bold text-white/80 landscape:text-sm">{opt.label}</span>
                     </button>
                   ))}
                 </div>
@@ -194,47 +196,50 @@ export function DuellCard({ card, pack, players, intensitet, korttyper, onNext }
             )}
 
             {phase === 'result' && p1choice && p2choice && (
-              <div className="flex flex-col items-center gap-4 text-center">
+              <div className="flex w-full flex-col items-center gap-4 text-center landscape:flex-row landscape:items-center landscape:gap-5 landscape:text-left">
                 {/* Reveal */}
-                <div className="flex w-full items-center justify-between gap-2">
+                <div className="flex w-full items-center justify-between gap-2 landscape:basis-1/2">
                   <div className="flex flex-1 flex-col items-center gap-1">
                     <span className="text-xs font-bold text-white/60">{p1}</span>
-                    <span className="text-4xl">{SSP_OPTIONS.find(o => o.value === p1choice)?.emoji}</span>
+                    <span className="text-4xl landscape:text-3xl">{SSP_OPTIONS.find(o => o.value === p1choice)?.emoji}</span>
                   </div>
-                  <span className="text-xl font-black text-white/50">VS</span>
+                  <span className="text-xl font-black text-white/50 landscape:text-base">VS</span>
                   <div className="flex flex-1 flex-col items-center gap-1">
                     <span className="text-xs font-bold text-white/60">{p2}</span>
-                    <span className="text-4xl">{SSP_OPTIONS.find(o => o.value === p2choice)?.emoji}</span>
+                    <span className="text-4xl landscape:text-3xl">{SSP_OPTIONS.find(o => o.value === p2choice)?.emoji}</span>
                   </div>
                 </div>
 
-                {winner === 'draw' ? (
-                  <p className="text-xl font-black text-white">Uavgjort! Omspill!</p>
-                ) : (
-                  <>
-                    <p className="text-xs font-bold uppercase tracking-widest text-white/60">Drikker</p>
-                    <span className={cn(
-                      'rounded-full px-6 py-2.5 text-2xl font-black',
-                      athina ? 'bg-white text-[#FF1493]' : 'bg-white text-forest'
-                    )}>
-                      {loser}
-                    </span>
-                    <p className="flex items-center gap-2 text-2xl font-black text-white">
-                      <Droplets className="h-6 w-6" />
-                      {formatSips(sips)}
-                    </p>
-                  </>
-                )}
+                {/* Resultat + CTA */}
+                <div className="flex w-full flex-col items-center gap-3 landscape:flex-1 landscape:items-stretch landscape:gap-1.5 landscape:min-w-0">
+                  {winner === 'draw' ? (
+                    <p className="text-xl font-black text-white landscape:text-base">Uavgjort! Omspill!</p>
+                  ) : (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-widest text-white/60">Drikker</p>
+                      <span className={cn(
+                        'inline-block rounded-full px-6 py-2.5 text-2xl font-black text-center landscape:text-lg landscape:py-1.5',
+                        athina ? 'bg-white text-[#FF1493]' : 'bg-white text-forest'
+                      )}>
+                        {loser}
+                      </span>
+                      <p className="flex items-center justify-center gap-2 text-2xl font-black text-white landscape:text-lg landscape:justify-start">
+                        <Droplets className="h-6 w-6 landscape:h-5 landscape:w-5" />
+                        {formatSips(sips)}
+                      </p>
+                    </>
+                  )}
 
-                {winner === 'draw' ? (
-                  <button onClick={() => { setPhase('p1'); setP1choice(null); setP2choice(null) }} className={primaryActionClass}>
-                    Spill igjen →
-                  </button>
-                ) : (
-                  <button onClick={onNext} className={primaryActionClass}>
-                    Neste kort →
-                  </button>
-                )}
+                  {winner === 'draw' ? (
+                    <button onClick={() => { setPhase('p1'); setP1choice(null); setP2choice(null) }} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>
+                      Spill igjen →
+                    </button>
+                  ) : (
+                    <button onClick={onNext} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>
+                      Neste kort →
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
