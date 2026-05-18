@@ -27,6 +27,7 @@ function maxNumberedSlot(text: string | null): number {
 
 export function useCardCounts(selectedDroyhet: Droyhet, playerCount?: number) {
   const [cardMeta, setCardMeta] = useState<CardMeta[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -50,7 +51,10 @@ export function useCardCounts(selectedDroyhet: Droyhet, playerCount?: number) {
         from += pageSize
       }
 
-      if (!cancelled) setCardMeta(all)
+      if (!cancelled) {
+        setCardMeta(all)
+        setLoaded(true)
+      }
     }
 
     loadAll()
@@ -76,5 +80,5 @@ export function useCardCounts(selectedDroyhet: Droyhet, playerCount?: number) {
     return result
   }, [cardMeta, selectedDroyhet, playerCount])
 
-  return { counts }
+  return { counts, loaded }
 }

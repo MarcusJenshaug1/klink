@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Droplets, Flame, Zap, Feather, Skull, ChevronLeft, Play } from 'lucide-react'
 import { PackGrid } from '@/components/pack-selection/pack-grid'
@@ -47,7 +47,7 @@ export default function PackSelectionPage() {
   const { isActive: athina } = useAthina()
   const { packs, loading: packsLoading, error: packsError, refetch: refetchPacks } = usePacks()
   const { fetchCards, fetchKorttyper, loading: cardsLoading } = useCards()
-  const { counts: cardCounts } = useCardCounts(state.droyhet, state.players.length)
+  const { counts: cardCounts, loaded: countsLoaded } = useCardCounts(state.droyhet, state.players.length)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     () => (state.customCards?.length ?? 0) > 0 ? new Set(['__custom__']) : new Set()
   )
@@ -58,19 +58,40 @@ export default function PackSelectionPage() {
     () => state.selectedPacks.length > 0 ? 'packs' : 'settings'
   )
 
-  // Bygg full pakkeliste — inkluder også for-drøye pakker som greyed-out.
-  // «Egne kort» legges først hvis brukerne har sendt inn kort.
-  const allPacks = useMemo(() => {
-    return (state.customCards?.length ?? 0) > 0 ? [CUSTOM_PACK, ...packs] : packs
-  }, [packs, state.customCards])
+  const enrichedCounts = useMemo((): Record<string, number> => ({
+    ...cardCounts,
+    ...((state.customCards?.length ?? 0) > 0 ? { '__custom__': state.customCards.length } : {}),
+  }), [cardCounts, state.customCards])
 
   const isPackBlocked = (pack: Pack) =>
     DROYHET_ORDER[pack.droyhet ?? 'normal'] > DROYHET_ORDER[state.droyhet]
+
+  // Vis ALLE pakker, inkludert "blocked"-pakker (greyed-out + auto-juster ved klikk).
+  // Men skjul "døde" pakker — pakker som ikke er blocked men som har 0 kort tilgjengelig
+  // (f.eks. fordi spillerantall filtrerer bort alt).
+  const allPacks = useMemo(() => {
+    const base = packs.filter((p) => {
+      if (DROYHET_ORDER[p.droyhet ?? 'normal'] > DROYHET_ORDER[state.droyhet]) return true
+      if (countsLoaded && (enrichedCounts[p.id] ?? 0) === 0) return false
+      return true
+    })
+    return (state.customCards?.length ?? 0) > 0 ? [CUSTOM_PACK, ...base] : base
+  }, [packs, state.droyhet, state.customCards, enrichedCounts, countsLoaded])
 
   const blockedCount = useMemo(
     () => allPacks.filter(isPackBlocked).length,
     [allPacks, state.droyhet] // eslint-disable-line react-hooks/exhaustive-deps
   )
+
+  // Rydd selectedIds når pakker forsvinner fra visning (f.eks. ved bytte av drøyhet).
+  useEffect(() => {
+    if (!countsLoaded) return
+    const visibleIds = new Set(allPacks.map((p) => p.id))
+    setSelectedIds((prev) => {
+      const next = new Set([...prev].filter((id) => visibleIds.has(id)))
+      return next.size !== prev.size ? next : prev
+    })
+  }, [allPacks, countsLoaded])
 
   const togglePack = (id: string) => {
     setStartError(null)
@@ -186,10 +207,6 @@ export default function PackSelectionPage() {
   }
 
   const canStart = selectedIds.size > 0 && !cardsLoading
-  const enrichedCounts = useMemo(() => ({
-    ...cardCounts,
-    ...((state.customCards?.length ?? 0) > 0 ? { '__custom__': state.customCards.length } : {}),
-  }), [cardCounts, state.customCards])
 
   const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
   const selectedCount = allPacks.filter((p) => selectedIds.has(p.id) && !isPackBlocked(p)).length
