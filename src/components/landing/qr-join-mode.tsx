@@ -9,10 +9,10 @@ import { cn } from '@/lib/utils'
 import type { Card } from '@/types/game'
 
 interface QrJoinModeProps {
-  onPlayersReady: (players: string[], customCards: Card[]) => void
+  onUpdate: (players: string[], customCards: Card[]) => void
 }
 
-export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
+export function QrJoinMode({ onUpdate }: QrJoinModeProps) {
   const { code, players, customCards, connected, removePlayer, addPlayer } = useHostRoom()
   const { isActive: athina } = useAthina()
   const [joinUrl, setJoinUrl] = useState('')
@@ -22,7 +22,10 @@ export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
     setJoinUrl(`${window.location.origin}/join/${code}`)
   }, [code])
 
-  const canStart = players.length >= 2
+  // Pass spillere opp til parent slik at sticky-knappen kan vise live status.
+  useEffect(() => {
+    onUpdate(players, customCards)
+  }, [players, customCards, onUpdate])
 
   const submitManual = () => {
     const name = manualName.trim()
@@ -160,15 +163,6 @@ export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
         </button>
       </div>
 
-      {!canStart && players.length > 0 && (
-        <p className={cn(
-          'text-xs text-center font-semibold',
-          athina ? 'text-white/35' : 'text-forest/35'
-        )}>
-          Minst 2 spillere kreves for å starte
-        </p>
-      )}
-
       {/* Custom card count */}
       {customCards.length > 0 && (
         <p className={cn(
@@ -177,21 +171,6 @@ export function QrJoinMode({ onPlayersReady }: QrJoinModeProps) {
         )}>
           {customCards.length} eget kort sendt inn
         </p>
-      )}
-
-      {/* Start button — only shown when enough players */}
-      {canStart && (
-        <button
-          onClick={() => onPlayersReady(players, customCards)}
-          className={cn(
-            'w-full min-h-[52px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
-            athina
-              ? 'bg-white/30 text-white shadow-lg hover:bg-white/40 backdrop-blur-sm'
-              : 'bg-forest text-lime shadow-lg hover:bg-forest-light'
-          )}
-        >
-          Alle er med — neste →
-        </button>
       )}
     </div>
   )

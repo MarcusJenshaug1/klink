@@ -5,24 +5,32 @@ import { X } from 'lucide-react'
 import Markdown from 'react-markdown'
 import { useAthina } from '@/context/athina-context'
 import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { getCardTypeMeta } from '@/lib/game/card-types'
 import { cn } from '@/lib/utils'
-import type { Pack } from '@/types/game'
+import type { Korttype, Pack } from '@/types/game'
 
 interface InfoModalProps {
   open: boolean
   onClose: () => void
   packs: Pack[]
+  currentCardType?: string
+  korttyper?: Korttype[]
 }
 
-export function InfoModal({ open, onClose, packs }: InfoModalProps) {
-  const [activeIdx, setActiveIdx] = useState(0)
+type Tab = 'type' | 'packs'
+
+export function InfoModal({ open, onClose, packs, currentCardType, korttyper }: InfoModalProps) {
   const { isActive: athina } = useAthina()
   const titleId = useId()
   const dialogRef = useDialogA11y(open, onClose)
+  const [activePackIdx, setActivePackIdx] = useState(0)
+  const [tab, setTab] = useState<Tab>(currentCardType ? 'type' : 'packs')
 
   if (!open || packs.length === 0) return null
 
-  const pack = packs[Math.min(activeIdx, packs.length - 1)]
+  const pack = packs[Math.min(activePackIdx, packs.length - 1)]
+  const typeMeta = currentCardType ? getCardTypeMeta(currentCardType, korttyper ?? []) : null
+  const TypeIcon = typeMeta?.icon
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
@@ -44,7 +52,9 @@ export function InfoModal({ open, onClose, packs }: InfoModalProps) {
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-3 shrink-0">
-          <h2 id={titleId} className={cn('font-display text-2xl font-black', athina ? 'text-white' : 'text-forest')}>{pack.navn}</h2>
+          <h2 id={titleId} className={cn('font-display text-2xl font-black', athina ? 'text-white' : 'text-forest')}>
+            Hjelp
+          </h2>
           <button
             onClick={onClose}
             aria-label="Lukk"
@@ -54,44 +64,96 @@ export function InfoModal({ open, onClose, packs }: InfoModalProps) {
           </button>
         </div>
 
-        {/* Pack tabs — only shown when multiple packs selected */}
-        {packs.length > 1 && (
-          <div className="flex gap-2 px-6 pb-3 shrink-0 overflow-x-auto">
-            {packs.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => setActiveIdx(i)}
-                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
-                  i === activeIdx
-                    ? athina ? 'bg-[#E91E8C] text-white' : 'bg-forest text-lime'
-                    : athina ? 'bg-[#E91E8C]/15 text-[#E91E8C]/70 hover:bg-[#E91E8C]/25' : 'bg-forest/10 text-forest/60 hover:bg-forest/20'
-                }`}
-              >
-                <span
-                  className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
-                  style={{ backgroundColor: p.farge }}
-                />
-                {p.navn}
-              </button>
-            ))}
+        {/* Tabs: korttype + pakker */}
+        {typeMeta && (
+          <div className="flex gap-1 px-6 pb-3 shrink-0">
+            <button
+              onClick={() => setTab('type')}
+              className={cn(
+                'flex-1 py-2 rounded-xl text-xs font-black transition-colors',
+                tab === 'type'
+                  ? athina ? 'bg-[#E91E8C] text-white' : 'bg-forest text-lime'
+                  : athina ? 'bg-[#E91E8C]/10 text-[#E91E8C]/70 hover:bg-[#E91E8C]/20' : 'bg-forest/10 text-forest/60 hover:bg-forest/20'
+              )}
+            >
+              Dette kortet
+            </button>
+            <button
+              onClick={() => setTab('packs')}
+              className={cn(
+                'flex-1 py-2 rounded-xl text-xs font-black transition-colors',
+                tab === 'packs'
+                  ? athina ? 'bg-[#E91E8C] text-white' : 'bg-forest text-lime'
+                  : athina ? 'bg-[#E91E8C]/10 text-[#E91E8C]/70 hover:bg-[#E91E8C]/20' : 'bg-forest/10 text-forest/60 hover:bg-forest/20'
+              )}
+            >
+              Pakker
+            </button>
           </div>
         )}
 
-        {/* Rules content */}
+        {/* Innhold */}
         <div className="px-6 overflow-y-auto pb-2">
-          {pack.regler ? (
+          {tab === 'type' && typeMeta ? (
             <div className={cn(
-              'backdrop-blur-sm rounded-2xl p-4 prose prose-sm max-w-none',
-              athina
-                ? 'bg-white/18 text-white/85 [&_strong]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white'
-                : 'bg-white/60 text-forest/80 [&_strong]:text-forest [&_h1]:text-forest [&_h2]:text-forest [&_h3]:text-forest'
+              'rounded-2xl p-4',
+              athina ? 'bg-white/18 text-white/90' : 'bg-white/60 text-forest/85'
             )}>
-              <Markdown>{pack.regler}</Markdown>
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shrink-0"
+                  style={{ backgroundColor: typeMeta.farge ?? '#1A3A1A' }}
+                >
+                  {TypeIcon && <TypeIcon className="w-5 h-5" />}
+                </div>
+                <h3 className={cn('font-display text-xl font-black', athina ? 'text-white' : 'text-forest')}>
+                  {typeMeta.label}
+                </h3>
+              </div>
+              <p className="text-sm leading-relaxed">
+                {typeMeta.beskrivelse ?? 'Ingen beskrivelse tilgjengelig.'}
+              </p>
             </div>
           ) : (
-            <p className={cn('text-sm font-medium', athina ? 'text-white/50' : 'text-forest/40')}>
-              Ingen regler tilgjengelig for denne pakken.
-            </p>
+            <>
+              {/* Pack tabs — only shown when multiple packs */}
+              {packs.length > 1 && (
+                <div className="flex gap-2 pb-3 shrink-0 overflow-x-auto">
+                  {packs.map((p, i) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setActivePackIdx(i)}
+                      className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                        i === activePackIdx
+                          ? athina ? 'bg-[#E91E8C] text-white' : 'bg-forest text-lime'
+                          : athina ? 'bg-[#E91E8C]/15 text-[#E91E8C]/70 hover:bg-[#E91E8C]/25' : 'bg-forest/10 text-forest/60 hover:bg-forest/20'
+                      }`}
+                    >
+                      <span
+                        className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
+                        style={{ backgroundColor: p.farge }}
+                      />
+                      {p.navn}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {pack.regler ? (
+                <div className={cn(
+                  'backdrop-blur-sm rounded-2xl p-4 prose prose-sm max-w-none',
+                  athina
+                    ? 'bg-white/18 text-white/85 [&_strong]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white'
+                    : 'bg-white/60 text-forest/80 [&_strong]:text-forest [&_h1]:text-forest [&_h2]:text-forest [&_h3]:text-forest'
+                )}>
+                  <Markdown>{pack.regler}</Markdown>
+                </div>
+              ) : (
+                <p className={cn('text-sm font-medium', athina ? 'text-white/50' : 'text-forest/40')}>
+                  Ingen ekstra regler — bare følg kortene.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

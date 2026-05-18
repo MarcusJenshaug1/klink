@@ -9,15 +9,15 @@ export const DROYHET_ORDER: Record<Droyhet, number> = {
 export const DROYHET_META: Record<Droyhet, { label: string; beskrivelse: string }> = {
   mild: {
     label: 'Mild',
-    beskrivelse: 'Trygge kort. Passer alle.',
+    beskrivelse: 'Kun snille kort.',
   },
   normal: {
     label: 'Normal',
-    beskrivelse: 'Mild + normale kort.',
+    beskrivelse: 'Snille + middels.',
   },
   droy: {
     label: 'Drøy',
-    beskrivelse: 'Alle drøyhetsnivåer.',
+    beskrivelse: 'Alt — inkludert vågale.',
   },
 }
 

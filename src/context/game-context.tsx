@@ -170,21 +170,31 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null)
 
-const SESSION_KEY = 'klink-game-state'
+const STATE_KEY = 'klink-game-state'
 const PLAYERS_KEY = 'klink-players'
+const STATE_TTL_MS = 24 * 60 * 60 * 1000
+
+interface PersistedState {
+  state: GameState
+  at: number
+}
 
 function loadInitialState(): GameState {
   try {
-    // 1. Try full session state first (survives refresh)
-    const session = sessionStorage.getItem(SESSION_KEY)
-    if (session) {
-      const parsed = JSON.parse(session) as GameState
-      return { ...initialState, ...parsed }
+    // 1. Full state — overlever tab-lukking, men utløper etter 24t.
+    const raw = localStorage.getItem(STATE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw) as PersistedState
+      if (parsed.at && Date.now() - parsed.at < STATE_TTL_MS && parsed.state) {
+        return { ...initialState, ...parsed.state }
+      }
+      // Utløpt — rydd opp.
+      localStorage.removeItem(STATE_KEY)
     }
   } catch { /* ignore */ }
 
   try {
-    // 2. Fall back: restore just players from localStorage (survives tab close)
+    // 2. Fall-back: bare spillerne (langlivet).
     const players = localStorage.getItem(PLAYERS_KEY)
     if (players) {
       return { ...initialState, players: JSON.parse(players) as string[] }
@@ -206,10 +216,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Sync full state to sessionStorage, players to localStorage
+  // Sync full state to localStorage (med tidsstempel) + spillere alene.
   useEffect(() => {
     try {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(state))
+      const payload: PersistedState = { state, at: Date.now() }
+      localStorage.setItem(STATE_KEY, JSON.stringify(payload))
     } catch { /* ignore */ }
     try {
       localStorage.setItem(PLAYERS_KEY, JSON.stringify(state.players))

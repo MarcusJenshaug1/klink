@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Play, Beer, QrCode, UserPlus, Tv, LogIn } from 'lucide-react'
+import { Play, Beer, QrCode, UserPlus, LogIn } from 'lucide-react'
 import type { Card } from '@/types/game'
-import { CastModal } from '@/components/game/cast-modal'
 import { Logo } from '@/components/landing/logo'
+import { HowItWorks } from '@/components/landing/how-it-works'
 import { PlayerForm } from '@/components/landing/player-form'
 import { QrJoinMode } from '@/components/landing/qr-join-mode'
 import { InstallCta } from '@/components/landing/install-cta'
@@ -21,23 +21,39 @@ export default function LandingPage() {
   const { state, dispatch } = useGame()
   const { isActive } = useAthina()
   const [mode, setMode] = useState<PlayerMode>('manual')
-  const [castOpen, setCastOpen] = useState(false)
+  const [qrPlayers, setQrPlayers] = useState<string[]>([])
+  const [qrCustomCards, setQrCustomCards] = useState<Card[]>([])
+
+  // Init med én tom rad så førstegangsbrukere ser hvor de skal skrive.
+  useEffect(() => {
+    if (state.players.length === 0) {
+      dispatch({ type: 'SET_PLAYERS', players: [''] })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const validPlayers = state.players.filter((n) => n.trim() !== '')
-  const canStart = validPlayers.length >= 2
+  const canStartManual = validPlayers.length >= 2
+  const canStartQr = qrPlayers.length >= 2
+  const canStart = mode === 'manual' ? canStartManual : canStartQr
 
   const handleStart = () => {
-    if (!canStart) return
-    dispatch({ type: 'SET_PLAYERS', players: validPlayers })
-    dispatch({ type: 'SET_PHASE', phase: 'pack-selection' })
-    router.push('/velg-pakke')
+    if (mode === 'manual') {
+      if (!canStartManual) return
+      dispatch({ type: 'SET_PLAYERS', players: validPlayers })
+      dispatch({ type: 'SET_PHASE', phase: 'pack-selection' })
+      router.push('/velg-pakke')
+    } else {
+      if (!canStartQr) return
+      dispatch({ type: 'SET_PLAYERS', players: qrPlayers })
+      if (qrCustomCards.length > 0) dispatch({ type: 'SET_CUSTOM_CARDS', cards: qrCustomCards })
+      dispatch({ type: 'SET_PHASE', phase: 'pack-selection' })
+      router.push('/velg-pakke')
+    }
   }
 
-  const handleQrReady = (players: string[], customCards: Card[]) => {
-    dispatch({ type: 'SET_PLAYERS', players })
-    if (customCards.length > 0) dispatch({ type: 'SET_CUSTOM_CARDS', cards: customCards })
-    dispatch({ type: 'SET_PHASE', phase: 'pack-selection' })
-    router.push('/velg-pakke')
+  const handleQrUpdate = (players: string[], customCards: Card[]) => {
+    setQrPlayers(players)
+    setQrCustomCards(customCards)
   }
 
   const tabBase = cn(
@@ -56,7 +72,11 @@ export default function LandingPage() {
       style={{ backgroundColor: isActive ? 'transparent' : '#A8E63D' }}
     >
       <div className="flex-1 flex flex-col items-center justify-center p-6 pb-0 max-w-md mx-auto w-full">
-        <Logo className="text-center mb-10" />
+        <Logo className="text-center mb-4" />
+
+        <div className="mb-6">
+          <HowItWorks />
+        </div>
 
         <div
           className="w-full backdrop-blur-sm rounded-3xl p-6 shadow-lg transition-colors duration-700"
@@ -91,7 +111,7 @@ export default function LandingPage() {
               onUpdate={(players) => dispatch({ type: 'SET_PLAYERS', players })}
             />
           ) : (
-            <QrJoinMode onPlayersReady={handleQrReady} />
+            <QrJoinMode onUpdate={handleQrUpdate} />
           )}
         </div>
 
@@ -126,41 +146,31 @@ export default function LandingPage() {
         <div className="h-4" />
       </div>
 
-      {/* Sticky start button — only shown in manual mode */}
-      {mode === 'manual' && (
-        <div
-          className="sticky bottom-0 p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700"
-          style={{ backgroundColor: isActive ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}
-        >
-          <div className="max-w-md mx-auto flex gap-2">
-            <button
-              onClick={() => setCastOpen(true)}
-              aria-label="Cast til TV"
-              className={cn(
-                'shrink-0 w-14 min-h-[56px] rounded-2xl flex items-center justify-center transition-all active:scale-95',
-                isActive ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-forest/15 text-forest hover:bg-forest/25'
-              )}
-            >
-              <Tv className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleStart}
-              disabled={!canStart}
-              className={cn(
-                'flex-1 min-h-[56px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
-                canStart
-                  ? isActive ? 'bg-white/30 text-white shadow-lg hover:bg-white/40 backdrop-blur-sm' : 'bg-forest text-lime shadow-lg hover:bg-forest-light'
-                  : isActive ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-forest/20 text-forest/40 cursor-not-allowed'
-              )}
-            >
-              <Play className="w-5 h-5" />
-              Start spill
-            </button>
-          </div>
+      {/* Sticky start button — vises i begge moduser */}
+      <div
+        className="sticky bottom-0 p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm transition-colors duration-700"
+        style={{ backgroundColor: isActive ? 'rgba(233,30,140,0.55)' : 'rgba(168,230,61,0.8)' }}
+      >
+        <div className="max-w-md mx-auto">
+          <button
+            onClick={handleStart}
+            disabled={!canStart}
+            className={cn(
+              'w-full min-h-[56px] rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95',
+              canStart
+                ? isActive ? 'bg-white/30 text-white shadow-lg hover:bg-white/40 backdrop-blur-sm' : 'bg-forest text-lime shadow-lg hover:bg-forest-light'
+                : isActive ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-forest/20 text-forest/40 cursor-not-allowed'
+            )}
+          >
+            <Play className="w-5 h-5" />
+            {canStart
+              ? 'Start spill'
+              : mode === 'qr'
+                ? qrPlayers.length === 0 ? 'Venter på spillere…' : `Trenger ${2 - qrPlayers.length} til`
+                : 'Skriv inn minst 2 spillere'}
+          </button>
         </div>
-      )}
-
-      <CastModal open={castOpen} onClose={() => setCastOpen(false)} castCode={state.castCode} />
+      </div>
     </div>
   )
 }

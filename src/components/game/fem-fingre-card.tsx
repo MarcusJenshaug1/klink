@@ -38,7 +38,7 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
 
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-20 landscape:pt-12 landscape:pb-16"
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-10 landscape:pt-10 landscape:pb-14"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
       <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-4xl landscape:gap-2 lg:landscape:max-w-5xl">
@@ -60,7 +60,7 @@ export function FemFingreCard({ card, pack, korttyper, onNext }: FemFingreCardPr
         {/* Main card — frosted glass; stop propagation while revealing to avoid accidental next-card */}
         <div
           className={cn(
-            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-x-hidden overflow-y-auto rounded-3xl border p-6 shadow-2xl backdrop-blur-md md:gap-7 md:p-10 lg:p-12 landscape:max-h-[calc(100dvh-8.5rem)] landscape:gap-3 landscape:rounded-2xl landscape:p-4 lg:landscape:gap-4 lg:landscape:p-6',
+            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-x-hidden overflow-y-auto rounded-3xl border p-6 shadow-2xl backdrop-blur-md md:gap-7 md:p-10 lg:p-12 landscape:max-h-[calc(100dvh-6rem)] landscape:gap-3 landscape:rounded-2xl landscape:p-3 lg:landscape:gap-4 lg:landscape:p-5',
             athina ? 'border-white/30 bg-white/18' : 'border-white/25 bg-white/18'
           )}
           style={{
@@ -169,7 +169,7 @@ function FiveFingerHand({ count, total }: FiveFingerHandProps) {
   const fingerCount = Math.max(total, 5)
 
   return (
-    <div className="flex items-end justify-center gap-2 md:gap-3 landscape:gap-3 lg:landscape:gap-4 landscape:scale-125 lg:landscape:scale-150 landscape:origin-bottom" style={{ height: 88 }}>
+    <div className="flex items-end justify-center gap-2 md:gap-3 landscape:gap-2 lg:landscape:gap-4 landscape:scale-90 lg:landscape:scale-110 landscape:origin-bottom" style={{ height: 88 }}>
       {Array.from({ length: fingerCount }).map((_, i) => {
         const isDown = i < count
         const naturalH = FINGER_HEIGHTS[i] ?? 60

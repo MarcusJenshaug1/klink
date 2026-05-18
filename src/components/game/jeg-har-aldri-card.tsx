@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo } from 'react'
-import { Droplets } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Beer, Droplets } from 'lucide-react'
 import { colorWithAlpha, getCardTypeMeta } from '@/lib/game/card-types'
 import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips } from '@/lib/game/sips'
@@ -9,7 +9,7 @@ import { useAthina } from '@/context/athina-context'
 import { cn } from '@/lib/utils'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
-interface SnusboksCardProps {
+interface JegHarAldriCardProps {
   card: Card
   pack: Pack
   players: string[]
@@ -18,14 +18,10 @@ interface SnusboksCardProps {
   onNext: () => void
 }
 
-function seedIndex(id: string, len: number): number {
-  const hash = id.split('').reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) | 0, 0)
-  return Math.abs(hash) % len
-}
-
-export function SnusboksCard({ card, pack, players, intensitet, korttyper, onNext }: SnusboksCardProps) {
+export function JegHarAldriCard({ card, pack, players, intensitet, korttyper, onNext }: JegHarAldriCardProps) {
   const { isActive: athina } = useAthina()
   const meta = getCardTypeMeta(card.type, korttyper)
+  const [tilted, setTilted] = useState(false)
 
   const sips = useMemo(() => {
     const override =
@@ -43,11 +39,8 @@ export function SnusboksCard({ card, pack, players, intensitet, korttyper, onNex
     )
   }, [card.innhold, players, sips])
 
-  const hasPlayers = players.length > 0
-  const holderIdx = hasPlayers ? seedIndex(card.id, players.length) : 0
-  const holder = hasPlayers ? players[holderIdx] : null
-
   const accent = athina ? '#FF1493' : meta.farge ?? pack.farge
+
   const primaryActionClass = cn(
     'w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 font-black text-base shadow-lg transition-all hover:opacity-95 active:scale-[0.98] landscape:py-2.5 landscape:text-sm',
     athina ? 'bg-white/30 text-white' : 'bg-forest text-lime'
@@ -93,12 +86,33 @@ export function SnusboksCard({ card, pack, players, intensitet, korttyper, onNex
           />
           {athina && <div className="pointer-events-none absolute inset-0 bg-[#FF1493]/30" />}
 
-          {/* I landscape: tekst venstre, kaster+CTA høyre */}
+          {/* I landscape: glass venstre, tekst+CTA høyre */}
           <div className="relative z-10 flex flex-col items-center gap-5 md:gap-7 landscape:flex-row landscape:items-center landscape:gap-5">
 
-            {/* Venstre i landscape: spørsmålstekst */}
-            {card.innhold && (
-              <p className="break-words text-center text-2xl font-semibold leading-snug text-white sm:text-3xl landscape:text-base landscape:text-left landscape:flex-1 [overflow-wrap:anywhere]">
+            {/* Venstre kolonne i landscape: stempel + glass */}
+            <div className="flex flex-col items-center gap-3 landscape:shrink-0 landscape:basis-1/3 landscape:gap-2">
+              <span
+                className={cn(
+                  'inline-block rounded-full px-4 py-1 text-xs font-black uppercase tracking-widest',
+                  athina ? 'bg-white text-[#FF1493]' : 'bg-white/85 text-forest'
+                )}
+              >
+                Jeg har aldri
+              </span>
+              <button
+                type="button"
+                onClick={() => setTilted((t) => !t)}
+                aria-label={tilted ? 'Sett glass ned' : 'Drikk!'}
+                className="relative h-20 w-20 transition-transform duration-500 ease-out active:scale-95 landscape:h-14 landscape:w-14"
+                style={{ transform: tilted ? 'rotate(-45deg)' : 'rotate(0deg)' }}
+              >
+                <Beer className="h-20 w-20 text-white landscape:h-14 landscape:w-14" />
+              </button>
+            </div>
+
+            {/* Høyre kolonne i landscape: påstand + drikk-tekst + CTA */}
+            <div className="flex w-full flex-col items-center gap-4 landscape:flex-1 landscape:items-stretch landscape:gap-2 landscape:min-w-0">
+              <p className="break-words text-center text-2xl font-semibold leading-snug text-white sm:text-3xl md:text-4xl landscape:text-lg landscape:text-left [overflow-wrap:anywhere]">
                 {segments.map((seg, i) =>
                   seg.type === 'player' ? (
                     <mark key={i} className={cn(
@@ -110,31 +124,22 @@ export function SnusboksCard({ card, pack, players, intensitet, korttyper, onNex
                   ) : <span key={i}>{seg.text}</span>
                 )}
               </p>
-            )}
 
-            {/* Høyre i landscape: kaster, slurker, CTA */}
-            <div className="flex flex-col items-center gap-3 landscape:flex-1 landscape:gap-2 landscape:min-w-0 landscape:items-stretch">
-              {holder && (
-                <div className="flex flex-col items-center gap-1 landscape:gap-0.5">
-                  <p className="text-xs font-bold uppercase tracking-widest text-white/60">Kaster</p>
-                  <span
-                    className="rounded-full px-5 py-2 text-lg font-black text-white landscape:py-1.5 landscape:text-base"
-                    style={{ backgroundColor: colorWithAlpha(accent, 0.35, 'rgba(255,255,255,0.2)') }}
-                  >
-                    {holder}
-                  </span>
-                </div>
-              )}
-
-              <p className="flex items-center justify-center gap-2 text-2xl font-black text-white landscape:text-lg">
-                <Droplets className="h-6 w-6 landscape:h-5 landscape:w-5" />{formatSips(sips)}
+              <p className="text-center text-sm text-white/85 landscape:text-xs landscape:text-left">
+                Har du gjort det? <span className="font-black">Drikk {formatSips(sips)}</span>.
               </p>
-              <p className="text-center text-sm text-white/60 landscape:text-xs">til den som mottar snusboksen</p>
 
-              <button onClick={onNext} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>Neste kort →</button>
+              <button onClick={onNext} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>
+                Neste kort →
+              </button>
             </div>
           </div>
         </div>
+
+        <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-black/20 px-4 py-1.5 text-sm font-bold text-white/75 shadow-sm backdrop-blur-sm">
+          <Droplets className="h-4 w-4 shrink-0" />
+          {formatSips(sips)} — hvis det stemmer
+        </span>
       </div>
     </div>
   )

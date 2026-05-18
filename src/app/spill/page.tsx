@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Pause } from 'lucide-react'
 import { GameCard } from '@/components/game/game-card'
 import { CardTypeIntro } from '@/components/game/card-type-intro'
 import { CastModal } from '@/components/game/cast-modal'
@@ -20,8 +21,11 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, replaceSips } from '@/lib/game/sips'
 import { track } from '@/lib/analytics/events'
+import { cn } from '@/lib/utils'
 
 type SlideDir = 'in-left' | 'out-left' | 'in-right' | 'out-right' | null
+
+const NAV_HINT_KEY = 'klink-nav-hint-seen'
 
 export default function GamePage() {
   const router = useRouter()
@@ -34,19 +38,32 @@ export default function GamePage() {
   const [castOpen, setCastOpen] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [slideDir, setSlideDir] = useState<SlideDir>(null)
+  const [paused, setPaused] = useState(false)
+  const [showNavHint, setShowNavHint] = useState(false)
   const reducedMotion = useReducedMotion()
 
   const { broadcast } = useTvBroadcast(state.castCode)
 
-  // Sync iOS status bar / html-bg med aktivt kort sin pakke-farge
   useThemeColor(currentPack?.farge ?? null)
 
-  // Redirect if no deck loaded
   useEffect(() => {
     if (state.phase !== 'playing' && state.phase !== 'deck-empty') {
       router.push('/')
     }
   }, [state.phase, router])
+
+  // Vis nav-hint én gang per session.
+  useEffect(() => {
+    if (state.phase !== 'playing') return
+    try {
+      if (!sessionStorage.getItem(NAV_HINT_KEY)) {
+        setShowNavHint(true)
+        sessionStorage.setItem(NAV_HINT_KEY, '1')
+        const t = setTimeout(() => setShowNavHint(false), 4500)
+        return () => clearTimeout(t)
+      }
+    } catch { /* ignore */ }
+  }, [state.phase])
 
   // Broadcast current card to TV whenever it changes
   useEffect(() => {
@@ -113,23 +130,25 @@ export default function GamePage() {
   )
 
   const nextCard = useCallback(() => {
+    if (paused) return
+    if (showNavHint) setShowNavHint(false)
     if (!reducedMotion) {
       try { if (navigator.vibrate) navigator.vibrate(10) } catch {}
     }
     animateTransition('forward', () => dispatch({ type: 'NEXT_CARD' }))
-  }, [animateTransition, dispatch, reducedMotion])
+  }, [animateTransition, dispatch, reducedMotion, paused, showNavHint])
 
   const prevCard = useCallback(() => {
+    if (paused) return
     if (state.currentCardIndex <= 0) return
     animateTransition('back', () => dispatch({ type: 'PREV_CARD' }))
-  }, [animateTransition, dispatch, state.currentCardIndex])
+  }, [animateTransition, dispatch, state.currentCardIndex, paused])
 
   const swipeHandlers = useSwipe({
-    onSwipeLeft: nextCard,
-    onSwipeRight: prevCard,
+    onSwipeLeft: paused ? () => {} : nextCard,
+    onSwipeRight: paused ? () => {} : prevCard,
   })
 
-  // Keyboard navigation
   useEffect(() => {
     if (state.phase !== 'playing') return
     const onKey = (e: KeyboardEvent) => {
@@ -143,6 +162,7 @@ export default function GamePage() {
         return
       }
       if (infoOpen || playersOpen || exitOpen || flagOpen || castOpen) return
+      if (paused) return
       const target = e.target as HTMLElement | null
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
       if (e.key === 'ArrowRight' || e.key === ' ') {
@@ -155,9 +175,8 @@ export default function GamePage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [state.phase, infoOpen, playersOpen, exitOpen, flagOpen, castOpen, nextCard, prevCard])
+  }, [state.phase, infoOpen, playersOpen, exitOpen, flagOpen, castOpen, paused, nextCard, prevCard])
 
-  // Track deck_completed once when we enter deck-empty
   useEffect(() => {
     if (state.phase === 'deck-empty') {
       track('deck_completed', { cards: state.deck.length, players: state.players.length })
@@ -206,22 +225,11 @@ export default function GamePage() {
 
   const scareActive = state.intensitet === 'borst' && state.droyhet === 'droy'
 
-  const anyModalOpen = infoOpen || playersOpen || exitOpen || flagOpen || castOpen
-
-  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (animating || anyModalOpen) return
-    if (e.target !== e.currentTarget) return
-    const target = e.target as HTMLElement
-    if (target.closest('button, a, input, textarea, select')) return
-    nextCard()
-  }
-
   return (
     <div
       className="fixed inset-0 no-overscroll select-none"
       style={{ backgroundColor: athina ? 'transparent' : currentPack.farge }}
       {...swipeHandlers}
-      onClick={handleBackgroundClick}
     >
       {scareActive && (
         <div
@@ -248,6 +256,33 @@ export default function GamePage() {
       {/* Tydelig "ny korttype"-overlay når kort-typen endrer seg */}
       <CardTypeIntro type={currentCard.type} korttyper={state.korttyper} />
 
+      {/* Nav-hint — vises én gang. Skjules i landscape for å ikke dekke kortinnhold. */}
+      {showNavHint && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-32 z-[40] hidden justify-center px-4 animate-fade-in portrait:flex">
+          <span
+            className={cn(
+              'rounded-full px-4 py-2 text-xs font-bold tracking-wide shadow-xl backdrop-blur-sm',
+              athina ? 'bg-white/30 text-white' : 'bg-black/55 text-white'
+            )}
+          >
+            Trykk Neste eller swipe ← → for å bla
+          </span>
+        </div>
+      )}
+
+      {/* Pause-overlay */}
+      {paused && (
+        <button
+          type="button"
+          onClick={() => setPaused(false)}
+          className="absolute inset-0 z-[45] flex flex-col items-center justify-center gap-4 bg-black/55 backdrop-blur-md text-white"
+        >
+          <Pause className="w-14 h-14 opacity-75" />
+          <p className="font-display text-3xl font-black">Pause</p>
+          <p className="text-sm text-white/70">Trykk for å fortsette</p>
+        </button>
+      )}
+
       {/* HUD */}
       <GameHud
         onInfo={() => setInfoOpen(true)}
@@ -257,6 +292,8 @@ export default function GamePage() {
         onPlayers={() => setPlayersOpen(true)}
         onFlag={() => setFlagOpen(true)}
         onCast={() => setCastOpen(true)}
+        onPause={() => setPaused((p) => !p)}
+        paused={paused}
         progress={progress}
         isTransitioning={animating}
       />
@@ -266,6 +303,8 @@ export default function GamePage() {
         open={infoOpen}
         onClose={() => setInfoOpen(false)}
         packs={state.selectedPacks}
+        currentCardType={currentCard.type}
+        korttyper={state.korttyper}
       />
 
       <PlayerModal

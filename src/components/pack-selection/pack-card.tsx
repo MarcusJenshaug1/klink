@@ -1,22 +1,27 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Info } from 'lucide-react'
+import { Check, Info, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAthina } from '@/context/athina-context'
+import { DROYHET_META } from '@/lib/game/droyhet'
 import { PackInfoModal } from './pack-info-modal'
-import type { Pack } from '@/types/game'
+import type { Droyhet, Pack } from '@/types/game'
 
 interface PackCardProps {
   pack: Pack
   selected: boolean
   onToggle: () => void
   cardCount?: number
+  blocked?: boolean
+  selectedDroyhet?: Droyhet
+  playerCount?: number
 }
 
-export function PackCard({ pack, selected, onToggle, cardCount }: PackCardProps) {
+export function PackCard({ pack, selected, onToggle, cardCount, blocked, playerCount }: PackCardProps) {
   const { isActive: athina } = useAthina()
   const [infoOpen, setInfoOpen] = useState(false)
+  const requiredLabel = blocked && pack.droyhet ? DROYHET_META[pack.droyhet].label : null
 
   return (
     <>
@@ -24,9 +29,11 @@ export function PackCard({ pack, selected, onToggle, cardCount }: PackCardProps)
         className={cn(
           'relative w-full rounded-2xl p-4 text-left transition-all duration-200 overflow-hidden',
           'text-white min-h-[118px] flex flex-col justify-between',
-          selected
-            ? 'shadow-xl scale-[1.02] ring-[3px] ring-inset ring-white/70'
-            : 'shadow-md opacity-85 hover:opacity-100',
+          blocked
+            ? 'opacity-55 grayscale-[40%]'
+            : selected
+              ? 'shadow-xl scale-[1.02] ring-[3px] ring-inset ring-white/70'
+              : 'shadow-md opacity-85 hover:opacity-100',
         )}
         style={{ backgroundColor: pack.farge }}
       >
@@ -35,33 +42,50 @@ export function PackCard({ pack, selected, onToggle, cardCount }: PackCardProps)
           type="button"
           onClick={onToggle}
           aria-pressed={selected}
-          aria-label={`${selected ? 'Fjern' : 'Velg'} ${pack.navn}`}
+          aria-label={
+            blocked
+              ? `${pack.navn} — krever ${requiredLabel} drøyhet, trykk for å aktivere`
+              : `${selected ? 'Fjern' : 'Velg'} ${pack.navn}`
+          }
           className="absolute inset-0 rounded-2xl active:scale-[0.98] transition-transform"
         />
         {athina && <div className="absolute inset-0 bg-[#FF1493]/30 pointer-events-none" />}
 
         <div className="relative z-10 pointer-events-none flex min-h-[86px] flex-col justify-between">
 
-          {/* Top row: name + selection indicator only */}
+          {/* Top row: name + selection indicator */}
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-black text-base sm:text-lg leading-tight flex-1">{pack.navn}</h3>
-            <div className={cn(
-              'mt-0.5 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 shrink-0',
-              selected
-                ? 'bg-white shadow-sm scale-100'
-                : 'border-2 border-white/35 scale-90',
-            )}>
-              <Check
-                className={cn('w-3.5 h-3.5 transition-opacity duration-150', selected ? 'opacity-100' : 'opacity-0')}
-                style={{ color: pack.farge }}
-                strokeWidth={3}
-              />
-            </div>
+            {blocked ? (
+              <div
+                className="mt-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-white/25"
+                aria-hidden
+              >
+                <Lock className="w-3 h-3 text-white" />
+              </div>
+            ) : (
+              <div className={cn(
+                'mt-0.5 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 shrink-0',
+                selected
+                  ? 'bg-white shadow-sm scale-100'
+                  : 'border-2 border-white/35 scale-90',
+              )}>
+                <Check
+                  className={cn('w-3.5 h-3.5 transition-opacity duration-150', selected ? 'opacity-100' : 'opacity-0')}
+                  style={{ color: pack.farge }}
+                  strokeWidth={3}
+                />
+              </div>
+            )}
           </div>
 
           {/* Bottom row: description + info button + card count */}
           <div className="flex items-end justify-between gap-2 mt-2">
-            {pack.beskrivelse ? (
+            {blocked && requiredLabel ? (
+              <p className="text-white/85 text-xs sm:text-sm leading-snug flex-1 font-semibold">
+                Krever «{requiredLabel}»
+              </p>
+            ) : pack.beskrivelse ? (
               <p className="text-white/75 text-xs sm:text-sm leading-snug line-clamp-2 flex-1">
                 {pack.beskrivelse}
               </p>
@@ -93,6 +117,7 @@ export function PackCard({ pack, selected, onToggle, cardCount }: PackCardProps)
         <PackInfoModal
           pack={pack}
           cardCount={cardCount}
+          playerCount={playerCount}
           onClose={() => setInfoOpen(false)}
         />
       )}

@@ -145,10 +145,10 @@ export function BussenCard({ card, pack, players, intensitet, korttyper, onNext 
 
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-20 landscape:pt-14 landscape:pb-20"
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-10 landscape:pt-10 landscape:pb-14"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
-      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl landscape:gap-2 lg:landscape:max-w-3xl">
+      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-4xl landscape:gap-2 lg:landscape:max-w-5xl">
 
         {/* Badge */}
         <div className="flex justify-center">
@@ -167,7 +167,7 @@ export function BussenCard({ card, pack, players, intensitet, korttyper, onNext 
         {/* Main card */}
         <div
           className={cn(
-            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-4 overflow-x-hidden overflow-y-auto rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:p-8 landscape:max-h-[calc(100dvh-8.5rem)] landscape:gap-3 landscape:rounded-2xl landscape:p-5',
+            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-4 overflow-hidden rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:p-8 landscape:max-h-[calc(100dvh-5.5rem)] landscape:gap-2 landscape:rounded-2xl landscape:p-3',
             athina ? 'border-white/30 bg-white/18' : 'border-white/25 bg-white/18'
           )}
           style={{
@@ -181,13 +181,13 @@ export function BussenCard({ card, pack, players, intensitet, korttyper, onNext 
             style={{ background: `linear-gradient(180deg, ${colorWithAlpha(accent, 0.24, 'rgba(255,255,255,0.14)')}, transparent)` }} />
           {athina && <div className="pointer-events-none absolute inset-0 bg-[#FF1493]/30" />}
 
-          <div className="relative z-10 flex flex-col items-center gap-4 landscape:gap-3">
+          <div className="relative z-10 flex flex-col items-center gap-4 landscape:gap-2">
 
             {/* Passenger */}
             {passenger && (
-              <div className="flex flex-col items-center gap-1">
+              <div className="flex flex-col items-center gap-1 landscape:flex-row landscape:gap-2">
                 <p className="text-xs font-bold uppercase tracking-widest text-white/60">Passasjer</p>
-                <span className="rounded-full px-5 py-2 text-base font-black text-white"
+                <span className="rounded-full px-5 py-2 text-base font-black text-white landscape:px-3 landscape:py-1 landscape:text-sm"
                   style={{ backgroundColor: colorWithAlpha(accent, 0.35, 'rgba(255,255,255,0.2)') }}>
                   {passenger}
                 </span>
@@ -196,16 +196,24 @@ export function BussenCard({ card, pack, players, intensitet, korttyper, onNext 
 
             {!done ? (
               <>
-                {/* Step dots */}
-                <div className="flex items-center gap-2">
-                  {[0, 1, 2, 3].map(i => (
-                    <div key={i} className={cn(
-                      'h-2 rounded-full transition-all duration-300 landscape:h-1.5',
-                      i < step ? 'w-4 bg-white/50 landscape:w-3'
-                      : i === step ? 'w-8 bg-white landscape:w-6'
-                      : 'w-4 bg-white/20 landscape:w-3'
-                    )} />
-                  ))}
+                {/* Step dots + hopp over */}
+                <div className="flex w-full items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    {[0, 1, 2, 3].map(i => (
+                      <div key={i} className={cn(
+                        'h-2 rounded-full transition-all duration-300 landscape:h-1.5',
+                        i < step ? 'w-4 bg-white/50 landscape:w-3'
+                        : i === step ? 'w-8 bg-white landscape:w-6'
+                        : 'w-4 bg-white/20 landscape:w-3'
+                      )} />
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setDone(true)}
+                    className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white/90 transition-colors"
+                  >
+                    Hopp over
+                  </button>
                 </div>
 
                 {/* Question */}

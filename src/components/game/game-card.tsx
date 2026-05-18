@@ -20,7 +20,8 @@ import { KategoriCard } from './kategori-card'
 import { RouletteCard } from './roulette-card'
 import { BussenCard } from './bussen-card'
 import { OppdragCard } from './oppdrag-card'
-import { SannhetCard } from './sannhet-card'
+import { PekelekCard } from './pekelek-card'
+import { JegHarAldriCard } from './jeg-har-aldri-card'
 import type { Card, Pack, Intensitet, Korttype } from '@/types/game'
 
 const GLITTERS = [
@@ -93,8 +94,11 @@ export function GameCard(props: GameCardProps) {
   if (props.card.type === 'oppdrag') {
     return <OppdragCard {...props} />
   }
-  if (props.card.type === 'sannhet') {
-    return <SannhetCard {...props} />
+  if (props.card.type === 'pekelek') {
+    return <PekelekCard {...props} />
+  }
+  if (props.card.type === 'alle_drikker') {
+    return <JegHarAldriCard {...props} />
   }
   return <StandardGameCard {...props} />
 }

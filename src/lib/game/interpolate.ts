@@ -57,6 +57,16 @@ export function interpolate(template: string, players: string[]): string {
 }
 
 /**
+ * Renders a card template using stand-in names for previewing
+ * (e.g. in pack-info modals before a game has started). Also replaces
+ * {sips} with a neutral phrase so the preview reads naturally.
+ */
+const PREVIEW_NAMES = ['Marcus', 'Sara', 'Ole', 'Ida', 'Henrik']
+export function interpolatePreview(template: string): string {
+  return interpolate(template, PREVIEW_NAMES).replace(/\{sips\}\s*slurke?r?/g, 'noen slurker').replace(/\{sips\}/g, 'noen slurker')
+}
+
+/**
  * Same as interpolate() but returns typed segments so the caller can render
  * player names differently (e.g. as highlighted badge spans).
  */

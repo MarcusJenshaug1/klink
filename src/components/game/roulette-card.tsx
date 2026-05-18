@@ -72,10 +72,10 @@ export function RouletteCard({ card, pack, players, intensitet, korttyper, onNex
 
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-20 landscape:pt-14 landscape:pb-20"
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-10 landscape:pt-10 landscape:pb-14"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
-      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl landscape:gap-2 lg:landscape:max-w-3xl">
+      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-3xl landscape:gap-2 lg:landscape:max-w-4xl">
 
         {/* Category badge */}
         <div className="flex justify-center">
@@ -94,7 +94,7 @@ export function RouletteCard({ card, pack, players, intensitet, korttyper, onNex
         {/* Main card */}
         <div
           className={cn(
-            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-x-hidden overflow-y-auto rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:gap-7 md:p-10 landscape:max-h-[calc(100dvh-8.5rem)] landscape:gap-4 landscape:rounded-2xl landscape:p-5',
+            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-hidden rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:gap-7 md:p-10 landscape:max-h-[calc(100dvh-6rem)] landscape:gap-3 landscape:rounded-2xl landscape:p-4',
             athina ? 'border-white/30 bg-white/18' : 'border-white/25 bg-white/18'
           )}
           style={{
@@ -112,16 +112,16 @@ export function RouletteCard({ card, pack, players, intensitet, korttyper, onNex
           />
           {athina && <div className="pointer-events-none absolute inset-0 bg-[#FF1493]/30" />}
 
-          <div className="relative z-10 flex flex-col items-center gap-5 md:gap-6 landscape:gap-3">
+          <div className="relative z-10 flex flex-col items-center gap-5 md:gap-6 landscape:gap-2">
 
             {bang === null ? (
               <>
                 {/* Current player */}
                 {currentPlayer && (
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-1 landscape:flex-row landscape:gap-2">
                     <p className="text-xs font-bold uppercase tracking-widest text-white/60">Velger kammer</p>
                     <span
-                      className="rounded-full px-5 py-2 text-lg font-black text-white"
+                      className="rounded-full px-5 py-2 text-lg font-black text-white landscape:px-3 landscape:py-1 landscape:text-sm"
                       style={{ backgroundColor: colorWithAlpha(accent, 0.35, 'rgba(255,255,255,0.2)') }}
                     >
                       {currentPlayer}
@@ -129,8 +129,8 @@ export function RouletteCard({ card, pack, players, intensitet, korttyper, onNex
                   </div>
                 )}
 
-                {/* Cylinder grid */}
-                <div className="grid w-full grid-cols-3 gap-3 landscape:gap-2">
+                {/* Cylinder grid — 3x2 portrait, 6x1 landscape for større touch-target */}
+                <div className="grid w-full grid-cols-3 gap-3 landscape:grid-cols-6 landscape:gap-2">
                   {Array.from({ length: CHAMBERS }, (_, i) => {
                     const isTapped = tapped.includes(i)
                     return (
@@ -139,7 +139,7 @@ export function RouletteCard({ card, pack, players, intensitet, korttyper, onNex
                         onClick={() => handleTap(i)}
                         disabled={isTapped}
                         className={cn(
-                          'flex flex-col items-center justify-center rounded-2xl py-5 text-2xl font-black transition-all landscape:py-3 landscape:text-xl',
+                          'flex flex-col items-center justify-center rounded-2xl py-5 text-2xl font-black transition-all landscape:aspect-square landscape:py-0 landscape:text-2xl',
                           isTapped
                             ? 'bg-green-500/30 text-green-300 cursor-default'
                             : 'bg-white/15 text-white hover:bg-white/25 active:scale-95'
@@ -152,9 +152,14 @@ export function RouletteCard({ card, pack, players, intensitet, korttyper, onNex
                   })}
                 </div>
 
-                <p className="text-center text-xs text-white/50">
-                  {CHAMBERS - tapped.length} kammer igjen · {tapped.length} trygge
-                </p>
+                {(() => {
+                  const remaining = CHAMBERS - tapped.length
+                  return (
+                    <p className="text-center text-xs text-white/60">
+                      {remaining} kammer igjen · sjanse: <span className="font-black text-white">1 av {remaining}</span>
+                    </p>
+                  )
+                })()}
               </>
             ) : (
               /* BANG */

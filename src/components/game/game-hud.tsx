@@ -1,6 +1,6 @@
 'use client'
 
-import { Info, X, Users, ChevronLeft, ChevronRight, Flag, Tv } from 'lucide-react'
+import { Info, X, Users, ChevronLeft, ChevronRight, Flag, Tv, Pause, Play } from 'lucide-react'
 import { useAthina } from '@/context/athina-context'
 import { cn } from '@/lib/utils'
 
@@ -12,11 +12,13 @@ interface GameHudProps {
   onPlayers: () => void
   onFlag?: () => void
   onCast?: () => void
+  onPause?: () => void
+  paused?: boolean
   progress: { current: number; total: number }
   isTransitioning?: boolean
 }
 
-export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, onCast, progress, isTransitioning = false }: GameHudProps) {
+export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, onCast, onPause, paused = false, progress, isTransitioning = false }: GameHudProps) {
   const { isActive: athina } = useAthina()
   const canGoBack = progress.current > 1
   const pct = (progress.current / progress.total) * 100
@@ -72,6 +74,16 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
           >
             <Users className="w-5 h-5" />
           </button>
+          {onPause && (
+            <button
+              onClick={onPause}
+              aria-label={paused ? 'Fortsett' : 'Pause'}
+              title={paused ? 'Fortsett' : 'Pause'}
+              className={cn(iconButtonClass, 'text-white/80 hover:text-white')}
+            >
+              {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+            </button>
+          )}
           {onFlag && (
             <button
               onClick={onFlag}
@@ -100,7 +112,7 @@ export function GameHud({ onInfo, onClose, onNext, onPrev, onPlayers, onFlag, on
             onClick={onPrev}
             aria-label="Forrige kort"
             disabled={!canGoBack || isTransitioning}
-            className={cn(iconButtonClass, !canGoBack && 'opacity-0 pointer-events-none')}
+            className={iconButtonClass}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>

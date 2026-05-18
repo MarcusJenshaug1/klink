@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { Droplets } from 'lucide-react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { Droplets, Timer } from 'lucide-react'
 import { colorWithAlpha, getCardTypeMeta } from '@/lib/game/card-types'
 import { interpolateToSegments } from '@/lib/game/interpolate'
 import { getSips, formatSips, replaceSips } from '@/lib/game/sips'
@@ -17,6 +17,8 @@ interface KategoriCardProps {
   korttyper: Korttype[]
   onNext: () => void
 }
+
+const TURN_MS = 5000
 
 function seedIndex(id: string, len: number): number {
   const hash = id.split('').reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) | 0, 0)
@@ -48,21 +50,57 @@ export function KategoriCard({ card, pack, players, intensitet, korttyper, onNex
 
   const [currentIdx, setCurrentIdx] = useState(startIdx)
   const [loser, setLoser] = useState<string | null>(null)
+  const [timerRunning, setTimerRunning] = useState(false)
+  const [remaining, setRemaining] = useState(TURN_MS)
+  const turnStartRef = useRef<number | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const stopTimer = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    intervalRef.current = null
+    setTimerRunning(false)
+  }
+
+  const startTimerFor = (idx: number) => {
+    stopTimer()
+    if (!hasPlayers) return
+    turnStartRef.current = Date.now()
+    setRemaining(TURN_MS)
+    setTimerRunning(true)
+    intervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - (turnStartRef.current ?? Date.now())
+      const left = Math.max(0, TURN_MS - elapsed)
+      setRemaining(left)
+      if (left <= 0) {
+        stopTimer()
+        setLoser(players[idx])
+      }
+    }, 50)
+  }
 
   useEffect(() => {
     setCurrentIdx(hasPlayers ? seedIndex(card.id, players.length) : 0)
     setLoser(null)
+    setRemaining(TURN_MS)
+    return () => stopTimer()
   }, [card.id, hasPlayers, players.length])
 
   const currentPlayer = hasPlayers ? players[currentIdx] : null
   const accent = athina ? '#FF1493' : meta.farge ?? pack.farge
 
+  const handleStart = () => {
+    startTimerFor(currentIdx)
+  }
+
   const nextPlayer = () => {
     if (!hasPlayers) return
-    setCurrentIdx(i => (i + 1) % players.length)
+    const nextIdx = (currentIdx + 1) % players.length
+    setCurrentIdx(nextIdx)
+    startTimerFor(nextIdx)
   }
 
   const handleFail = () => {
+    stopTimer()
     if (currentPlayer) setLoser(currentPlayer)
   }
 
@@ -71,12 +109,16 @@ export function KategoriCard({ card, pack, players, intensitet, korttyper, onNex
     athina ? 'bg-white/30 text-white' : 'bg-forest text-lime'
   )
 
+  const pctRemaining = (remaining / TURN_MS) * 100
+  const remainingSec = Math.ceil(remaining / 1000)
+  const lowTime = remaining <= 1500
+
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-20 landscape:pt-14 landscape:pb-20"
+      className="absolute inset-0 flex flex-col items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)_+_4.25rem)] pb-[calc(env(safe-area-inset-bottom)_+_6.75rem)] transition-colors duration-700 sm:px-5 landscape:px-10 landscape:pt-10 landscape:pb-14"
       style={{ backgroundColor: athina ? 'transparent' : pack.farge }}
     >
-      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-2xl landscape:gap-2 lg:landscape:max-w-3xl">
+      <div className="flex min-h-0 w-full max-w-sm flex-col items-center gap-3 md:max-w-xl md:gap-5 lg:max-w-2xl xl:max-w-3xl landscape:max-w-3xl landscape:gap-2 lg:landscape:max-w-4xl">
 
         {/* Category badge */}
         <div className="flex justify-center">
@@ -95,7 +137,7 @@ export function KategoriCard({ card, pack, players, intensitet, korttyper, onNex
         {/* Main card */}
         <div
           className={cn(
-            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-x-hidden overflow-y-auto rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:gap-7 md:p-10 landscape:max-h-[calc(100dvh-8.5rem)] landscape:gap-3 landscape:rounded-2xl landscape:p-5',
+            'relative flex max-h-[calc(100dvh-13.5rem)] w-full flex-col gap-5 overflow-hidden rounded-3xl border p-6 shadow-2xl backdrop-blur-md sm:p-7 md:gap-7 md:p-10 landscape:max-h-[calc(100dvh-6rem)] landscape:gap-3 landscape:rounded-2xl landscape:p-4',
             athina ? 'border-white/30 bg-white/18' : 'border-white/25 bg-white/18'
           )}
           style={{
@@ -111,10 +153,11 @@ export function KategoriCard({ card, pack, players, intensitet, korttyper, onNex
           />
           {athina && <div className="pointer-events-none absolute inset-0 bg-[#FF1493]/30" />}
 
-          <div className="relative z-10 flex flex-col gap-5 md:gap-7 landscape:gap-3">
+          {/* I landscape: 2-kolonne (kategori venstre, interaksjon høyre). Portrait: stacked. */}
+          <div className="relative z-10 flex flex-col gap-5 md:gap-7 landscape:flex-row landscape:items-center landscape:gap-5">
 
-            {/* Category text */}
-            <p className="break-words text-center text-3xl font-semibold leading-snug text-white sm:text-4xl md:text-5xl landscape:text-2xl [overflow-wrap:anywhere]">
+            {/* Venstre i landscape: kategori-tekst */}
+            <p className="break-words text-center text-3xl font-semibold leading-snug text-white sm:text-4xl md:text-5xl landscape:text-xl landscape:text-left landscape:flex-1 [overflow-wrap:anywhere]">
               {segments.map((seg, i) =>
                 seg.type === 'player' ? (
                   <mark key={i} className={cn(
@@ -129,62 +172,89 @@ export function KategoriCard({ card, pack, players, intensitet, korttyper, onNex
               )}
             </p>
 
-            {loser === null ? (
-              /* Playing phase */
-              <>
-                {currentPlayer && (
-                  <div className="flex flex-col items-center gap-1">
-                    <p className="text-xs font-bold uppercase tracking-widest text-white/60">Din tur</p>
-                    <span
-                      className="rounded-full px-6 py-2.5 text-xl font-black text-white landscape:text-lg"
-                      style={{ backgroundColor: colorWithAlpha(accent, 0.35, 'rgba(255,255,255,0.2)') }}
-                    >
-                      {currentPlayer}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-2">
-                  {hasPlayers && players.length > 1 && (
-                    <button
-                      onClick={nextPlayer}
-                      className={primaryActionClass}
-                    >
-                      Neste spiller →
-                    </button>
+            {/* Høyre i landscape: spiller-info + timer + knapper */}
+            <div className="flex flex-col gap-4 landscape:flex-1 landscape:gap-2 landscape:min-w-0">
+              {loser === null ? (
+                <>
+                  {currentPlayer && (
+                    <div className="flex flex-col items-center gap-1 landscape:gap-0.5">
+                      <p className="text-xs font-bold uppercase tracking-widest text-white/60">Din tur — 5 sek</p>
+                      <span
+                        className="rounded-full px-6 py-2.5 text-xl font-black text-white landscape:text-base landscape:py-1.5"
+                        style={{ backgroundColor: colorWithAlpha(accent, 0.35, 'rgba(255,255,255,0.2)') }}
+                      >
+                        {currentPlayer}
+                      </span>
+                    </div>
                   )}
-                  <button
-                    onClick={handleFail}
-                    className="flex w-full animate-pulse items-center justify-center gap-2 rounded-2xl bg-red-500/80 py-3.5 text-base font-black text-white shadow-lg transition-all hover:bg-red-500 active:scale-[0.98] landscape:py-2.5 landscape:text-sm"
-                  >
-                    Bommet! 🍺
+
+                  {timerRunning && (
+                    <div className="flex flex-col items-center gap-1.5">
+                      <div className="h-2 w-full rounded-full bg-white/15 overflow-hidden">
+                        <div
+                          className={cn(
+                            'h-full transition-[width] ease-linear',
+                            lowTime ? 'bg-red-500' : 'bg-white/80'
+                          )}
+                          style={{ width: `${pctRemaining}%`, transitionDuration: '60ms' }}
+                        />
+                      </div>
+                      <p className={cn(
+                        'flex items-center gap-1 text-sm font-black tabular-nums',
+                        lowTime ? 'text-red-200 animate-pulse' : 'text-white/80'
+                      )}>
+                        <Timer className="w-3.5 h-3.5" />
+                        {remainingSec}s
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    {!timerRunning ? (
+                      <button onClick={handleStart} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>
+                        <Timer className="w-5 h-5 landscape:w-4 landscape:h-4" />
+                        Start 5-sek timer
+                      </button>
+                    ) : (
+                      <>
+                        {hasPlayers && players.length > 1 && (
+                          <button onClick={nextPlayer} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>
+                            Klarte det! →
+                          </button>
+                        )}
+                        <button
+                          onClick={handleFail}
+                          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500/80 py-3.5 text-base font-black text-white shadow-lg transition-all hover:bg-red-500 active:scale-[0.98] landscape:py-2 landscape:text-sm"
+                        >
+                          Bommet! 🍺
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-3 text-center landscape:gap-1.5">
+                  <p className="text-xs font-bold uppercase tracking-widest text-white/60">Drikker</p>
+                  <span className={cn(
+                    'rounded-full px-6 py-2.5 text-2xl font-black landscape:text-lg landscape:py-1.5',
+                    athina ? 'bg-white text-[#FF1493]' : 'bg-white text-forest'
+                  )}>
+                    {loser}
+                  </span>
+                  <p className="flex items-center gap-2 text-2xl font-black text-white landscape:text-lg">
+                    <Droplets className="h-6 w-6 landscape:h-5 landscape:w-5" />
+                    {formatSips(sips)}
+                  </p>
+                  <button onClick={onNext} className={cn(primaryActionClass, 'landscape:py-2 landscape:text-sm')}>
+                    Neste kort →
                   </button>
                 </div>
-              </>
-            ) : (
-              /* Result phase */
-              <div className="flex flex-col items-center gap-4 text-center">
-                <p className="text-xs font-bold uppercase tracking-widest text-white/60">Drikker</p>
-                <span className={cn(
-                  'rounded-full px-6 py-2.5 text-2xl font-black',
-                  athina ? 'bg-white text-[#FF1493]' : 'bg-white text-forest'
-                )}>
-                  {loser}
-                </span>
-                <p className="flex items-center gap-2 text-2xl font-black text-white">
-                  <Droplets className="h-6 w-6" />
-                  {formatSips(sips)}
-                </p>
-                <button onClick={onNext} className={primaryActionClass}>
-                  Neste kort →
-                </button>
-              </div>
-            )}
+              )}
+            </div>
 
           </div>
         </div>
 
-        {/* Sip pill */}
         {loser === null && (
           <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-black/20 px-4 py-1.5 text-sm font-bold text-white/75 shadow-sm backdrop-blur-sm">
             <Droplets className="h-4 w-4 shrink-0" />

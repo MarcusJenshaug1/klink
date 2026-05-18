@@ -15,6 +15,9 @@ export type TrackEvent =
   | 'intensitet_changed'
   | 'card_flagged'
   | 'share_clicked'
+  | 'pack_selection_empty'
+  | 'how_it_works_opened'
+  | 'pause_toggled'
 
 /** Fire-and-forget GA4 event. No-op if consent not granted / gtag missing. */
 export function track(event: TrackEvent, params?: Record<string, unknown>): void {
